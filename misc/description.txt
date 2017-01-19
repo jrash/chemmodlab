@@ -1,0 +1,37 @@
+New package chemmodlab with initial version 0.0.0.9000 
+
+<strong>Package</strong>: chemmodlab<br>
+<strong>Type</strong>: Package<br>
+<strong>Title</strong>: A Cheminformatics Laboratory for Fitting and Assessing Machine Learning Models<br>
+<strong>Version</strong>: 0.0.0.9000<br>
+<strong>Date</strong>: 2016-11-27<br>
+<strong>Authors@R</strong>: c(
+person("Jacqueline", "Hughes-Oliver", email = "hughesol@ncsu.edu", role = c("aut")),
+person("Jeremy", "Ash", email = "jrash@ncsu.edu", role = c("aut", "cre"))
+)<br>
+<strong>Description</strong>: Contains a set of methods for fitting models and methods for validating the resulting models.
+The statistical methodologies comprise a
+comprehensive collection of approaches whose validity and utility have been accepted by experts
+in the Cheminformatics field. As promising new methodologies emerge from the
+statistical and data-mining communities, they will be incorporated into the laboratory.
+These methods are aimed at discovering quantitative structure-activity relationships (QSARs).
+However, the user can directly input their own choices of descriptors and responses, so the capability
+for comparing models is effectively unlimited. Users may also examine the diversity of the molecules
+identified by a QSAR model.<br>
+<strong>Depends</strong>: R (&gt;= 3.3.1)<br>
+<strong>License</strong>: GPL-3<br>
+<strong>LazyData</strong>: TRUE<br>
+<strong>URL</strong>: https://github.com/jrash/ChemModLab<br>
+<strong>BugReports</strong>: https://github.com/jrash/ChemModLab/issues<br>
+<strong>Imports</strong>: 
+class (&gt;= 7.3.14),
+e1071 (&gt;= 1.6.7),
+elasticnet (&gt;= 1.1),
+foreach(&gt;= 1.4.3),
+lars(&gt;= 1.2),
+MASS(&gt;= 7.3.45),
+nnet(&gt;= 7.3.12),
+pROC(&gt;= 1.8),
+randomForest(&gt;= 4.6.12),
+rpart(&gt;= 4.1.10),
+tree (&gt;= 1.0.37)<br>
