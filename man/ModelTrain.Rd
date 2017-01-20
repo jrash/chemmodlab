@@ -99,7 +99,7 @@ is not directly appropriate for continuous response assays such as
 percent inhibition, but it can be applied once a threshold value for
 percent inhibition is used to create a binary (active/inactive) response.
 
-See \url{https://jrash.github.io/} for more information about the
+See \url{https://jrash.github.io/ChemModLab/} for more information about the
 models available (including model default parameters).
 
 Sensible default values are selected for each

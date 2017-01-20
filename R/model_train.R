@@ -166,9 +166,9 @@ ModelTrain <- function(data,
                          "KNNEns"))) {
     stop("'models' should be a character vector containing models existing in chemmodlab")
   }
-  if (!is.na(idcol) && !(idcol%%1 == 0)) {
-    stop("'idcol' should be an integer or NA")
-  }
+  # if (!is.na(idcol) && !(idcol%%1 == 0)) {
+  #   stop("'idcol' should be an integer or NA")
+  # }
   meths <- models
 
   if (!is.na(des.names)) {

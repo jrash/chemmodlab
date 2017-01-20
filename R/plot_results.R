@@ -27,8 +27,8 @@
 #'  combination. The accumulation curve for each model is compared.
 #'
 #' @section Second plot series:
-#'  There is one plot per model fit. The
-#'  accumulation curve for each split and descriptor set combination is
+#'  There is one plot per split and model fit. The
+#'  accumulation curve for each descriptor set combination is
 #'  compared.
 #'
 #' @aliases plot.chemmodlab
