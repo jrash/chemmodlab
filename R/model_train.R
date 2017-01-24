@@ -4,72 +4,77 @@
 #' models to sets of descriptors and computes cross-validated measures
 #' of model performance.
 #'
-#' @param data A data frame containing a response column, descriptor columns
-#' and an (optional) id column.
-#' @param ycol The index of the response column.
-#' @param xcols A list of integer vectors.  Each vector contains
-#'  column indices
-#'  of \code{data} where a set of descriptor variables is located.
+#' @param data a data frame containing an (optional) ID column,
+#' a response column, and descriptor columns.  The columns should be
+#' provide in this order.
+#' The response variable should either be binary
+#' (represented as a numeric vector with 0 or 1 values) or
+#' continuous.  At the moment, only numeric descriptors are supported.
+#' @param ids a logical.  Is an ID column provided?
+#' @param xcol.lengths a vector of integers.  It is assumed that the columns
+#'  in \code{data} are grouped by descriptor set.  The integers specify the
+#'  number of descriptors in each descriptor set.  They should be ordered as
+#'  the descriptor sets are ordered in \code{data}.
 #'  Users can specify multiple descriptor sets. By default there is one
 #'  descriptor set, all columns in \code{data} except \code{ycol} and
 #'  \code{idcol}.
-#' @param idcol The index of the column of \code{data} containing
-#' the compound labels. By default this is \code{NA}, and the row labels
-#' of \code{data} will be used.
-#' @param nfolds The number of folds to use for each cross
+#' @param nfolds the number of folds to use for each cross
 #' validation split.
-#' @param nsplits The number of splits to use for repeated
+#' @param nsplits the number of splits to use for repeated
 #' cross validation.
-#' @param seed.in A numeric vector with length equal to \code{nsplits}.
+#' @param seed.in a numeric vector with length equal to \code{nsplits}.
 #' The seeds are used to randomly assign folds to observations for each
-#' repeated cross-validation split.
-#' @param models A character vector specifying the regression or
+#' repeated cross-validation split. If \code{NA}, the first seed will be 
+#' 11111, the second will be 22222, and so on. 
+#' @param models a character vector specifying the regression or
 #' classification models to use.  The strings must match models
 #' implemented in `chemmodlab` (see Details).
-#' @param des.names A character vector specifying the names for each
+#' @param des.names a character vector specifying the names for each
 #' descriptor
 #' set.  The length of the vector must match the number of descriptor sets.
-#' If \code{NA}, descriptor set i will be named "Descriptor Set i".
-#' @param user.params A list of data frames where each data frame contains
+#' If \code{NA}, each descriptor set will be named "Descriptor Set i", where
+#' i is the number of the descriptor set.
+#' @param user.params a list of data frames where each data frame contains
 #' the parameters values for a model.  The list should have the format of
 #' the list constructed by \code{\link{MakeModelDefaults}}. One can construct
 #' a list of parameters using \code{\link{MakeModelDefaults}} and then
 #' modify the parameters.
 #'
 #' @return A list is returned of class \code{\link{chemmodlab}} containing:
-#'  \item{all.preds}{a list of lists of data frames.  The elements of the outer
-#'   list correspond to each split performed by ModelTrain. The
-#'   elements of the inner list correspond to each descriptor set.  The elements
-#'   of the inner list are data frames containing all model predictions for a
-#'   split and descriptor set combination.  The first column of each data frame
+#'  \item{all.preds}{a list of lists of dataframes.  The elements of the outer
+#'   list correspond to each CV split performed by \code{\link{ModelTrain}}. The
+#'   elements of the inner list correspond to each descriptor set.  For each
+#'   descriptor set and CV split combination, the output is a dataframe
+#'   containing all model predictions.  The first column of each data frame
 #'   contains the true value of the response.  The remaining columns contain
 #'   the predictions for each model.}
-#' \item{all.probs}{a list of lists of data frames. Constructed only if there is
+#' \item{all.probs}{a list of lists of dataframes. Constructed only if there is
 #'   a binary response.  The structure is the same as \code{all.preds}, except
-#'   that predictions are replaced by predicted probabilities.  Predicted
+#'   that predictions are replaced by "predicted probabilities" (ie. estimated
+#'   probabilities of a response
+#'   value of one).  Predicted
 #'   probabilities are only reported for classification models.}
 #' \item{model.acc}{a list of lists of model accuracy measures.  The elements of
-#'   the outer list correspond to each split performed by ModelTrain.
-#'   The elements of the inner list correspond to each descriptor set.  The
-#'   inner list contains model accuracy measures for each model fit
+#'   the outer list correspond each CV split performed by \code{ModelTrain}.
+#'   The elements of the inner list correspond to each descriptor set.  For each
+#'   descriptor set and CV split combination model accuracy measures for each model fit
 #'   to the data.  Regression models are assessed with Pearson's \eqn{r} and
 #'   \eqn{RMSE}. Classification models are assessed with contingency tables.}
 #' \item{classify}{a logical.  Were classification models used for binary
 #'   response?}
-#' \item{responses}{a numeric vector.  The true value of the response.}
+#' \item{responses}{a numeric vector.  The observed value of the response.}
 #' \item{data}{a list of numeric matrices.  Each matrix is a descriptor set used
-#'   as model input. The first column of each matrix is the response vector, and
-#'   the remaining columns are descriptors.}
+#'   as model input.}
 #' \item{params}{a list of data frames as made by
 #'   \code{\link{MakeModelDefaults}}.  Each data frame contains the parameters to
 #'   be set for a particular model.}
 #'
 #' @details
-#' \code{ModelTrain} fits a number of model fitting operations for each
-#' data set provided. The response variable should either be binary or
-#' continuous.  Descriptors can be any object as long as the models used
-#' can take the object as input.
-#'
+#' Multiple descriptor sets can be specified
+#' by the user. For each descriptor set, repeated k-fold cross validation
+#' is performed for the spcified number of regression and/or classification
+#' models.
+#' 
 #' Not all modeling strategies will be appropriate for all response
 #' types. For example, partial least squares linear discriminant analysis
 #' ("PLSLDA")
@@ -77,7 +82,8 @@
 #' percent inhibition, but it can be applied once a threshold value for
 #' percent inhibition is used to create a binary (active/inactive) response.
 #'
-#' See \url{https://jrash.github.io/ChemModLab/} for more information about the
+#' See \url{https://pages.github.ncsu.edu/jrash/chemmodlab/} for more 
+#' information about the
 #' models available (including model default parameters).
 #'
 #' Sensible default values are selected for each
@@ -107,14 +113,9 @@
 #' Observed performance measures are
 #' assessed across all splits using \code{\link{CombineSplits}}.  This
 #' function assesses how sensitive performance measures are to fold
-#' assignments, or changes to the training and test sets.  Rigorous
-#' statistical tests are used to determine the best performing model and
+#' assignments, or changes to the training and test sets. 
+#' Statistical tests are used to determine the best performing model and
 #' descriptor set combination.
-#'
-#' Multiple descriptor sets can be specified
-#' by the user. For each descriptor set, repeated k-fold cross validation
-#' is performed for the spcified number of regression and/or classification
-#' models.
 #'
 #' @aliases ModelTrain
 #' @author Jacqueline Hughes-Oliver, Jeremy Ash
@@ -123,21 +124,27 @@
 #' @references ?
 #'
 #' @examples
-#' cml <- ModelTrain(USArrests, nsplits = 3)
+#' 
+#' # A data set with  binary response and multiple descriptor sets
+#' 
+#' desc_lengths <- c(24, 147)
+#' desc_names <- c("BurdenNumbers", "Pharmacophores")
+#' cml <- ModelTrain(aid364, ids = T, xcol.lengths = desc_lengths)
+#' cml
+#' 
+#' # A continuous response
+#' 
+#' cml <- ModelTrain(USArrests)
 #' cml
 #'
-#' bin <- rbinom(50, 1, .1)
-#' cml <- ModelTrain(cbind(bin, USArrests), nsplits = 3)
-#' cml
 #' @export
 ModelTrain <- function(data,
-                       ycol = ifelse(is.na(idcol), 1, 2),
-                       xcols = ifelse(is.na(idcol),
-                                      list(seq(2, ncol(data))),
-                                      list(seq(3, ncol(data)))),
-                       idcol = NA,
+                       ids = F,
+                       xcol.lengths = ifelse(ids,
+                                      length(data) - 2,
+                                      length(data) - 1),
                        nfolds = 10,
-                       nsplits = 1,
+                       nsplits = 3,
                        seed.in = NA,
                        des.names = NA,
                        models = c("NNet", "PLS", "LARs",
@@ -147,43 +154,54 @@ ModelTrain <- function(data,
 
   #-----Background benchmarking program
   # yfilein=input response data: response in column ycol xfilein=input descriptors
-  # data: descriptors in columns xcols
+  # data: descriptors in columns xcol.lengths
 
   # checking parameters specified correctly
-
   if (!is(data, "data.frame"))
-    stop("'data' must be a list of data frames or matrices")
-  if (!(ycol%%1 == 0))
-    stop("'ycol' must be an integer")
-  if (!(nfolds%%1 == 0))
+    stop("'data' must be a data frame")
+  # if (!(ycol%%1 == 0) || !is.numeric(ycol))
+  #   stop("'ycol' must be an integer")
+  if (!(nfolds%%1 == 0) || !is.numeric(nfolds))
     stop("'nfolds' must be an integer")
   # if(length(seed.in) != nsplits)
     # stop("length of 'seed.in' must equal number of splits")
-  if (!(nsplits%%1 == 0))
+  if (!(nsplits%%1 == 0) || !is.numeric(nsplits))
     stop("'nsplits' must be an integer")
-  if (!is(xcols, "list"))
-    stop("'xcols' must be a list of integers") else {
-      for (i in 1:length(xcols)) {
-        if (!(all.equal(xcols[[i]], as.integer(xcols[[i]]))))
-          stop("'xcols' must be a list of integers")
+  # if (!is(xcols, "list"))
+  #   stop("'xcols' must be a list of integers") else {
+  #     for (i in 1:length(xcols)) {
+  #       if (!(all.equal(xcols[[i]], as.integer(xcols[[i]]))))
+  #         stop("'xcols' must be a list of integers")
+  #     }
+  #   }
+  # now having user supply list of integers with descriptor column numbers
+  if (!is(xcol.lengths, "vector"))
+    stop("'xcol.lengths' must be a vector of integers") else {
+      for (i in 1:length(xcol.lengths)) {
+        if (!(xcol.lengths[[i]]%%1 == 0) || !is.numeric(xcol.lengths[[i]]))
+          stop("'xcol.lengths' must be a list of integers")
       }
     }
   if (!all(models %in% c("NNet", "PCR", "ENet", "PLS", "Ridge", "LARs", "PLSLDA",
-                         "RPart", "Tree", "SVM", "KNN", "Forest", "Forest70", "TreeEns", "RPartEns",
+                         "RPart", "Tree", "SVM", "KNN", "Forest", "Forest70", "TreeEns",
+                         "RPartEns",
                          "KNNEns"))) {
     stop("'models' should be a character vector containing models existing in chemmodlab")
   }
-  # if (!is.na(idcol) && !(idcol%%1 == 0)) {
-  #   stop("'idcol' should be an integer or NA")
-  # }
+  if (!is(ids, "logical")) {
+    stop("'ids' should be a logical")
+  }
+  
+  ycol <- ifelse(ids, 2, 1)
+  idcol <- ifelse(ids, 1, NA)
   meths <- models
 
   if (!is.na(des.names)) {
-    if (length(des.names) != length(xcols))
-      stop("'des.names' must be the same length as 'xcols'")
+    if (length(des.names) != length(xcol.lengths))
+      stop("'des.names' must be the same length as 'xcol.lengths'")
   } else {
     des.names <- c()
-    for (i in 1:length(xcols)) {
+    for (i in 1:length(xcol.lengths)) {
       des.names <- c(des.names, paste0("Descriptor Set ", i))
     }
   }
@@ -217,11 +235,30 @@ ModelTrain <- function(data,
     }
     fold.id[(1:n.obs)[(is.na(fold.id))]] <- nfolds
 
+    # use the descriptor column numbers to find the corresponding columns in the 
+    # data frame
+    xcols <- list()
+    xcols[[1]] <- 1:xcol.lengths[1]
+    for(i in 2:length(xcol.lengths)){
+      l1 <- xcols[[i-1]][xcol.lengths[i-1]]
+      l2 <- xcol.lengths[i]
+      xcols[[i]] <- (l1+1):(l1+l2)
+    }
+    # shift up indices by 1 if there is a response column, or 2 if there is a 
+    # response and id columns
+    for(i in 1:length(xcols)){
+      if(is.na(idcol)){
+        xcols[[i]] <- xcols[[i]] + 1
+      } else {
+        xcols[[i]] <- xcols[[i]] + 2
+      }
+    }
+    
     des.preds.ls <- list()
     des.probs.ls <- list()
     des.model.acc.ls <- list()
 
-    for (des.idx in 1:length(xcols)) {
+    for (des.idx in 1:length(xcol.lengths)) {
       model.acc.ls <- list()
       work.data <- ReadInData(data, ycol, xcols[[des.idx]], idcol)[[1]]
       n.pred <- ncol(work.data) - 1

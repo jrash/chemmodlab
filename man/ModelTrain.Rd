@@ -4,49 +4,51 @@
 \alias{ModelTrain}
 \title{Fit predictive models to sets of descriptors.}
 \usage{
-ModelTrain(data, ycol = ifelse(is.na(idcol), 1, 2),
-  xcols = ifelse(is.na(idcol), list(seq(2, ncol(data))), list(seq(3,
-  ncol(data)))), idcol = NA, nfolds = 10, nsplits = 1, seed.in = NA,
+ModelTrain(data, ids = F, xcol.lengths = ifelse(ids, length(data) - 2,
+  length(data) - 1), nfolds = 10, nsplits = 3, seed.in = NA,
   des.names = NA, models = c("NNet", "PLS", "LARs", "PLSLDA", "Tree", "SVM",
   "KNN", "Forest"), user.params = NULL)
 }
 \arguments{
-\item{data}{A data frame containing a response column, descriptor columns
-and an (optional) id column.}
+\item{data}{a data frame containing an (optional) ID column,
+a response column, and descriptor columns.  The columns should be
+provide in this order.
+The response variable should either be binary
+(represented as a numeric vector with 0 or 1 values) or
+continuous.  At the moment, only numeric descriptors are supported.}
 
-\item{ycol}{The index of the response column.}
+\item{ids}{a logical.  Is an ID column provided?}
 
-\item{xcols}{A list of integer vectors.  Each vector contains
-column indices
-of \code{data} where a set of descriptor variables is located.
+\item{xcol.lengths}{a vector of integers.  It is assumed that the columns
+in \code{data} are grouped by descriptor set.  The integers specify the
+number of descriptors in each descriptor set.  They should be ordered as
+the descriptor sets are ordered in \code{data}.
 Users can specify multiple descriptor sets. By default there is one
 descriptor set, all columns in \code{data} except \code{ycol} and
 \code{idcol}.}
 
-\item{idcol}{The index of the column of \code{data} containing
-the compound labels. By default this is \code{NA}, and the row labels
-of \code{data} will be used.}
-
-\item{nfolds}{The number of folds to use for each cross
+\item{nfolds}{the number of folds to use for each cross
 validation split.}
 
-\item{nsplits}{The number of splits to use for repeated
+\item{nsplits}{the number of splits to use for repeated
 cross validation.}
 
-\item{seed.in}{A numeric vector with length equal to \code{nsplits}.
+\item{seed.in}{a numeric vector with length equal to \code{nsplits}.
 The seeds are used to randomly assign folds to observations for each
-repeated cross-validation split.}
+repeated cross-validation split. If \code{NA}, the first seed will be 
+11111, the second will be 22222, and so on.}
 
-\item{des.names}{A character vector specifying the names for each
+\item{des.names}{a character vector specifying the names for each
 descriptor
 set.  The length of the vector must match the number of descriptor sets.
-If \code{NA}, descriptor set i will be named "Descriptor Set i".}
+If \code{NA}, each descriptor set will be named "Descriptor Set i", where
+i is the number of the descriptor set.}
 
-\item{models}{A character vector specifying the regression or
+\item{models}{a character vector specifying the regression or
 classification models to use.  The strings must match models
 implemented in `chemmodlab` (see Details).}
 
-\item{user.params}{A list of data frames where each data frame contains
+\item{user.params}{a list of data frames where each data frame contains
 the parameters values for a model.  The list should have the format of
 the list constructed by \code{\link{MakeModelDefaults}}. One can construct
 a list of parameters using \code{\link{MakeModelDefaults}} and then
@@ -54,29 +56,30 @@ modify the parameters.}
 }
 \value{
 A list is returned of class \code{\link{chemmodlab}} containing:
- \item{all.preds}{a list of lists of data frames.  The elements of the outer
-  list correspond to each split performed by ModelTrain. The
-  elements of the inner list correspond to each descriptor set.  The elements
-  of the inner list are data frames containing all model predictions for a
-  split and descriptor set combination.  The first column of each data frame
+ \item{all.preds}{a list of lists of dataframes.  The elements of the outer
+  list correspond to each CV split performed by \code{\link{ModelTrain}}. The
+  elements of the inner list correspond to each descriptor set.  For each
+  descriptor set and CV split combination, the output is a dataframe
+  containing all model predictions.  The first column of each data frame
   contains the true value of the response.  The remaining columns contain
   the predictions for each model.}
-\item{all.probs}{a list of lists of data frames. Constructed only if there is
+\item{all.probs}{a list of lists of dataframes. Constructed only if there is
   a binary response.  The structure is the same as \code{all.preds}, except
-  that predictions are replaced by predicted probabilities.  Predicted
+  that predictions are replaced by "predicted probabilities" (ie. estimated
+  probabilities of a response
+  value of one).  Predicted
   probabilities are only reported for classification models.}
 \item{model.acc}{a list of lists of model accuracy measures.  The elements of
-  the outer list correspond to each split performed by ModelTrain.
-  The elements of the inner list correspond to each descriptor set.  The
-  inner list contains model accuracy measures for each model fit
-  to the data.  Regression models are assessed with Pearson's \eqn{R^2} and
+  the outer list correspond each CV split performed by \code{ModelTrain}.
+  The elements of the inner list correspond to each descriptor set.  For each
+  descriptor set and CV split combination model accuracy measures for each model fit
+  to the data.  Regression models are assessed with Pearson's \eqn{r} and
   \eqn{RMSE}. Classification models are assessed with contingency tables.}
 \item{classify}{a logical.  Were classification models used for binary
   response?}
-\item{responses}{a numeric vector.  The true value of the response.}
+\item{responses}{a numeric vector.  The observed value of the response.}
 \item{data}{a list of numeric matrices.  Each matrix is a descriptor set used
-  as model input. The first column of each matrix is the response vector, and
-  the remaining columns are descriptors.}
+  as model input.}
 \item{params}{a list of data frames as made by
   \code{\link{MakeModelDefaults}}.  Each data frame contains the parameters to
   be set for a particular model.}
@@ -87,10 +90,10 @@ models to sets of descriptors and computes cross-validated measures
 of model performance.
 }
 \details{
-\code{ModelTrain} fits a number of model fitting operations for each
-data set provided. The response variable should either be binary or
-continuous.  Descriptors can be any object as long as the models used
-can take the object as input.
+Multiple descriptor sets can be specified
+by the user. For each descriptor set, repeated k-fold cross validation
+is performed for the spcified number of regression and/or classification
+models.
 
 Not all modeling strategies will be appropriate for all response
 types. For example, partial least squares linear discriminant analysis
@@ -99,7 +102,8 @@ is not directly appropriate for continuous response assays such as
 percent inhibition, but it can be applied once a threshold value for
 percent inhibition is used to create a binary (active/inactive) response.
 
-See \url{https://jrash.github.io/ChemModLab/} for more information about the
+See \url{https://pages.github.ncsu.edu/jrash/chemmodlab/} for more 
+information about the
 models available (including model default parameters).
 
 Sensible default values are selected for each
@@ -126,18 +130,27 @@ to obtain multiple separate k-fold cross validation runs resulting in
 multiple separate definitions of folds.  The number of these "splits"
 is specified by \code{nsplits}.
 
-Multiple descriptor sets can be specified
-by the user. For each descriptor set, repeated k-fold cross validation
-is performed for the spcified number of regression and/or classification
-models.
+Observed performance measures are
+assessed across all splits using \code{\link{CombineSplits}}.  This
+function assesses how sensitive performance measures are to fold
+assignments, or changes to the training and test sets. 
+Statistical tests are used to determine the best performing model and
+descriptor set combination.
 }
 \examples{
-cml <- ModelTrain(USArrests, nsplits = 3)
+
+# A data set with  binary response and multiple descriptor sets
+
+desc_lengths <- c(24, 147)
+desc_names <- c("BurdenNumbers", "Pharmacophores")
+cml <- ModelTrain(aid364, ids = T, xcol.lengths = desc_lengths)
 cml
 
-bin <- rbinom(50, 1, .1)
-cml <- ModelTrain(cbind(bin, USArrests), nsplits = 3)
+# A continuous response
+
+cml <- ModelTrain(USArrests)
 cml
+
 }
 \author{
 Jacqueline Hughes-Oliver, Jeremy Ash

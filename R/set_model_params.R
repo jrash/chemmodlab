@@ -20,7 +20,7 @@
 #' manually by generating a list with this function and assigning
 #' the parameters.
 #'
-#' See \url{https://jrash.github.io/ChemModLab/} for more information about the
+#' See \url{https://pages.github.ncsu.edu/jrash/chemmodlab/} for more information about the
 #' models available (including model default parameters).
 #'
 #' @aliases MakeModelDefaults

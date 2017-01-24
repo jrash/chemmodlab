@@ -27,8 +27,10 @@ validation. Given a particular compound collection, larger accumulations are
 preferable.
 
 The accumulation curve has also been extended to continuous responses.
-Assuming large values of a continuous response y are preferable, ChemModLab
-accumulates \code{y} so that \code{\eqn{\sum_{i=1}^n y_i}{\sum y_i}} is the sum of the
+Assuming large positive values of a continuous response y are preferable,
+ChemModLab
+accumulates \code{y} so that \code{\eqn{\sum_{i=1}^n y_i}{\sum y_i}}
+is the sum of the
 \code{y}
 over the first \code{n} tests. This extension includes the binary-response
 accumulation curve as a special case.
@@ -41,24 +43,28 @@ There are two main series of plots generated:
 }
 \section{First plot series}{
 
- There is one plot per split and descriptor set
+ There is one plot per CV split and descriptor set
  combination. The accumulation curve for each model is compared.
 }
 
 \section{Second plot series}{
 
- There is one plot per split and model fit. The
+ There is one plot per CV split and model fit. The
  accumulation curve for each descriptor set is
  compared.
 }
 \examples{
-cml <- modelTrain(USArrests, nsplits = 3)
+# A data set with  binary response and multiple descriptor sets
+
+desc_lengths <- c(24, 147)
+desc_names <- c("BurdenNumbers", "Pharmacophores")
+cml <- ModelTrain(aid364, ids = T, xcol.lengths = desc_lengths)
 plot(cml)
 
-bin <- rbinom(50, 1, .1)
-cml <- ModelTrain(cbind(bin, USArrests), nsplits = 3)
-plot(cml)
+# A continuous response
 
+cml <- ModelTrain(USArrests)
+plot(cml)
 }
 \author{
 Jacqueline Hughes-Oliver, Jeremy Ash

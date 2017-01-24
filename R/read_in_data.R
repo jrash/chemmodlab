@@ -1,8 +1,8 @@
 # removed option to provide y response vector, this will be used later in a
 # different S3 ModelTrain method
 
-ReadInData <- function(data, ycol, xcols, idcol = NA, type = "ANALYZE") {
-
+ReadInData <- function(data, ycol, xcols, idcol, type = "ANALYZE") {
+  
   if (is.na(idcol)) {
     if (!all(c(ycol, xcols) <= ncol(data)))
       stop("there is an index larger than number of columns in 'data'")
