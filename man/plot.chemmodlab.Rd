@@ -4,7 +4,8 @@
 \alias{plot.chemmodlab}
 \title{Plot method for the chemmodlab class.}
 \usage{
-\method{plot}{chemmodlab}(cml.result, max.select = NA)
+\method{plot}{chemmodlab}(cml.result, max.select = NA,
+  splits = 1:cml.result$nsplits, models = cml.result$models)
 }
 \arguments{
 \item{cml.result}{an object of class \code{\link{chemmodlab}}.}
@@ -12,6 +13,13 @@
 \item{max.select}{the maximum number of tests to plot for the
 accumulation curve. If max.select not specified, use \code{floor(min(300,n/4))},
 where n is the number of compounds.}
+
+\item{splits}{a numeric vector containing the indices of the splits to use to construct
+accumulation curves.  Default is to use all splits. \code{NA} means the first series
+of plots are not generate. See \code{Details}.}
+
+\item{models}{a character vector with models implemented in \code{chemmodlab}.  The 
+models to use for the second series plots.  See \code{Details}}
 }
 \description{
 \code{plot.chemmodlab} takes a \code{\link{chemmodlab}} object output by the
@@ -56,9 +64,8 @@ There are two main series of plots generated:
 \examples{
 # A data set with  binary response and multiple descriptor sets
 
-desc_lengths <- c(24, 147)
-desc_names <- c("BurdenNumbers", "Pharmacophores")
-cml <- ModelTrain(aid364, ids = T, xcol.lengths = desc_lengths)
+cml <- ModelTrain(aid364, ids = T, xcol.lengths = c(24, 147), 
+                  des.names = c("BurdenNumbers", "Pharmacophores"))
 plot(cml)
 
 # A continuous response
@@ -74,6 +81,6 @@ Modified from code originally written by
   William J. Welch 2001-2002
 }
 \seealso{
-\code{\link{chemmodlab}}, \code{\link{modelTrain}}, \code{\link{modelTrain}}
+\code{\link{chemmodlab}}, \code{\link{ModelTrain}}
 }
 

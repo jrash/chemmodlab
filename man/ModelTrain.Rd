@@ -83,6 +83,10 @@ A list is returned of class \code{\link{chemmodlab}} containing:
 \item{params}{a list of data frames as made by
   \code{\link{MakeModelDefaults}}.  Each data frame contains the parameters to
   be set for a particular model.}
+\item{des.names}{a character vector specifying the descriptor set names.  NA if 
+  unspecified.}
+\item{models}{a character vector specifying the models fit to the data.}
+\item{nsplits}{number of CV splits performed.}
 }
 \description{
 \code{ModelTrain} fits a series of classification or regression
@@ -141,9 +145,8 @@ descriptor set combination.
 
 # A data set with  binary response and multiple descriptor sets
 
-desc_lengths <- c(24, 147)
-desc_names <- c("BurdenNumbers", "Pharmacophores")
-cml <- ModelTrain(aid364, ids = T, xcol.lengths = desc_lengths)
+cml <- ModelTrain(aid364, ids = T, xcol.lengths = c(24, 147), 
+                  des.names = c("BurdenNumbers", "Pharmacophores"))
 cml
 
 # A continuous response

@@ -33,3 +33,6 @@ Packaged: 2017-01-12 16:33:49 UTC; Vestige
 Author: Jacqueline Hughes-Oliver [aut],
   Jeremy Ash [aut, cre]
 Maintainer: Jeremy Ash <jrash@ncsu.edu>
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr

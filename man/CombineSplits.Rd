@@ -12,7 +12,7 @@ CombineSplits(cml.result, metric = "enhancement", at = NA, thresh = 0.5,
 
 \item{metric}{the model performance measure to use.  This should be
 one of \code{"error rate"}, \code{"enhancement"}, \code{"R2"},
-\code{"rho"}, \code{"ROC"}, \code{"sensitivity"}, \code{"specificity"}.}
+\code{"rho"}, \code{"auc"}, \code{"sensitivity"}, \code{"specificity"}.}
 
 \item{at}{the number of tests to use for initial \code{enchancement}.}
 
@@ -81,15 +81,17 @@ and initial \code{enhancement}.
 \examples{
 # A data set with  binary response and multiple descriptor sets
 
-desc_lengths <- c(24, 147)
-desc_names <- c("BurdenNumbers", "Pharmacophores")
-cml <- ModelTrain(aid364, ids = T, xcol.lengths = desc_lengths)
+cml <- ModelTrain(aid364, ids = T, xcol.lengths = c(24, 147), 
+                  des.names = c("BurdenNumbers", "Pharmacophores"))
 CombineSplits(cml)
 
 # A continuous response
 
 cml <- ModelTrain(USArrests)
 CombineSplits(cml)
+}
+\author{
+Jacqueline Hughes-Oliver, Jeremy Ash
 }
 \references{
 Kearsley, S.K., Sallamack, S., Fluder, E.M., Andose, J.D., Mosley, R.T.,
@@ -102,5 +104,8 @@ with unequal numbers of replications. Biometrics 12, 307-310.
 Tukey, J. W. (1953). The problem of multiple comparisons. Unpublished
 manuscript. In The Collected Works of John W. Tukey VIII. Multiple
 Comparisons: 1948-1983, Chapman and Hall, New York.
+}
+\seealso{
+\code{\link{chemmodlab}}, \code{\link{ModelTrain}}
 }
 

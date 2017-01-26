@@ -1,3 +1,4 @@
+
 BackTree <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, current.seed,
                      nperm, params) {
   #-----Recursive partitioning using "tree" with splitting criterion deviance and default settings. Specifically:
@@ -32,13 +33,7 @@ BackTree <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, curren
       work.pred[fold.id == id] <- predict(work.meth,
                                           work.data[fold.id == id, ], type = "vector")
     }
-    #    temp.impdesc[(((id-1)*nperm)+1):(id*nperm),] <- permute.for.imp( "tree", work.data[fold.id==id,],
-    #      work.meth, work.pred[fold.id==id], work.prob[fold.id==id], n.obs, n.pred, classify, nperm, current.seed )
-    #    impdesc <- unique(c(impdesc, as.character( sort(unique(work.meth$frame$var))[-1] )))
   }
-  #  work.impdesc <- test.imp( temp.impdesc, work.data, nperm, nfolds )
-  #  cat("new: ",var.imp.sort(work.impdesc),"\n");
-  #  cat("old: ",var.imp.sort(impdesc),"\n");
   work.model.acc <- BackAssess(work.data[,1], work.pred, work.impdesc, classify=classify)
   #returns probability of being active
   return(list(pred = work.pred, impdesc = work.impdesc,
@@ -62,8 +57,6 @@ BackRpart <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, curre
   work.pred <- rep(NA, n.obs)
   work.prob <- rep(NA, n.obs)
   work.impdesc <- c()
-  #  temp.impdesc <- matrix( rep(NA,n.pred*nperm*nfolds), ncol=n.pred )
-  #  impdesc <- c()
   for (id in 1:nfolds) {
     if (classify == "Y") {
       # setting maxsurrpgate to zero saves computational time
@@ -82,13 +75,7 @@ BackRpart <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, curre
                                                                    maxcompete = 0, maxsurrogate = 0))
       work.pred[fold.id == id] <- predict(work.meth, work.data[fold.id == id, ], type = "vector")
     }
-    #    temp.impdesc[(((id-1)*nperm)+1):(id*nperm),] <- permute.for.imp( "rpart", work.data[fold.id==id,],
-    #      work.meth, work.pred[fold.id==id], work.prob[fold.id==id], n.obs, n.pred, classify, nperm, current.seed )
-    #    impdesc <- unique(c(impdesc, as.character( sort(unique(work.meth$frame$var))[-1] )))
   }
-  #  work.impdesc <- test.imp( temp.impdesc, work.data, nperm, nfolds )
-  #  cat("new: ",var.imp.sort(work.impdesc),"\n");
-  #  cat("old: ",var.imp.sort(impdesc),"\n");
   work.model.acc <- BackAssess( work.data[,1], work.pred, work.impdesc, classify=classify )
   return( list(pred=work.pred, impdesc=work.impdesc, prob=1-work.prob,  model.acc = work.model.acc) )
 }
@@ -108,12 +95,8 @@ BackRf <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, current.
   work.pred <- rep(NA, n.obs)
   work.prob <- rep(NA, n.obs)
   work.impdesc <- c()
-  #    temp.impdesc <- matrix( rep(NA,n.pred*nperm*nfolds), ncol=n.pred )
-  #    impdesc <- c()
-  #    t.impdesc <- matrix(0,n.pred,nfolds)
   for (id in 1:nfolds) {
     if (classify == "Y") {
-      # work.meth <- randomForest( y=as.factor(work.data$y[fold.id!=id]),x=work.data[fold.id!=id,-1],ntree=100,nodesize=5,importance=TRUE )
       if (is.null(params$Forest$mtry)) {
         work.meth <-
           randomForest::randomForest(y=as.factor(work.data$y[fold.id!=id]),
@@ -131,7 +114,6 @@ BackRf <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, current.
         predict(work.meth,
                               work.data[fold.id==id,-1], type="prob")[,1]
     } else {
-      #      work.meth <- randomForest( y=work.data$y[fold.id!=id],x=work.data[fold.id!=id,-1],ntree=100,nodesize=5,importance=TRUE )
       #TO DO: I dont think you need this if then anymore
       if (is.null(params$Forest$mtry)) {
         work.meth <- randomForest::randomForest(y=work.data$y[fold.id!=id],
@@ -146,18 +128,7 @@ BackRf <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, current.
       work.pred[fold.id==id] <- predict(work.meth,
                                                       work.data[fold.id==id,-1])
     }
-    #      temp.impdesc[(((id-1)*nperm)+1):(id*nperm),] <- permute.for.imp( "rf", work.data[fold.id==id,],
-    #        work.meth, work.pred[fold.id==id], work.prob[fold.id==id], n.obs, n.pred, classify, nperm, current.seed )
-    #      tmp.impdesc <- importance(work.meth,type=1)
-    #      sorted.impdesc <- sort( tmp.impdesc,decreasing=TRUE )
-    #      threshold.impdesc <- sorted.impdesc[ ZhuGhodsi(sorted.impdesc) ]
-    #      threshold.impdesc <- max(threshold.impdesc,0)
-    #      t.impdesc[,id] <- 1*( tmp.impdesc>=threshold.impdesc )
   }
-  #  impdesc <- row.names(tmp.impdesc)[rowSums(t.impdesc)>0]
-  #  work.impdesc <- test.imp( temp.impdesc, work.data, nperm, nfolds )
-  #  cat("new: ",var.imp.sort(work.impdesc),"\n");
-  #  cat("old: ",var.imp.sort(impdesc),"\n");
   work.model.acc <- BackAssess( work.data[,1], work.pred, work.impdesc, classify=classify )
   return( list(pred=work.pred, impdesc=work.impdesc,
                prob=1-work.prob,  model.acc = work.model.acc) )
@@ -203,11 +174,7 @@ BackSvm <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, current
       work.pred[fold.id == id] <- predict(work.meth, work.data[fold.id == id,
                                                                c(FALSE, varying.cols)])
     }
-    #    temp.impdesc[(((id-1)*nperm)+1):(id*nperm),] <- permute.for.imp( "svm", work.data[fold.id==id,],
-    #      work.meth, work.pred[fold.id==id], work.prob[fold.id==id], n.obs, n.pred, classify, nperm, current.seed, varying.cols )
   }
-  #  work.impdesc <- test.imp( temp.impdesc, work.data, nperm, nfolds )
-  #  cat("new: ",var.imp.sort(work.impdesc),"\n");
   work.model.acc <- BackAssess( work.data[,1], work.pred, work.impdesc,
                                 classify=classify )
   return( list(pred=work.pred, impdesc=work.impdesc,
@@ -246,11 +213,7 @@ BackNnet <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify,
                                               work.data[fold.id == id,
                                                         c(TRUE, varying.cols)],
                                               type = "raw")
-      #      temp.impdesc[(((id-1)*nperm)+1):(id*nperm),] <- permute.for.imp( "nnet", work.data[fold.id==id,],
-      #        work.meth, work.pred[fold.id==id], work.prob[fold.id==id], n.obs, n.pred, classify, nperm, current.seed, varying.cols )
     }
-    #    work.impdesc <- test.imp( temp.impdesc, work.data, nperm, nfolds )
-    #    cat("new: ",var.imp.sort(work.impdesc),"\n");
     work.model.acc <- BackAssess(work.data[, 1], work.pred, work.impdesc,
                                  classify = classify)
   }
@@ -284,55 +247,13 @@ BackKnn <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, current
       #Gets the probability of class 1
       work.prob[fold.id==id] <- abs(work.pred[fold.id==id] +
                                        attr(work.meth, "prob") - 1)
-      #      temp.impdesc[(((id-1)*nperm)+1):(id*nperm),] <- permute.for.imp( "knn", work.data[fold.id==id,],
-      #        work.meth, work.pred[fold.id==id], work.prob[fold.id==id], n.obs, n.pred, classify, nperm, current.seed, train.data=work.data[fold.id!=id,] )
     }
-    #    work.impdesc <- test.imp( temp.impdesc, work.data, nperm, nfolds )
-    #    cat("new: ",var.imp.sort(work.impdesc),"\n");
 
     work.model.acc <- BackAssess(work.data[, 1], work.pred, work.impdesc, classify = classify)
   }
   return(list(pred = work.pred, impdesc = work.impdesc,
               prob = work.prob, model.acc = work.model.acc))
 }
-
-# TO DO: remove this
-# #--------------------------------------------------------------------------------
-# BackKnnflex <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, current.seed,
-#                         nperm, params) {
-#   #-----K nearest neighbor using
-#   # k = 3
-#   # Possible modifications that have NOT been pursued here:
-#   # cv option ...
-#   # TODO: discontinued, remove
-#   work.pred <- rep(NA, n.obs)
-#   work.prob <- rep(NA, n.obs)
-#   work.impdesc <- c()
-#   set.seed(current.seed)
-#   # temp.impdesc <- matrix( rep(NA,n.pred*nperm*nfolds), ncol=n.pred )
-#   cat("KNN ----------------------------------------", "\n")
-#   work.meth <- knn.dist(work.data[, -1])
-#   for (id in 1:nfolds) {
-#     if (classify == "Y") {
-#       #      work.pred[fold.id==id] <- as.numeric(levels(as.factor(work.data[,1])))[knn.predict(train=which(fold.id!=id),test=which(fold.id==id),y=work.data$y,k=10,dist.matrix=work.meth,agg.meth="majority")]
-#       work.pred[fold.id == id] <- as.numeric(knn.predict(train = which(fold.id != id), test = which(fold.id == id), y = work.data$y, k = 10, dist.matrix = work.meth,
-#                                                          agg.meth = "majority"))
-#       work.prob[fold.id == id] <- knn.predict(train = which(fold.id != id),
-#                                               test = which(fold.id == id), y = work.data$y, k = 10, dist.matrix = work.meth,
-#                                               agg.meth = "mean")
-#     } else {
-#       work.pred[fold.id == id] <- knn.predict(train = which(fold.id != id),
-#                                               test = which(fold.id == id), y = work.data$y, k = 10, dist.matrix = work.meth,
-#                                               agg.meth = "mean")
-#     }
-#   }
-#   #   temp.impdesc[(((id-1)*nperm)+1):(id*nperm),] <- permute.for.imp( "knn", work.data[fold.id==id,],
-#   #     work.meth, work.pred[fold.id==id], work.prob[fold.id==id], n.obs, n.pred, classify, nperm, current.seed, train.data=work.data[fold.id!=id,] )
-#   #  work.impdesc <- test.imp( temp.impdesc, work.data, nperm, nfolds )
-#   #  cat("new: ",var.imp.sort(work.impdesc),"\n");   work.model.acc <- BackAssess(work.data[, 1], work.pred, work.impdesc, classify = classify)
-#   return(list(pred = work.pred, impdesc = work.impdesc,
-#               prob = work.prob, model.acc = work.model.acc))
-# }
 
 
 #--------------------------------------------------------------------------------
@@ -358,11 +279,7 @@ BackLars <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, curren
     temp.pred <- predict(work.meth, as.matrix(work.data[fold.id == id, -1]),
                          type = "fit")
     work.pred[fold.id == id] <- temp.pred$fit[, dim(temp.pred$fit)[2]]
-    #    temp.impdesc[(((id-1)*nperm)+1):(id*nperm),] <- permute.for.imp( "lars", work.data[fold.id==id,],
-    #      work.meth, work.pred[fold.id==id], work.prob[fold.id==id], n.obs, n.pred, classify="N", nperm, current.seed, train.data=work.data[fold.id!=id,] )
   }
-  #  work.impdesc <- test.imp( temp.impdesc, work.data, nperm, nfolds )
-  #  cat("new: ",var.imp.sort(work.impdesc),"\n");
   work.model.acc <- BackAssess(work.data[, 1], work.pred, work.impdesc, classify = "N")
   return(list(pred = work.pred, impdesc = work.impdesc, model.acc = work.model.acc))
 }
@@ -376,7 +293,6 @@ BackRidge <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, curre
   work.pred <- rep(NA, n.obs)
   work.impdesc <- c()
   set.seed(current.seed)
-  # temp.impdesc <- matrix( rep(NA,n.pred*nperm*nfolds), ncol=n.pred )
   for (id in 1:nfolds) {
     X <- work.data[fold.id != id, -1]
     varying.cols <- (apply(X, 2, var) > 0)
@@ -387,11 +303,7 @@ BackRidge <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, curre
                                                      c(FALSE, varying.cols)]) %*%
                                    (work.meth$coef/work.meth$scales)) +
       ((work.meth$ym - (work.meth$xm %*% (work.meth$coef/work.meth$scales)))[1, 1])
-    #    temp.impdesc[(((id-1)*nperm)+1):(id*nperm),] <- permute.for.imp( "ridge", work.data[fold.id==id,],
-    #      work.meth, work.pred[fold.id==id], work.prob[fold.id==id], n.obs, n.pred, classify="N", nperm, current.seed, train.data=work.data[fold.id!=id,], varying.cols=varying.cols )
   }
-  #  work.impdesc <- test.imp( temp.impdesc, work.data, nperm, nfolds )
-  #  cat("new: ",var.imp.sort(work.impdesc),"\n");
   work.model.acc <- BackAssess(work.data[, 1], work.pred, work.impdesc, classify = "N")
   return(list(pred = work.pred, impdesc = work.impdesc, model.acc = work.model.acc))
 }
@@ -417,11 +329,7 @@ BackEnet <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, curren
                                              c(FALSE, varying.cols)]),
                          type = "fit")
     work.pred[fold.id == id] <- temp.pred$fit[, dim(temp.pred$fit)[2]]
-    #    temp.impdesc[(((id-1)*nperm)+1):(id*nperm),] <- permute.for.imp( "enet", work.data[fold.id==id,],
-    #      work.meth, work.pred[fold.id==id], work.prob[fold.id==id], n.obs, n.pred, classify="N", nperm, current.seed, train.data=work.data[fold.id!=id,], varying.cols=varying.cols )
   }
-  #  work.impdesc <- test.imp( temp.impdesc, work.data, nperm, nfolds )
-  #  cat("new: ",var.imp.sort(work.impdesc),"\n");
   work.model.acc <- BackAssess(work.data[, 1], work.pred, work.impdesc,
                                classify = "N")
   return(list(pred = work.pred, impdesc = work.impdesc,
@@ -446,16 +354,7 @@ BackPcr <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify,
     work.meth <- PcrZG(X = X[, varying.cols], Y = work.data[fold.id != id, 1],
                        newX = newX[, varying.cols])
     work.pred[fold.id == id] <- work.meth$Ypred
-    #      work.impdesc[ work.meth$imp.predictors[varying.cols] > 0.5 ] <- 1
-    #      work.impdesc[ varying.cols ] <- work.meth$imp.predictors
-    #      work.impdesc[ as.numeric( substring( names(X[,varying.cols]), 2) )-6 ] <- work.meth$imp.predictors
-    #      impdesc <- unique(c(impdesc, names(X[,varying.cols]) ))
-    #      temp.impdesc[(((id-1)*nperm)+1):(id*nperm),] <- permute.for.imp( "pcr.ZG", work.data[fold.id==id,],
-    #        work.meth, work.pred[fold.id==id], work.prob[fold.id==id], n.obs, n.pred, classify="N", nperm, current.seed, train.data=work.data[fold.id!=id,], varying.cols=varying.cols )
   }
-  #  work.impdesc <- test.imp( temp.impdesc, work.data, nperm, nfolds )
-  #  cat("new: ",var.imp.sort(work.impdesc),"\n");
-  #  cat("old: ",var.imp.sort(impdesc),"\n");
   work.model.acc <- BackAssess(work.data[,1], work.pred, work.impdesc,
                                 classify="N")
   return(list(pred=work.pred, impdesc=work.impdesc, model.acc = work.model.acc))
@@ -501,7 +400,8 @@ PcrZG <- function(X, Y, newX = NULL) {
 
 #--------------------------------------------------------------------------------
 ZhuGhodsi <- function(x) {
-  #-----Zhu & Ghodsi method for determining the number of latent variables given some measure of relative importance in x, where x1>=x2>=...
+  #-----Zhu & Ghodsi method for determining the number of latent variables given
+  # some measure of relative importance in x, where x1>=x2>=...
   # Computational Statistics and Data Analysis 2006?
   n <- length(x)
   nLV <- 1:n
@@ -543,19 +443,7 @@ BackPlsR <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, curren
     nLV.ZG <- ZhuGhodsi(work.meth$Yvar)
     #      plot( work.meth$Yvar / work.meth$Ytotvar ); abline(v=nLV.ZG)
     work.pred[fold.id==id] <- work.meth$Ypred[, 1, nLV.ZG]
-    #      tmp.impdesc <- as.matrix( work.meth$coefficients[,,nLV.ZG] )
-    #      sorted.impdesc <- sort( as.vector(abs( tmp.impdesc )), decreasing=TRUE )
-    #      threshold.impdesc <- sorted.impdesc[ ZhuGhodsi(sorted.impdesc) ]
-    #      plot( sorted.impdesc ); abline(h=threshold.impdesc)
-    #      tmp.impdesc <- apply( abs(tmp.impdesc), 1, max )
-    #      t.impdesc[varying.cols,id] <- 1*( tmp.impdesc>=threshold.impdesc )
-    #      temp.impdesc[(((id-1)*nperm)+1):(id*nperm),] <- permute.for.imp( "plsR", work.data[fold.id==id,],
-    #        work.meth, work.pred[fold.id==id], work.prob[fold.id==id], n.obs, n.pred, classify="N", nperm, current.seed, train.data=work.data[fold.id!=id,], varying.cols=varying.cols )
   }
-  #  work.impdesc <- test.imp( temp.impdesc, work.data, nperm, nfolds )
-  #  impdesc <- names(tmp.impdesc)[rowSums(t.impdesc)>0]
-  #  cat("new: ",var.imp.sort(work.impdesc),"\n");
-  #  cat("old: ",var.imp.sort(impdesc),"\n");
   work.model.acc <- BackAssess(work.data[,1], work.pred,
                                work.impdesc, classify="N")
   #  plot( work.data[,1], work.pred )
@@ -674,23 +562,11 @@ BackPlsLdaNew <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, c
                                 ncomp = min(n.obs, n.pred, 100),
                                 newX = newX.test)
       nLV.ZG <- max(ZhuGhodsi(work.meth$Yvar), 1)
-      #      print("ZG: nLV.ZG"); print(nLV.ZG)
-      #      cv.select <- simpls.lda.new.cv( X.train, Y.train, ncomp=min(n.obs,n.pred,100),nfolds=nfolds, current.seed=12345 )
-      #      print("cv.select"); print(cv.select); plot( cv.select$comp, cv.select$train.cv.error )
-      #      nLV.ZG <- cv.select$comp[ which.min(cv.select$train.cv.error) ]
-      #      print("nLV.ZG"); print(nLV.ZG)
-      #      plot( work.meth$Yvar / work.meth$Ytotvar ); abline(v=nLV.ZG)
       work.prob[fold.id==id] <- work.meth$Yprob[, 2, nLV.ZG]
       work.pred[fold.id==id] <- work.meth$Ypred[, nLV.ZG]
-      #      temp.impdesc[(((id-1)*nperm)+1):(id*nperm),] <- permute.for.imp( "pls.lda", work.data[fold.id==id,],
-      #        work.meth, work.pred[fold.id==id], work.prob[fold.id==id], n.obs, n.pred, classify, nperm, current.seed, train.data=work.data[fold.id!=id,], varying.cols=varying.cols )
     }
-    #    work.impdesc <- test.imp( temp.impdesc, work.data, nperm, nfolds )
-    #    cat("new: ",var.imp.sort(work.impdesc),"\n");
-    #    work.impdesc <- names(temp.impdesc)[rowSums(temp.impdesc)>0]
     work.model.acc <- BackAssess(work.data[, 1], work.pred, work.impdesc,
                                  classify="Y")
-    #    plot( work.data[,1], work.pred )
   }
   return(list(pred=work.pred, impdesc=work.impdesc, prob=work.prob,
               model.acc = work.model.acc))

@@ -29,15 +29,27 @@
 #' @param params a list of dataframes as made by
 #'   \code{\link{MakeModelDefaults}}.  Each dataframe contains the parameters to
 #'   be set for a particular model.
-#'
-#' @export
+#' @param des.names a character vector specifying the descriptor set names.  NA if 
+#'   unspecified.
+#' @param models a character vector specifying the models fit to the data.  
+#' @param nsplits number of CV splits performed.
+#' 
+#' @aliases chemmodlab
+#' @author Jacqueline Hughes-Oliver, Jeremy Ash
+#' @seealso \code{\link{chemmodlab}}, \code{\link{plot.chemmodlab}},
+#'   \code{\link{CombineSplits}},
+#' @references ?
+#' 
+#' @export 
 
 chemmodlab <- function(all.preds, all.probs, model.acc, classify, responses,
-                       data, params) {
+                       data, params, des.names, models, nsplits) {
   cml <- structure(list(all.preds = all.preds, all.probs = all.probs,
                         model.acc = model.acc,
                         classify = classify, responses = responses, data = data,
-                        params = params), class = "chemmodlab")
+                        params = params, des.names = des.names, models = models,
+                        nsplits = nsplits),
+                   class = "chemmodlab")
 }
 
 # Prints the prediction accuracy on held out data: confusion matrix for

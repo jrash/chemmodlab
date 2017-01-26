@@ -68,6 +68,10 @@
 #' \item{params}{a list of data frames as made by
 #'   \code{\link{MakeModelDefaults}}.  Each data frame contains the parameters to
 #'   be set for a particular model.}
+#' \item{des.names}{a character vector specifying the descriptor set names.  NA if 
+#'   unspecified.}
+#' \item{models}{a character vector specifying the models fit to the data.}
+#' \item{nsplits}{number of CV splits performed.}
 #'
 #' @details
 #' Multiple descriptor sets can be specified
@@ -127,9 +131,8 @@
 #' 
 #' # A data set with  binary response and multiple descriptor sets
 #' 
-#' desc_lengths <- c(24, 147)
-#' desc_names <- c("BurdenNumbers", "Pharmacophores")
-#' cml <- ModelTrain(aid364, ids = T, xcol.lengths = desc_lengths)
+#' cml <- ModelTrain(aid364, ids = T, xcol.lengths = c(24, 147), 
+#'                   des.names = c("BurdenNumbers", "Pharmacophores"))
 #' cml
 #' 
 #' # A continuous response
@@ -152,29 +155,15 @@ ModelTrain <- function(data,
                        user.params = NULL) {
   # TO DO: probably can get rid of the idcol parameter
 
-  #-----Background benchmarking program
-  # yfilein=input response data: response in column ycol xfilein=input descriptors
-  # data: descriptors in columns xcol.lengths
-
   # checking parameters specified correctly
   if (!is(data, "data.frame"))
     stop("'data' must be a data frame")
-  # if (!(ycol%%1 == 0) || !is.numeric(ycol))
-  #   stop("'ycol' must be an integer")
   if (!(nfolds%%1 == 0) || !is.numeric(nfolds))
     stop("'nfolds' must be an integer")
   # if(length(seed.in) != nsplits)
     # stop("length of 'seed.in' must equal number of splits")
   if (!(nsplits%%1 == 0) || !is.numeric(nsplits))
     stop("'nsplits' must be an integer")
-  # if (!is(xcols, "list"))
-  #   stop("'xcols' must be a list of integers") else {
-  #     for (i in 1:length(xcols)) {
-  #       if (!(all.equal(xcols[[i]], as.integer(xcols[[i]]))))
-  #         stop("'xcols' must be a list of integers")
-  #     }
-  #   }
-  # now having user supply list of integers with descriptor column numbers
   if (!is(xcol.lengths, "vector"))
     stop("'xcol.lengths' must be a vector of integers") else {
       for (i in 1:length(xcol.lengths)) {
@@ -194,9 +183,8 @@ ModelTrain <- function(data,
   
   ycol <- ifelse(ids, 2, 1)
   idcol <- ifelse(ids, 1, NA)
-  meths <- models
 
-  if (!is.na(des.names)) {
+  if (!(NA %in% des.names)) {
     if (length(des.names) != length(xcol.lengths))
       stop("'des.names' must be the same length as 'xcol.lengths'")
   } else {
@@ -301,128 +289,140 @@ ModelTrain <- function(data,
 
       #-----'tree' method
       # dont use method if requested more than once?
-      if (sum(meths %in% "Tree") == 1) {
+      if (sum(models %in% "Tree") == 1) {
         work.results <- list()
         # get how much time the current process has used
         pt <- proc.time()
         # get the time that expression used
         st <- system.time(tryCatch(work.results <- BackTree(work.data, n.obs,
-                                                            n.pred, nfolds, fold.id, classify, current.seed, nperm, params), error = function(e) {
-                                                              warning(paste("WARNING...Tree not run:", e$message))
-                                                              work.results <- list()
-                                                            }))
+                                                            n.pred, nfolds, fold.id,
+                                                            classify, current.seed, nperm,
+                                                            params),
+                                   error = function(e) {
+                                     warning(paste("WARNING...Tree not run:", e$message))
+                                     work.results <- list()
+                                     }))
         PrintTime(pt, st)
         if (length(work.results) > 0) {
           all.preds <- data.frame(all.preds, Tree = work.results$pred)
           if (classify == "Y")
             all.probs <- data.frame(all.probs, Tree = work.results$prob)
           model.acc.ls <- c(model.acc.ls, Tree = list(work.results$model.acc))
-          # all.imp.descs <- data.frame( all.imp.descs, Tree=as.numeric(names(work.data) %in% work.results$impdesc) )
         }
       }
 
       #-----'rpart' method
-      if (sum(meths %in% "RPart") == 1) {
+      if (sum(models %in% "RPart") == 1) {
         work.results <- list()
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackRpart(work.data, n.obs,
-                                                             n.pred, nfolds, fold.id, classify, current.seed, nperm, params), error = function(e) {
-                                                               warning(paste("WARNING...RPart not run:", e$message))
-                                                               work.results <- list()
-                                                             }))
+                                                             n.pred, nfolds, fold.id,
+                                                             classify, current.seed,
+                                                             nperm, params),
+                                   error = function(e) {
+                                     warning(paste("WARNING...RPart not run:", e$message))
+                                     work.results <- list()
+                                     }))
         PrintTime(pt, st)
         if (length(work.results) > 0) {
           all.preds <- data.frame(all.preds, RPart = work.results$pred)
           if (classify == "Y")
             all.probs <- data.frame(all.probs, RPart = work.results$prob)
           model.acc.ls <- c(model.acc.ls, RPart = list(work.results$model.acc))
-          # all.imp.descs <- data.frame( all.imp.descs, RPart=as.numeric(names(work.data) %in% work.results$impdesc) )
         }
       }
 
       #-----'randomforest' method
-      if (sum(meths %in% "Forest") == 1) {
+      if (sum(models %in% "Forest") == 1) {
         work.results <- list()
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackRf(work.data, n.obs,
-                                                          n.pred, nfolds, fold.id, classify, current.seed, nperm, params), error = function(e) {
-                                                            warning(paste("WARNING...RF not run:", e$message))
-                                                            work.results <- list()
-                                                          }))
+                                                          n.pred, nfolds, fold.id,
+                                                          classify, current.seed, nperm,
+                                                          params),
+                                   error = function(e) {
+                                     warning(paste("WARNING...RF not run:", e$message))
+                                     work.results <- list()
+                                     }))
         PrintTime(pt, st)
         if (length(work.results) > 0) {
           all.preds <- data.frame(all.preds, RF = work.results$pred)
           if (classify == "Y")
             all.probs <- data.frame(all.probs, RF = work.results$prob)
           model.acc.ls <- c(model.acc.ls, RF = list(work.results$model.acc))
-          # all.imp.descs <- data.frame( all.imp.descs, RF=as.numeric(names(work.data) %in%
-          # work.results$impdesc) )
         }
       }
 
       #-----'svm' method
-      if (sum(meths %in% "SVM") == 1) {
+      if (sum(models %in% "SVM") == 1) {
         work.results <- list()
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackSvm(work.data, n.obs,
-                                                           n.pred, nfolds, fold.id, classify, current.seed, nperm, params), error = function(e) {
-                                                             warning(paste("WARNING...SVM not run:", e$message))
-                                                             work.results <- list()
-                                                           }))
+                                                           n.pred, nfolds, fold.id,
+                                                           classify, current.seed, nperm,
+                                                           params),
+                                   error = function(e) {
+                                     warning(paste("WARNING...SVM not run:", e$message))
+                                     work.results <- list()
+                                     }))
         PrintTime(pt, st)
         if (length(work.results) > 0) {
           all.preds <- data.frame(all.preds, SVM = work.results$pred)
           if (classify == "Y")
             all.probs <- data.frame(all.probs, SVM = work.results$prob)
           model.acc.ls <- c(model.acc.ls, SVM = list(work.results$model.acc))
-          # all.imp.descs <- data.frame( all.imp.descs, SVM=as.numeric(names(work.data) %in% work.results$impdesc) )
         }
       }
 
       #-----'nnet' method
-      if ((sum(meths %in% "NNet") == 1) && (classify == "Y")) {
+      if ((sum(models %in% "NNet") == 1) && (classify == "Y")) {
         work.results <- list()
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackNnet(work.data, n.obs,
-                                                            n.pred, nfolds, fold.id, classify, current.seed, nperm, params), error = function(e) {
-                                                              warning(paste("WARNING...NNet not run:", e$message))
-                                                              work.results <- list()
-                                                            }))
+                                                            n.pred, nfolds, fold.id,
+                                                            classify, current.seed, nperm,
+                                                            params),
+                                   error = function(e) {
+                                     warning(paste("WARNING...NNet not run:", e$message))
+                                     work.results <- list()
+                                     }))
         PrintTime(pt, st)
         if (length(work.results) > 0) {
           all.preds <- data.frame(all.preds, NNet = work.results$pred)
           if (classify == "Y")
             all.probs <- data.frame(all.probs, NNet = work.results$prob)
           model.acc.ls <- c(model.acc.ls, NNet = list(work.results$model.acc))
-          # all.imp.descs <- data.frame( all.imp.descs, NNet=as.numeric(names(work.data) %in% work.results$impdesc) )
         }
       }
 
       #-----'knn' method
-      if ((sum(meths %in% "KNN") == 1) && (classify == "Y")) {
+      if ((sum(models %in% "KNN") == 1) && (classify == "Y")) {
         work.results <- list()
         pt <- proc.time()
-        st <- system.time(tryCatch(work.results <- BackKnn(work.data, n.obs,
-                                                           n.pred, nfolds, fold.id, classify, current.seed, nperm, params), error = function(e) {
-                                                             warning(paste("WARNING...KNN not run:", e$message))
-                                                             work.results <- list()
-                                                           }))
+        st <- system.time(tryCatch(work.results <- BackKnn(work.data, n.obs, n.pred,
+                                                           nfolds, fold.id, classify,
+                                                           current.seed, nperm, params),
+                                  error = function(e) {
+                                    warning(paste("WARNING...KNN not run:", e$message))
+                                    work.results <- list()
+                                  }))
         PrintTime(pt, st)
         if (length(work.results) > 0) {
           all.preds <- data.frame(all.preds, KNN = work.results$pred)
           if (classify == "Y")
             all.probs <- data.frame(all.probs, KNN = work.results$prob)
           model.acc.ls <- c(model.acc.ls, KNN = list(work.results$model.acc))
-          # all.imp.descs <- data.frame( all.imp.descs, KNN=as.numeric(names(work.data) %in% work.results$impdesc) )
         }
       }
 
       #-----'pls.lda' method
-      if ((sum(meths %in% "PLSLDA") == 1) && (classify == "Y")) {
+      if ((sum(models %in% "PLSLDA") == 1) && (classify == "Y")) {
         work.results <- list()
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackPlsLdaNew(work.data,
-                                                                 n.obs, n.pred, nfolds, fold.id, classify, current.seed, nperm),
+                                                                 n.obs, n.pred, nfolds,
+                                                                 fold.id, classify,
+                                                                 current.seed, nperm),
                                    error = function(e) {
                                      warning(paste("WARNING...PLSLDA not run:", e$message))
                                      work.results <- list()
@@ -433,104 +433,115 @@ ModelTrain <- function(data,
           if (classify == "Y")
             all.probs <- data.frame(all.probs, PLSLDA = work.results$prob)
           model.acc.ls <- c(model.acc.ls, PLSLDA = list(work.results$model.acc))
-          # all.imp.descs <- data.frame( all.imp.descs, PLSLDA=as.numeric(names(work.data) %in% work.results$impdesc) )
         }
       }
 
       #-----'lars' method
-      if (sum(meths %in% "LARs") == 1) {
+      if (sum(models %in% "LARs") == 1) {
         work.results <- list()
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackLars(work.data, n.obs,
-                                                            n.pred, nfolds, fold.id, classify, current.seed, nperm, params), error = function(e) {
-                                                              warning(paste("WARNING...LAR not run:", e$message))
-                                                              work.results <- list()
-                                                            }))
+                                                            n.pred, nfolds, fold.id,
+                                                            classify,
+                                                            current.seed, nperm, params),
+                                   error = function(e) {
+                                     warning(paste("WARNING...LAR not run:", e$message))
+                                     work.results <- list()
+                                     }))
         PrintTime(pt, st)
         if (length(work.results) > 0) {
           all.preds <- data.frame(all.preds, LAR = work.results$pred)
           model.acc.ls <- c(model.acc.ls, LAR = list(work.results$model.acc))
-          # all.imp.descs <- data.frame( all.imp.descs, LAR=as.numeric(names(work.data) %in% work.results$impdesc) )
         }
       }
 
       #-----'lm.ridge' method
-      if (sum(meths %in% "Ridge") == 1) {
+      if (sum(models %in% "Ridge") == 1) {
         work.results <- list()
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackRidge(work.data, n.obs,
-                                                             n.pred, nfolds, fold.id, classify, current.seed, nperm, params), error = function(e) {
-                                                               warning(paste("WARNING...Ridge not run:", e$message))
-                                                               work.results <- list()
-                                                             }))
+                                                             n.pred, nfolds, fold.id,
+                                                             classify, current.seed,
+                                                             nperm, params),
+                                   error = function(e) {
+                                     warning(paste("WARNING...Ridge not run:", e$message))
+                                     work.results <- list()
+                                     }))
         PrintTime(pt, st)
         if (length(work.results) > 0) {
           all.preds <- data.frame(all.preds, Ridge = work.results$pred)
           model.acc.ls <- c(model.acc.ls, Ridge = list(work.results$model.acc))
-          # all.imp.descs <- data.frame( all.imp.descs, Ridge=as.numeric(names(work.data) %in% work.results$impdesc) )
         }
       }
 
       #-----'enet' method
-      if (sum(meths %in% "ENet") == 1) {
+      if (sum(models %in% "ENet") == 1) {
         work.results <- list()
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackEnet(work.data, n.obs,
-                                                            n.pred, nfolds, fold.id, classify, current.seed, nperm, params), error = function(e) {
-                                                              warning(paste("WARNING...ENet not run:", e$message))
-                                                              work.results <- list()
-                                                            }))
+                                                            n.pred, nfolds, fold.id,
+                                                            classify, current.seed, nperm,
+                                                            params),
+                                   error = function(e) {
+                                     warning(paste("WARNING...ENet not run:", e$message))
+                                     work.results <- list()
+                                     }))
         PrintTime(pt, st)
         if (length(work.results) > 0) {
           all.preds <- data.frame(all.preds, ENet = work.results$pred)
           model.acc.ls <- c(model.acc.ls, ENet = list(work.results$model.acc))
-          # all.imp.descs <- data.frame( all.imp.descs, ENet=as.numeric(names(work.data) %in% work.results$impdesc) )
         }
       }
 
       #-----'PcrZG' method
-      if (sum(meths %in% "PCR") == 1) {
+      if (sum(models %in% "PCR") == 1) {
         work.results <- list()
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackPcr(work.data, n.obs,
-                                                           n.pred, nfolds, fold.id, classify, current.seed, nperm, params), error = function(e) {
-                                                             warning(paste("WARNING...PCR not run:", e$message))
-                                                             work.results <- list()
-                                                           }))
+                                                           n.pred, nfolds, fold.id,
+                                                           classify, current.seed, nperm,
+                                                           params),
+                                   error = function(e) {
+                                     warning(paste("WARNING...PCR not run:", e$message))
+                                     work.results <- list()
+                                     }))
         PrintTime(pt, st)
         if (length(work.results) > 0) {
           all.preds <- data.frame(all.preds, PCR = work.results$pred)
           model.acc.ls <- c(model.acc.ls, PCR = list(work.results$model.acc))
-          #  all.imp.descs <- data.frame( all.imp.descs, PCR=as.numeric(names(work.data          #  %in% work.results$impdesc) )
         }
       }
 
       #-----'pls.R' method
-      if (sum(meths %in% "PLS") == 1) {
+      if (sum(models %in% "PLS") == 1) {
         work.results <- list()
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackPlsR(work.data, n.obs,
-                                                            n.pred, nfolds, fold.id, classify, current.seed, nperm, params), error = function(e) {
-                                                              warning(paste("WARNING...PLS not run:", e$message))
-                                                              work.results <- list()
-                                                            }))
+                                                            n.pred, nfolds, fold.id,
+                                                            classify, current.seed, nperm,
+                                                            params),
+                                   error = function(e) {
+                                     warning(paste("WARNING...PLS not run:", e$message))
+                                     work.results <- list()
+                                     }))
         # why saving empty list to work.results replace output.to.log with warning()
         PrintTime(pt, st)
         if (length(work.results) > 0) {
           all.preds <- data.frame(all.preds, PLS = work.results$pred)
           model.acc.ls <- c(model.acc.ls, PLS = list(work.results$model.acc))
-          #  all.imp.descs <- data.frame( all.imp.descs, PLS=as.numeric(names(work.data          #  %in% work.results$impdesc) )
         }
       }
 
       cat("Ending Analysis for Split: ", seed.idx, "and Descriptor Set: ",
           des.names[des.idx], "\n\n\n")
 
-      #-----Create 'predictions', 'probabilities' and 'model accuracy' lists for descriptor set
+      #-----Create 'predictions', 'probabilities' and 'model accuracy' lists 
+      # for descriptor set
 
       # TO DO at the moment, some of the columns are factors and need to be converted
       # to numeric
-      all.preds <- as.data.frame(apply(all.preds, 2, function(x) as.numeric(as.character(x))))
+      all.preds <- as.data.frame(apply(all.preds, 2,
+                                       function(x) as.numeric(as.character(x))))
       # TO DO make the lists data frames if they only have one element
       if (classify == "Y") {
         rownames(all.probs) <- IDS
@@ -555,7 +566,8 @@ ModelTrain <- function(data,
   }
 
   cml.result <- chemmodlab(split.preds.ls, split.probs.ls, split.model.acc.ls,
-                           classify, work.data$y, work.data.ls, params)
+                           classify, work.data$y, work.data.ls, params, des.names,
+                           models, nsplits)
 
   return(cml.result)
 }

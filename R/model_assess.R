@@ -56,11 +56,14 @@
 #' and initial \code{enhancement}.
 #' 
 #' @aliases CombineSplits
+#' @author Jacqueline Hughes-Oliver, Jeremy Ash
+#' @seealso \code{\link{chemmodlab}}, \code{\link{ModelTrain}}
+#' 
 #' @param cml.result an object of class \code{\link{chemmodlab}}.
 #' @param at the number of tests to use for initial \code{enchancement}.
 #' @param metric the model performance measure to use.  This should be
 #' one of \code{"error rate"}, \code{"enhancement"}, \code{"R2"},
-#' \code{"rho"}, \code{"ROC"}, \code{"sensitivity"}, \code{"specificity"}.
+#' \code{"rho"}, \code{"auc"}, \code{"sensitivity"}, \code{"specificity"}.
 #' @param thresh if the predicted probability that a binary response is 
 #' 1 is above this threshold, an observation is classified as 1. Used to
 #' to compute \code{"error rate"}, \code{"sensitivity"}, and 
@@ -81,9 +84,8 @@
 #' @examples
 #' # A data set with  binary response and multiple descriptor sets
 #' 
-#' desc_lengths <- c(24, 147)
-#' desc_names <- c("BurdenNumbers", "Pharmacophores")
-#' cml <- ModelTrain(aid364, ids = T, xcol.lengths = desc_lengths)
+#' cml <- ModelTrain(aid364, ids = T, xcol.lengths = c(24, 147), 
+#'                   des.names = c("BurdenNumbers", "Pharmacophores"))
 #' CombineSplits(cml)
 #' 
 #' # A continuous response
@@ -105,8 +107,8 @@ CombineSplits <- function(cml.result, metric = "enhancement",
   
   # makes desciptor set names shorter so that they fit on the MCS plot
   abbrev.names <- c()
-  num.desc <- length(cml.result$all.preds[[1]])
-  des.names <- names(cml.result$all.preds[[1]])
+  num.desc <- length(cml.result$des.names)
+  des.names <- cml.result$des.names
   if (grepl("Descriptor Set", des.names[1])) {
     for (i in 1:num.desc) {
       # TO DO add option to specify abbreviated names?
@@ -190,7 +192,7 @@ CombineSplits <- function(cml.result, metric = "enhancement",
           if (metric == "enhancement") {
             model.acc <- Enhancement(prob[[i]][, j], y, at)
           } else if (metric == "auc") {
-            model.acc <- as.numeric(auc(y, prob[[i]][, j]))
+            model.acc <- as.numeric(pROC::auc(y, prob[[i]][, j]))
           } else if (metric == "error rate") {
             model.acc <- mean(y != yhat)
           } else if (metric == "specificity") {
@@ -228,7 +230,7 @@ CombineSplits <- function(cml.result, metric = "enhancement",
           if (metric == "enhancement") {
             model.acc <- Enhancement(pred[[i]][, j], y, at)
           } else if (metric == "auc") {
-            model.acc <- as.numeric(auc(y, pred[[i]][, j]))
+            model.acc <- as.numeric(pROC::auc(y, pred[[i]][, j]))
           } else if (metric == "error rate") {
             model.acc <- mean(y != yhat)
           } else if (metric == "specificity") {
