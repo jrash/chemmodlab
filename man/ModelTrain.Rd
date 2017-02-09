@@ -4,10 +4,10 @@
 \alias{ModelTrain}
 \title{Fit predictive models to sets of descriptors.}
 \usage{
-ModelTrain(data, ids = F, xcol.lengths = ifelse(ids, length(data) - 2,
+ModelTrain(data, ids = FALSE, xcol.lengths = ifelse(ids, length(data) - 2,
   length(data) - 1), nfolds = 10, nsplits = 3, seed.in = NA,
-  des.names = NA, models = c("NNet", "PLS", "LARs", "PLSLDA", "Tree", "SVM",
-  "KNN", "Forest"), user.params = NULL)
+  des.names = NA, models = c("NNet", "PLS", "LAR", "PLSLDA", "Tree", "SVM",
+  "KNN", "RF"), user.params = NULL)
 }
 \arguments{
 \item{data}{a data frame containing an (optional) ID column,
@@ -24,8 +24,8 @@ in \code{data} are grouped by descriptor set.  The integers specify the
 number of descriptors in each descriptor set.  They should be ordered as
 the descriptor sets are ordered in \code{data}.
 Users can specify multiple descriptor sets. By default there is one
-descriptor set, all columns in \code{data} except \code{ycol} and
-\code{idcol}.}
+descriptor set, namely all columns in \code{data} except \code{ycol} and
+the optional column ID column.}
 
 \item{nfolds}{the number of folds to use for each cross
 validation split.}
@@ -49,9 +49,9 @@ classification models to use.  The strings must match models
 implemented in `chemmodlab` (see Details).}
 
 \item{user.params}{a list of data frames where each data frame contains
-the parameters values for a model.  The list should have the format of
-the list constructed by \code{\link{MakeModelDefaults}}. One can construct
-a list of parameters using \code{\link{MakeModelDefaults}} and then
+the parameter values for a model.  The list should have the format of
+the list constructed by  \code{\link{MakeModelDefaults}}. One can construct
+a list of parameters using  \code{\link{MakeModelDefaults}} and then
 modify the parameters.}
 }
 \value{
@@ -70,11 +70,13 @@ A list is returned of class \code{\link{chemmodlab}} containing:
   value of one).  Predicted
   probabilities are only reported for classification models.}
 \item{model.acc}{a list of lists of model accuracy measures.  The elements of
-  the outer list correspond each CV split performed by \code{ModelTrain}.
+  the outer list correspond to each CV split performed by \code{ModelTrain}.
   The elements of the inner list correspond to each descriptor set.  For each
-  descriptor set and CV split combination model accuracy measures for each model fit
+  descriptor set and CV split combination model a limited collection of 
+  accuracy measures are given for each model fit
   to the data.  Regression models are assessed with Pearson's \eqn{r} and
-  \eqn{RMSE}. Classification models are assessed with contingency tables.}
+  \eqn{RMSE}. Classification models are assessed with contingency tables.
+  For additional model accuracy measures, see \code{\link{ModelAssess}}}.
 \item{classify}{a logical.  Were classification models used for binary
   response?}
 \item{responses}{a numeric vector.  The observed value of the response.}
@@ -96,7 +98,7 @@ of model performance.
 \details{
 Multiple descriptor sets can be specified
 by the user. For each descriptor set, repeated k-fold cross validation
-is performed for the spcified number of regression and/or classification
+is performed for the specified number of regression and/or classification
 models.
 
 Not all modeling strategies will be appropriate for all response
@@ -144,19 +146,17 @@ descriptor set combination.
 \examples{
 
 # A data set with  binary response and multiple descriptor sets
-
 cml <- ModelTrain(aid364, ids = T, xcol.lengths = c(24, 147), 
                   des.names = c("BurdenNumbers", "Pharmacophores"))
 cml
 
 # A continuous response
-
 cml <- ModelTrain(USArrests)
 cml
 
 }
 \author{
-Jacqueline Hughes-Oliver, Jeremy Ash
+Jacqueline Hughes-Oliver, Jeremy Ash, Atina Brooks
 }
 \references{
 ?

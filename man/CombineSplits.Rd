@@ -14,16 +14,18 @@ CombineSplits(cml.result, metric = "enhancement", at = NA, thresh = 0.5,
 one of \code{"error rate"}, \code{"enhancement"}, \code{"R2"},
 \code{"rho"}, \code{"auc"}, \code{"sensitivity"}, \code{"specificity"}.}
 
-\item{at}{the number of tests to use for initial \code{enchancement}.}
+\item{at}{the number of tests to use for initial \code{enhancement}. If 
+\code{at} is not specified, 
+ use \code{floor(min(300,n/4))}, where n is the number of compounds.}
 
 \item{thresh}{if the predicted probability that a binary response is 
-1 is above this threshold, an observation is classified as 1. Used to
+1 is above this threshold, an observation is classified as 1. Used
 to compute \code{"error rate"}, \code{"sensitivity"}, and 
 \code{"specificity"}}
 }
 \description{
 \code{CombineSplits} assesses observed performance measures
-across all splits created by \code{\link{ModelTrain}}, performs
+across all splits created by \code{\link{ModelTrain}} and conducts
 statistical tests to determine the best performing descriptor set and
 model (D-M) combinations.
 }
@@ -68,7 +70,8 @@ inappropriate for continuous chemical assay responses because
 it assumes losses 
 are equal for both under-predicting and over-predicting biological 
 activity.  A suitable alternative may be initial \code{enhancement}.
-Other options are Pearson's \code{R2} and Spearman's \code{rho}.
+Other options are the coeffcient of determination (\eqn{R^2})
+and Spearman's \code{rho}.
 
 For binary chemical assay responses, alternatives to 
 misclassification rate (\code{error rate}) 
@@ -80,13 +83,11 @@ and initial \code{enhancement}.
 }
 \examples{
 # A data set with  binary response and multiple descriptor sets
-
 cml <- ModelTrain(aid364, ids = T, xcol.lengths = c(24, 147), 
                   des.names = c("BurdenNumbers", "Pharmacophores"))
 CombineSplits(cml)
 
 # A continuous response
-
 cml <- ModelTrain(USArrests)
 CombineSplits(cml)
 }

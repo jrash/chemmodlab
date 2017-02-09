@@ -55,7 +55,7 @@ chemmodlab <- function(all.preds, all.probs, model.acc, classify, responses,
 # Prints the prediction accuracy on held out data: confusion matrix for
 # classification and pearson correlation and Root MSE for regression
 BackAssess <- function(obs.resp, pred.resp, imp.desc, classify) {
-  if (classify == "Y") {
+  if (classify) {
     return(table(obs.resp, pred.resp))
   } else {
     acc_vec <- c(Pearson_Correlation = cor(obs.resp, pred.resp),

@@ -6,7 +6,8 @@ Version: 0.0.0.9000
 Date: 2016-11-27
 Authors@R: c(
 	person("Jacqueline", "Hughes-Oliver", email = "hughesol@ncsu.edu", role = c("aut")),
-	person("Jeremy", "Ash", email = "jrash@ncsu.edu", role = c("aut", "cre"))
+	person("Jeremy", "Ash", email = "jrash@ncsu.edu", role = c("aut", "cre")), 
+	person("Atina", "Brooks", email = "atina.brooks@alumni.ncsu.edu", role = c("aut"))
 	)
 Description: Contains a set of methods for fitting models and methods for
     validating the resulting models. The statistical methodologies comprise
@@ -16,9 +17,8 @@ Description: Contains a set of methods for fitting models and methods for
     will be incorporated into the laboratory. These methods are aimed at discovering
     quantitative structure-activity relationships (QSARs). However, the user can
     directly input their own choices of descriptors and responses, so the capability
-    for comparing models is effectively unlimited. Users may also examine the
-    diversity of the molecules identified by a QSAR model.
-Depends: R (>= 3.3.1)
+    for comparing models is effectively unlimited.
+Depends: R (>= 3.1.1)
 License: GPL-3
 LazyData: TRUE
 URL: https://github.com/jrash/ChemModLab
@@ -31,8 +31,6 @@ RoxygenNote: 5.0.1
 NeedsCompilation: no
 Packaged: 2017-01-12 16:33:49 UTC; Vestige
 Author: Jacqueline Hughes-Oliver [aut],
-  Jeremy Ash [aut, cre]
+  Jeremy Ash [aut, cre], 
+  Atina Brooks [aut]
 Maintainer: Jeremy Ash <jrash@ncsu.edu>
-Suggests: knitr,
-    rmarkdown
-VignetteBuilder: knitr

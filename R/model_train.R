@@ -16,8 +16,8 @@
 #'  number of descriptors in each descriptor set.  They should be ordered as
 #'  the descriptor sets are ordered in \code{data}.
 #'  Users can specify multiple descriptor sets. By default there is one
-#'  descriptor set, all columns in \code{data} except \code{ycol} and
-#'  \code{idcol}.
+#'  descriptor set, namely all columns in \code{data} except \code{ycol} and
+#'  the optional column ID column.
 #' @param nfolds the number of folds to use for each cross
 #' validation split.
 #' @param nsplits the number of splits to use for repeated
@@ -35,9 +35,9 @@
 #' If \code{NA}, each descriptor set will be named "Descriptor Set i", where
 #' i is the number of the descriptor set.
 #' @param user.params a list of data frames where each data frame contains
-#' the parameters values for a model.  The list should have the format of
-#' the list constructed by \code{\link{MakeModelDefaults}}. One can construct
-#' a list of parameters using \code{\link{MakeModelDefaults}} and then
+#' the parameter values for a model.  The list should have the format of
+#' the list constructed by  \code{\link{MakeModelDefaults}}. One can construct
+#' a list of parameters using  \code{\link{MakeModelDefaults}} and then
 #' modify the parameters.
 #'
 #' @return A list is returned of class \code{\link{chemmodlab}} containing:
@@ -55,11 +55,13 @@
 #'   value of one).  Predicted
 #'   probabilities are only reported for classification models.}
 #' \item{model.acc}{a list of lists of model accuracy measures.  The elements of
-#'   the outer list correspond each CV split performed by \code{ModelTrain}.
+#'   the outer list correspond to each CV split performed by \code{ModelTrain}.
 #'   The elements of the inner list correspond to each descriptor set.  For each
-#'   descriptor set and CV split combination model accuracy measures for each model fit
+#'   descriptor set and CV split combination model a limited collection of 
+#'   accuracy measures are given for each model fit
 #'   to the data.  Regression models are assessed with Pearson's \eqn{r} and
-#'   \eqn{RMSE}. Classification models are assessed with contingency tables.}
+#'   \eqn{RMSE}. Classification models are assessed with contingency tables.
+#'   For additional model accuracy measures, see \code{\link{ModelAssess}}}.
 #' \item{classify}{a logical.  Were classification models used for binary
 #'   response?}
 #' \item{responses}{a numeric vector.  The observed value of the response.}
@@ -76,7 +78,7 @@
 #' @details
 #' Multiple descriptor sets can be specified
 #' by the user. For each descriptor set, repeated k-fold cross validation
-#' is performed for the spcified number of regression and/or classification
+#' is performed for the specified number of regression and/or classification
 #' models.
 #' 
 #' Not all modeling strategies will be appropriate for all response
@@ -122,7 +124,7 @@
 #' descriptor set combination.
 #'
 #' @aliases ModelTrain
-#' @author Jacqueline Hughes-Oliver, Jeremy Ash
+#' @author Jacqueline Hughes-Oliver, Jeremy Ash, Atina Brooks
 #' @seealso \code{\link{chemmodlab}}, \code{\link{plot.chemmodlab}},
 #'   \code{\link{CombineSplits}},
 #' @references ?
@@ -130,19 +132,17 @@
 #' @examples
 #' 
 #' # A data set with  binary response and multiple descriptor sets
-#' 
 #' cml <- ModelTrain(aid364, ids = T, xcol.lengths = c(24, 147), 
 #'                   des.names = c("BurdenNumbers", "Pharmacophores"))
 #' cml
 #' 
 #' # A continuous response
-#' 
 #' cml <- ModelTrain(USArrests)
 #' cml
-#'
+#' 
 #' @export
 ModelTrain <- function(data,
-                       ids = F,
+                       ids = FALSE,
                        xcol.lengths = ifelse(ids,
                                       length(data) - 2,
                                       length(data) - 1),
@@ -150,8 +150,8 @@ ModelTrain <- function(data,
                        nsplits = 3,
                        seed.in = NA,
                        des.names = NA,
-                       models = c("NNet", "PLS", "LARs",
-                                  "PLSLDA", "Tree", "SVM", "KNN", "Forest"),
+                       models = c("NNet", "PLS", "LAR",
+                                  "PLSLDA", "Tree", "SVM", "KNN", "RF"),
                        user.params = NULL) {
   # TO DO: probably can get rid of the idcol parameter
 
@@ -171,15 +171,21 @@ ModelTrain <- function(data,
           stop("'xcol.lengths' must be a list of integers")
       }
     }
-  if (!all(models %in% c("NNet", "PCR", "ENet", "PLS", "Ridge", "LARs", "PLSLDA",
-                         "RPart", "Tree", "SVM", "KNN", "Forest", "Forest70", "TreeEns",
-                         "RPartEns",
-                         "KNNEns"))) {
+  if (!all(models %in% c("NNet", "PCR", "ENet", "PLS", "Ridge", "LAR", "PLSLDA",
+                         "RPart", "Tree", "SVM", "KNN", "RF"))) {
     stop("'models' should be a character vector containing models existing in chemmodlab")
   }
   if (!is(ids, "logical")) {
     stop("'ids' should be a logical")
   }
+  if (ids == F) {
+    if (sum(c(1, xcol.lengths)) > ncol(data))
+      stop("there number of columns given is larger than number of columns in 'data'")
+  } else {
+    if (sum(c(2, xcol.lengths) > ncol(data)))
+      stop("there number of columns given is larger than number of columns in 'data'")
+  }
+  
   
   ycol <- ifelse(ids, 2, 1)
   idcol <- ifelse(ids, 1, NA)
@@ -198,8 +204,10 @@ ModelTrain <- function(data,
     if (length(seed.in) != nsplits)
       stop("length of 'seed.in' must equal number of splits")
   } else {
-    seed.in <- seq(11111, as.numeric(paste(rep(nsplits, 5), collapse = "")),
-                   by = 11111)
+    seed.in <- c()
+    for (i in 1:nsplits) {
+      seed.in <- c(seed.in, as.numeric(paste(rep(i, 3), collapse = "")))
+    }
   }
 
   split.preds.ls <- list()
@@ -227,10 +235,12 @@ ModelTrain <- function(data,
     # data frame
     xcols <- list()
     xcols[[1]] <- 1:xcol.lengths[1]
-    for(i in 2:length(xcol.lengths)){
-      l1 <- xcols[[i-1]][xcol.lengths[i-1]]
-      l2 <- xcol.lengths[i]
-      xcols[[i]] <- (l1+1):(l1+l2)
+    if (length(xcol.lengths) > 1){
+      for(i in 2:length(xcol.lengths)){
+        l1 <- xcols[[i-1]][xcol.lengths[i-1]]
+        l2 <- xcol.lengths[i]
+        xcols[[i]] <- (l1+1):(l1+l2)
+      }
     }
     # shift up indices by 1 if there is a response column, or 2 if there is a 
     # response and id columns
@@ -256,16 +266,18 @@ ModelTrain <- function(data,
       # F go to else
       if (!exists("classify")) {
         if (sum(!(work.data$y %in% c(1, 0))))
-          classify <- "N" else classify <- "Y"
+          classify <- F 
+        else 
+          classify <- T
       }
 
       #-----Make model parameter list
 
       if (!is.null(user.params)) {
-        params <- MakeModelDefaults(n.obs, n.pred, ifelse(classify == "Y", T, F), nfolds)
+        params <- MakeModelDefaults(n.obs, n.pred, classify, nfolds)
         params <- SetUserParams(params, user.params)
       } else {
-        params <- MakeModelDefaults(n.obs, n.pred, ifelse(classify == "Y", T, F), nfolds)
+        params <- MakeModelDefaults(n.obs, n.pred, classify, nfolds)
       }
 
       #-----Start outputing progress to console
@@ -276,7 +288,7 @@ ModelTrain <- function(data,
       cat("Starting Seed: ", current.seed, "\n")
       cat("Number of CV folds: ", nfolds, "\n\n")
       all.preds <- data.frame(Observed = work.data$y)
-      if (classify == "Y")
+      if (classify)
         all.probs <- data.frame(Observed = work.data$y)
       else all.probs <- NA
       all.imp.descs <- data.frame(Descriptors = names(work.data))
@@ -305,7 +317,7 @@ ModelTrain <- function(data,
         PrintTime(pt, st)
         if (length(work.results) > 0) {
           all.preds <- data.frame(all.preds, Tree = work.results$pred)
-          if (classify == "Y")
+          if (classify)
             all.probs <- data.frame(all.probs, Tree = work.results$prob)
           model.acc.ls <- c(model.acc.ls, Tree = list(work.results$model.acc))
         }
@@ -326,14 +338,14 @@ ModelTrain <- function(data,
         PrintTime(pt, st)
         if (length(work.results) > 0) {
           all.preds <- data.frame(all.preds, RPart = work.results$pred)
-          if (classify == "Y")
+          if (classify)
             all.probs <- data.frame(all.probs, RPart = work.results$prob)
           model.acc.ls <- c(model.acc.ls, RPart = list(work.results$model.acc))
         }
       }
 
       #-----'randomforest' method
-      if (sum(models %in% "Forest") == 1) {
+      if (sum(models %in% "RF") == 1) {
         work.results <- list()
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackRf(work.data, n.obs,
@@ -347,7 +359,7 @@ ModelTrain <- function(data,
         PrintTime(pt, st)
         if (length(work.results) > 0) {
           all.preds <- data.frame(all.preds, RF = work.results$pred)
-          if (classify == "Y")
+          if (classify)
             all.probs <- data.frame(all.probs, RF = work.results$prob)
           model.acc.ls <- c(model.acc.ls, RF = list(work.results$model.acc))
         }
@@ -368,14 +380,14 @@ ModelTrain <- function(data,
         PrintTime(pt, st)
         if (length(work.results) > 0) {
           all.preds <- data.frame(all.preds, SVM = work.results$pred)
-          if (classify == "Y")
+          if (classify)
             all.probs <- data.frame(all.probs, SVM = work.results$prob)
           model.acc.ls <- c(model.acc.ls, SVM = list(work.results$model.acc))
         }
       }
 
       #-----'nnet' method
-      if ((sum(models %in% "NNet") == 1) && (classify == "Y")) {
+      if ((sum(models %in% "NNet") == 1) && (classify)) {
         work.results <- list()
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackNnet(work.data, n.obs,
@@ -389,14 +401,14 @@ ModelTrain <- function(data,
         PrintTime(pt, st)
         if (length(work.results) > 0) {
           all.preds <- data.frame(all.preds, NNet = work.results$pred)
-          if (classify == "Y")
+          if (classify)
             all.probs <- data.frame(all.probs, NNet = work.results$prob)
           model.acc.ls <- c(model.acc.ls, NNet = list(work.results$model.acc))
         }
       }
 
       #-----'knn' method
-      if ((sum(models %in% "KNN") == 1) && (classify == "Y")) {
+      if ((sum(models %in% "KNN") == 1) && (classify)) {
         work.results <- list()
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackKnn(work.data, n.obs, n.pred,
@@ -409,14 +421,14 @@ ModelTrain <- function(data,
         PrintTime(pt, st)
         if (length(work.results) > 0) {
           all.preds <- data.frame(all.preds, KNN = work.results$pred)
-          if (classify == "Y")
+          if (classify)
             all.probs <- data.frame(all.probs, KNN = work.results$prob)
           model.acc.ls <- c(model.acc.ls, KNN = list(work.results$model.acc))
         }
       }
 
       #-----'pls.lda' method
-      if ((sum(models %in% "PLSLDA") == 1) && (classify == "Y")) {
+      if ((sum(models %in% "PLSLDA") == 1) && (classify)) {
         work.results <- list()
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackPlsLdaNew(work.data,
@@ -430,14 +442,14 @@ ModelTrain <- function(data,
         PrintTime(pt, st)
         if (length(work.results) > 0) {
           all.preds <- data.frame(all.preds, PLSLDA = work.results$pred)
-          if (classify == "Y")
+          if (classify)
             all.probs <- data.frame(all.probs, PLSLDA = work.results$prob)
           model.acc.ls <- c(model.acc.ls, PLSLDA = list(work.results$model.acc))
         }
       }
 
       #-----'lars' method
-      if (sum(models %in% "LARs") == 1) {
+      if (sum(models %in% "LAR") == 1) {
         work.results <- list()
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackLars(work.data, n.obs,
@@ -543,7 +555,7 @@ ModelTrain <- function(data,
       all.preds <- as.data.frame(apply(all.preds, 2,
                                        function(x) as.numeric(as.character(x))))
       # TO DO make the lists data frames if they only have one element
-      if (classify == "Y") {
+      if (classify) {
         rownames(all.probs) <- IDS
         des.probs.ls <- c(des.probs.ls, list(all.probs))
       }
@@ -557,11 +569,11 @@ ModelTrain <- function(data,
     }
     names(des.preds.ls) <- des.names
     names(des.model.acc.ls) <- des.names
-    if (classify == "Y")
+    if (classify)
       names(des.probs.ls) <- des.names
     split.preds.ls <- c(split.preds.ls, list(des.preds.ls))
     split.model.acc.ls <- c(split.model.acc.ls, list(des.model.acc.ls))
-    if (classify == "Y")
+    if (classify)
       split.probs.ls <- c(split.probs.ls, list(des.probs.ls))
   }
 

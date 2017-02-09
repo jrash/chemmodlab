@@ -4,11 +4,11 @@
 ReadInData <- function(data, ycol, xcols, idcol, type = "ANALYZE") {
   
   if (is.na(idcol)) {
-    if (!all(c(ycol, xcols) <= ncol(data)))
-      stop("there is an index larger than number of columns in 'data'")
+    if (!all(c(ycol, xcols) <=  ncol(data)))
+      stop("there is a column number larger than number of columns in 'data'")
   } else {
     if (!all(c(ycol, xcols, idcol) <= ncol(data)))
-      stop("there is an index larger than number of columns in 'data'")
+      stop("there is a column number larger than number of columns in 'data'")
   }
 
   # might still need this for prediction
@@ -69,3 +69,4 @@ ReadInData <- function(data, ycol, xcols, idcol, type = "ANALYZE") {
 
   return(list(work.data, rm.cols))
 }
+

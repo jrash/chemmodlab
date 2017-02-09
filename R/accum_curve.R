@@ -34,11 +34,6 @@ HitCurve <- function(phat.list, y, max.select = NA, phat.labels = NA,
   if (missing(max.select))
     max.select <- min(300, (length(y)/4))
 
-  # This function will modify graphical parameters
-  # Reset old parameters upon exiting
-  old.par <- par(no.readonly = TRUE)
-  on.exit(par(old.par))
-
   while (list.index <= length(phat.labels)) {
     if (length(phat.labels) == 1)
       phat <- unlist(phat.list)
@@ -69,19 +64,19 @@ HitCurve <- function(phat.list, y, max.select = NA, phat.labels = NA,
         x.max <- min(sum(select), max.select)
         y.max <- sum(y)
         par(mar = c(3, 3, 2, 0.5), mgp = c(3, 0.5, 0))
-        plot(1:x.max, cumsum(rev(sort(y)))[1:x.max], type = "l",
+        plot(0:x.max, c(0, cumsum(rev(sort(y))))[1:(x.max + 1)], type = "l",
              xlim = c(0, x.max), ylim = c(0, y.max), xlab = "", ylab = "",
              pch = "-")
         mtext(text = "Number of compounds selected", side = 1, line = 1.5)
         mtext(text = "Number of actual hits", side = 2, line = 1.5)
         title(title, cex = 0.8)
-        lines(1:x.max, cumsum(rep(sum(y)/length(y), x.max)), lty = 1, col = 2)
+        lines(0:x.max, c(0, cumsum(rep(sum(y)/length(y), x.max))), lty = 1, col = 2)
       }
 
       # Plot the cumulative number of hits.
-      cum.select.last <- select[1]
-      cum.nhits.last <- nhits[1]
-      for (i in 2:i.max) {
+      cum.select.last <- 0
+      cum.nhits.last <- 0
+      for (i in 1:i.max) {
         cum.select <- cum.select.last + select[i]
         cum.nhits <- cum.nhits.last + nhits[i]
         # plot points and connect with lines
@@ -133,25 +128,25 @@ ContCurve <- function(yhat.list, y, max.select = NA, yhat.labels = NA, title = "
   y.max <- max(cumsum(rev(sort(y)))[1:x.max])
   y.min <- min(cumsum(rev(sort(y)))[1:x.max], 0)
 
-  # This function will modify graphical parameters
-  # Reset old parameters upon exiting
-  old.par <- par(no.readonly = TRUE)
-  on.exit(par(old.par))
+  # # This function will modify graphical parameters
+  # # Reset old parameters upon exiting
+  # old.par <- par(no.readonly = TRUE)
+  # on.exit(par(old.par))
 
   if (curves.only) {
     layout(matrix(c(1, 2), 1, 2), c(3.5, 1))
     par(mfg = c(1, 1))
     par(mar = c(3, 3, 2, 0.5), mgp = c(3, 0.5, 0))
-    plot((1:x.max), cumsum(rev(sort(y)))[1:x.max], type = "n", ylab = "", xlab = "",
+    plot((0:x.max), c(0, cumsum(rev(sort(y))))[1:(x.max + 1)], type = "n", ylab = "", xlab = "",
          xlim = c(0, x.max), ylim = c(y.min, y.max), axes = FALSE)
   } else {
     layout(matrix(c(1, 2), 1, 2), c(3.5, 1))
     par(mar = c(3, 3, 2, 0.5), mgp = c(3, 0.5, 0))
-    plot((1:x.max), cumsum(rev(sort(y)))[1:x.max], type = "l", lty = 1,
+    plot((0:x.max), c(0, cumsum(rev(sort(y))))[1:(x.max + 1)], type = "l", lty = 1,
          xlim = c(0, x.max), ylim = c(y.min, y.max), ylab = "", xlab = "")
     mtext(text = "Number of compounds selected", side = 1, line = 1.5)
     mtext(text = "Cumulative response", side = 2, line = 1.5)
-    lines(1:x.max, cumsum(rep(sum(y)/length(y), x.max)), lty = 1, col = 2)
+    lines(0:x.max, c(0, cumsum(rep(sum(y)/length(y), x.max))), lty = 1, col = 2)
     title(title, cex = 0.8)
   }
 
@@ -162,8 +157,8 @@ ContCurve <- function(yhat.list, y, max.select = NA, yhat.labels = NA, title = "
       yhat <- unlist(yhat.list[list.index])
     }
     order <- order(yhat, -y, decreasing = TRUE)
-    ploty <- cumsum(y[order])[1:x.max]
-    lines((1:x.max), ploty, lty = (((list.index - 1)%%5) + 2), col = list.index +
+    ploty <- c(0, cumsum(y[order]))[1:(x.max + 1)]
+    lines((0:x.max), ploty, lty = (((list.index - 1)%%5) + 2), col = list.index +
             2 + start.col)
     list.index <- list.index + 1
   }

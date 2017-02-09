@@ -1,7 +1,7 @@
 #' ANOVA and multiple comparisons for chemmodlab objects
 #' 
 #' \code{CombineSplits} assesses observed performance measures
-#' across all splits created by \code{\link{ModelTrain}}, performs
+#' across all splits created by \code{\link{ModelTrain}} and conducts
 #' statistical tests to determine the best performing descriptor set and
 #' model (D-M) combinations.  
 #' 
@@ -45,7 +45,8 @@
 #' it assumes losses 
 #' are equal for both under-predicting and over-predicting biological 
 #' activity.  A suitable alternative may be initial \code{enhancement}.
-#' Other options are Pearson's \code{R2} and Spearman's \code{rho}.
+#' Other options are the coeffcient of determination (\code{R2})
+#' and Spearman's \code{rho}.
 #' 
 #' For binary chemical assay responses, alternatives to 
 #' misclassification rate (\code{error rate}) 
@@ -56,16 +57,18 @@
 #' and initial \code{enhancement}.
 #' 
 #' @aliases CombineSplits
-#' @author Jacqueline Hughes-Oliver, Jeremy Ash
+#' @author Jacqueline Hughes-Oliver, Jeremy Ash, Atina Brooks
 #' @seealso \code{\link{chemmodlab}}, \code{\link{ModelTrain}}
 #' 
 #' @param cml.result an object of class \code{\link{chemmodlab}}.
-#' @param at the number of tests to use for initial \code{enchancement}.
+#' @param at the number of tests to use for initial \code{enhancement}. If 
+#' \code{at} is not specified, 
+#'  use \code{floor(min(300,n/4))}, where n is the number of compounds.
 #' @param metric the model performance measure to use.  This should be
 #' one of \code{"error rate"}, \code{"enhancement"}, \code{"R2"},
 #' \code{"rho"}, \code{"auc"}, \code{"sensitivity"}, \code{"specificity"}.
 #' @param thresh if the predicted probability that a binary response is 
-#' 1 is above this threshold, an observation is classified as 1. Used to
+#' 1 is above this threshold, an observation is classified as 1. Used
 #' to compute \code{"error rate"}, \code{"sensitivity"}, and 
 #' \code{"specificity"}
 #' 
@@ -83,13 +86,11 @@
 #' 
 #' @examples
 #' # A data set with  binary response and multiple descriptor sets
-#' 
 #' cml <- ModelTrain(aid364, ids = T, xcol.lengths = c(24, 147), 
 #'                   des.names = c("BurdenNumbers", "Pharmacophores"))
 #' CombineSplits(cml)
 #' 
 #' # A continuous response
-#' 
 #' cml <- ModelTrain(USArrests)
 #' CombineSplits(cml)
 #' @export
@@ -119,7 +120,7 @@ CombineSplits <- function(cml.result, metric = "enhancement",
       abbrev.names <- c(abbrev.names, substr(des.names[i], 1, 4))
     }
   }
-  if (cml.result$classify == "N") {
+  if (!cml.result$classify) {
     # then no classification model
     # TODO: Why are they concerned about these objects
     # existing?
