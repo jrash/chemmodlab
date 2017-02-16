@@ -4,11 +4,11 @@
 \alias{plot.chemmodlab}
 \title{Plot method for the chemmodlab class.}
 \usage{
-\method{plot}{chemmodlab}(cml.result, max.select = NA,
-  splits = 1:cml.result$nsplits, meths = cml.result$models)
+\method{plot}{chemmodlab}(x, max.select = NA, splits = 1:x$nsplits,
+  meths = x$models, ...)
 }
 \arguments{
-\item{cml.result}{an object of class \code{\link{chemmodlab}}.}
+\item{x}{an object of class \code{\link{chemmodlab}}.}
 
 \item{max.select}{the maximum number of tests to plot for the
 accumulation curve. If \code{max.select} is not specified, 
@@ -22,6 +22,8 @@ of plots are not generated. See \code{Details}.}
 \item{meths}{a character vector with statistical methods implemented in
 \code{chemmodlab}.  The 
 statistical methods to use for the second series of plots.  See \code{Details}.}
+
+\item{...}{other parameters to be passed through to plotting functions.}
 }
 \description{
 \code{plot.chemmodlab} takes a \code{\link{chemmodlab}} object output by the
@@ -39,7 +41,7 @@ preferable.
 The accumulation curve has also been extended to continuous responses.
 Assuming large positive values of a continuous response y are preferable,
 ChemModLab
-accumulates \code{y} so that \code{\eqn{\sum y_i}} is the sum of the \code{y}
+accumulates \code{y} so that \eqn{\sum y_i} is the sum of the \code{y}
 over the first \code{n} tests. This extension includes the binary-response
 accumulation curve as a special case.
 
@@ -63,7 +65,7 @@ There are two main series of plots generated:
 }
 \examples{
 # A data set with  binary response and multiple descriptor sets
-cml <- ModelTrain(aid364, ids = T, xcol.lengths = c(24, 147), 
+cml <- ModelTrain(aid364, ids = TRUE, xcol.lengths = c(24, 147), 
                   des.names = c("BurdenNumbers", "Pharmacophores"))
 plot(cml)
 

@@ -76,7 +76,7 @@ A list is returned of class \code{\link{chemmodlab}} containing:
   accuracy measures are given for each model fit
   to the data.  Regression models are assessed with Pearson's \eqn{r} and
   \eqn{RMSE}. Classification models are assessed with contingency tables.
-  For additional model accuracy measures, see \code{\link{ModelAssess}}}.
+  For additional model accuracy measures, see \code{ModelAssess}}.
 \item{classify}{a logical.  Were classification models used for binary
   response?}
 \item{responses}{a numeric vector.  The observed value of the response.}
@@ -146,7 +146,7 @@ descriptor set combination.
 \examples{
 
 # A data set with  binary response and multiple descriptor sets
-cml <- ModelTrain(aid364, ids = T, xcol.lengths = c(24, 147), 
+cml <- ModelTrain(aid364, ids = TRUE, xcol.lengths = c(24, 147), 
                   des.names = c("BurdenNumbers", "Pharmacophores"))
 cml
 

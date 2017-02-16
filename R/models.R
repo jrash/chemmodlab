@@ -196,7 +196,7 @@ BackNnet <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify,
   #-----Neural Network using "nnet" with:
   # size=2
   # decay = 0
-  # trace=FALSE (don't print out convergence info)
+  # trace= FALSEALSE (don't print out convergence info)
   # Possible modifications that have NOT been pursued here:
   # many
   # TODO, Why not for Regression?
@@ -289,7 +289,7 @@ BackLars <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, curren
                          type = "fit")
     work.pred[fold.id == id] <- temp.pred$fit[, dim(temp.pred$fit)[2]]
   }
-  work.model.acc <- BackAssess(work.data[, 1], work.pred, work.impdesc, classify = F)
+  work.model.acc <- BackAssess(work.data[, 1], work.pred, work.impdesc, classify = FALSE)
   return(list(pred = work.pred, impdesc = work.impdesc, model.acc = work.model.acc))
 }
 
@@ -313,7 +313,7 @@ BackRidge <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, curre
                                    (work.meth$coef/work.meth$scales)) +
       ((work.meth$ym - (work.meth$xm %*% (work.meth$coef/work.meth$scales)))[1, 1])
   }
-  work.model.acc <- BackAssess(work.data[, 1], work.pred, work.impdesc, classify = F)
+  work.model.acc <- BackAssess(work.data[, 1], work.pred, work.impdesc, classify = FALSE)
   return(list(pred = work.pred, impdesc = work.impdesc, model.acc = work.model.acc))
 }
 
@@ -340,7 +340,7 @@ BackEnet <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, curren
     work.pred[fold.id == id] <- temp.pred$fit[, dim(temp.pred$fit)[2]]
   }
   work.model.acc <- BackAssess(work.data[, 1], work.pred, work.impdesc,
-                               classify = F)
+                               classify = FALSE)
   return(list(pred = work.pred, impdesc = work.impdesc,
               model.acc = work.model.acc))
 }
@@ -365,7 +365,7 @@ BackPcr <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify,
     work.pred[fold.id == id] <- work.meth$Ypred
   }
   work.model.acc <- BackAssess(work.data[,1], work.pred, work.impdesc,
-                                classify = F)
+                                classify = FALSE)
   return(list(pred=work.pred, impdesc=work.impdesc, model.acc = work.model.acc))
 }
 
@@ -373,7 +373,7 @@ BackPcr <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify,
 PcrZG <- function(X, Y, newX = NULL) {
   Xcs <- scale(X)
   Yc <- scale(Y, scale = FALSE)
-  full.svd <<- La.svd(Xcs)
+  full.svd <- La.svd(Xcs)
   nLV.ZG <- ZhuGhodsi((full.svd$d)^2)
   #  nLV.ZG <- sum(full.svd$d>0)
   #  print("nLV.ZG"); print(nLV.ZG)
@@ -451,7 +451,7 @@ BackPlsR <- function(work.data, n.obs, n.pred, nfolds, fold.id, classify, curren
     work.pred[fold.id==id] <- work.meth$Ypred[, 1, nLV.ZG]
   }
   work.model.acc <- BackAssess(work.data[,1], work.pred,
-                               work.impdesc, classify=F)
+                               work.impdesc, classify= FALSE)
   return(list(pred=work.pred, impdesc=work.impdesc, model.acc = work.model.acc))
 }
 

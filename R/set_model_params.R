@@ -24,17 +24,17 @@
 #' models available (including model default parameters).
 #'
 #' @aliases MakeModelDefaults
-#' @author Jacqueline Hughes-Oliver, Jeremy Ash
+#' @author Jeremy Ash
 #' @seealso \code{\link{ModelTrain}}, \code{\link{chemmodlab}}
 #' @references ?
 #'
 #' @examples
-#' params <- MakeModelDefaults(nrow(USArrests),
-#'  ncol(USArrests[, -1]), T, 10)
+#' params <- MakeModelDefaults(n = nrow(USArrests),
+#'  p = ncol(USArrests[, -1]), classify = TRUE, nfolds = 10)
 #' params$Forest$mtry <- ncol(USArrests[, -1])-1
 #' params
 #'
-#' cml <- modelTrain(USArrests, models = "RF", nsplits = 3,
+#' cml <- ModelTrain(USArrests, models = "RF", nsplits = 3,
 #'  user.params = params)
 #'
 #'

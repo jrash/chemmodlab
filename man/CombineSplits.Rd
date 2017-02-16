@@ -4,8 +4,7 @@
 \alias{CombineSplits}
 \title{ANOVA and multiple comparisons for chemmodlab objects}
 \usage{
-CombineSplits(cml.result, metric = "enhancement", at = NA, thresh = 0.5,
-  ...)
+CombineSplits(cml.result, metric = "enhancement", at = NA, thresh = 0.5)
 }
 \arguments{
 \item{cml.result}{an object of class \code{\link{chemmodlab}}.}
@@ -70,7 +69,7 @@ inappropriate for continuous chemical assay responses because
 it assumes losses 
 are equal for both under-predicting and over-predicting biological 
 activity.  A suitable alternative may be initial \code{enhancement}.
-Other options are the coeffcient of determination (\eqn{R^2})
+Other options are the coeffcient of determination (\code{R2})
 and Spearman's \code{rho}.
 
 For binary chemical assay responses, alternatives to 
@@ -83,16 +82,17 @@ and initial \code{enhancement}.
 }
 \examples{
 # A data set with  binary response and multiple descriptor sets
-cml <- ModelTrain(aid364, ids = T, xcol.lengths = c(24, 147), 
+cml <- ModelTrain(aid364, ids = TRUE, xcol.lengths = c(24, 147), 
                   des.names = c("BurdenNumbers", "Pharmacophores"))
 CombineSplits(cml)
 
 # A continuous response
 cml <- ModelTrain(USArrests)
 CombineSplits(cml)
+
 }
 \author{
-Jacqueline Hughes-Oliver, Jeremy Ash
+Jacqueline Hughes-Oliver, Jeremy Ash, Atina Brooks
 }
 \references{
 Kearsley, S.K., Sallamack, S., Fluder, E.M., Andose, J.D., Mosley, R.T.,

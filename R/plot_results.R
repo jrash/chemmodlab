@@ -15,7 +15,7 @@
 #' The accumulation curve has also been extended to continuous responses.
 #' Assuming large positive values of a continuous response y are preferable,
 #' ChemModLab
-#' accumulates \code{y} so that \code{\eqn{\sum y_i}} is the sum of the \code{y}
+#' accumulates \code{y} so that \eqn{\sum y_i} is the sum of the \code{y}
 #' over the first \code{n} tests. This extension includes the binary-response
 #' accumulation curve as a special case.
 #'
@@ -35,7 +35,7 @@
 #'  compared.
 #'
 #' @aliases plot.chemmodlab
-#' @param cml.result an object of class \code{\link{chemmodlab}}.
+#' @param x an object of class \code{\link{chemmodlab}}.
 #' @param max.select the maximum number of tests to plot for the
 #'  accumulation curve. If \code{max.select} is not specified, 
 #'  use \code{floor(min(300,n/4))},
@@ -46,6 +46,7 @@
 #' @param meths a character vector with statistical methods implemented in
 #' \code{chemmodlab}.  The 
 #' statistical methods to use for the second series of plots.  See \code{Details}.
+#' @param ... other parameters to be passed through to plotting functions.
 #' 
 #' @author Jacqueline Hughes-Oliver, Jeremy Ash, Atina Brooks
 #' @seealso \code{\link{chemmodlab}}, \code{\link{ModelTrain}}
@@ -54,7 +55,7 @@
 #'   
 #' @examples
 #' # A data set with  binary response and multiple descriptor sets
-#' cml <- ModelTrain(aid364, ids = T, xcol.lengths = c(24, 147), 
+#' cml <- ModelTrain(aid364, ids = TRUE, xcol.lengths = c(24, 147), 
 #'                   des.names = c("BurdenNumbers", "Pharmacophores"))
 #' plot(cml)
 #' 
@@ -62,8 +63,8 @@
 #' cml <- ModelTrain(USArrests)
 #' plot(cml)
 #' @export
-plot.chemmodlab <- function(cml.result, max.select = NA, splits = 1:cml.result$nsplits,
-                            meths = cml.result$models) {
+plot.chemmodlab <- function(x, max.select = NA, splits = 1:x$nsplits,
+                            meths = x$models, ...) {
   
   # This function will modify graphical parameters
   # Reset old parameters upon exiting
@@ -76,14 +77,14 @@ plot.chemmodlab <- function(cml.result, max.select = NA, splits = 1:cml.result$n
   }
   
   if (missing(max.select))
-    max.select <- min(300,(length(cml.result$responses)/4))
+    max.select <- min(300,(length(x$responses)/4))
 
-  nsplit <- length(cml.result$all.preds)
+  nsplit <- length(x$all.preds)
   
   # Makes desciptor set names shorter so that they fit on the plots
   abbrev.names <- c()
-  num.desc <- length(cml.result$des.names)
-  des.names <- cml.result$des.names
+  num.desc <- length(x$des.names)
+  des.names <- x$des.names
   if (grepl("Descriptor Set", des.names[1])) {
     for (i in 1:num.desc) {
       # TO DO add option to specify abbreviated names?
@@ -96,15 +97,15 @@ plot.chemmodlab <- function(cml.result, max.select = NA, splits = 1:cml.result$n
   }
   
   for (splidx in splits) {
-    preds <- cml.result$all.preds[[splidx]]
+    preds <- x$all.preds[[splidx]]
     titles <- paste0("Split ", splidx, " : ", gsub("_", " ", names(preds)))
 
-    y <- cml.result$responses
+    y <- x$responses
     if (sum(!(y %in% c(1, 0)))) classify <- "N" else classify <- "Y"
     if (classify == "Y")
       num.actives <- sum(y)
     if (classify == "Y")
-      probs <- cml.result$all.probs[[splidx]]
+      probs <- x$all.probs[[splidx]]
 
     # TO DO why removing KNN, etc predictions?
     if (classify == "N") {
@@ -187,41 +188,5 @@ plot.chemmodlab <- function(cml.result, max.select = NA, splits = 1:cml.result$n
         }
       }
     }
-  }
-}
-
-
-# Deprecated
-plotSingleRun <- function(cml.result, splitidx, desidx) {
-  y <- cml.result$response
-  desc <- cml.result$data[[desidx]]
-
-  # is this necessary, wasnt data cleaning already done?
-  y <- y[apply(desc, 1, function(x) sum(is.na(x)) == 0)]
-  desc <- subset(desc, apply(desc, 1, function(x) sum(is.na(x)) == 0))
-  desc <- subset(desc, !is.na(y))
-  y <- y[!is.na(y)]
-  if (sum(!(y %in% c(1, 0))))
-    classify <- "N" else classify <- "Y"
-  preds <- cml.result$all.preds[[splitidx]][[desidx]]
-  if (classify == "Y")
-    probs <- cml.result$all.probs[[splitidx]][[desidx]]
-  if ((classify == "Y") && (ncol(probs) > 1)) {
-    HitCurve(probs[, -1], y = probs[, 1], phat.labels = names(probs)[-1])
-    ContCurve(preds[, !(names(preds) %in% names(probs))],
-              yhat.labels = names(preds)[!(names(preds) %in%
-                                             names(probs))], y = preds[, 1],
-              curves.only = TRUE, start.col = (ncol(probs) - 1))
-  } else {
-    ContCurve(preds[, -1], y = preds[, 1], yhat.labels = names(preds)[-1])
-  }
-  if ((classify == "Y") && (ncol(probs) > 1)) {
-    HitCurve(probs[, -1], y = probs[, 1], phat.labels = names(probs)[-1])
-    ContCurve(preds[, !(names(preds) %in% names(probs))],
-              yhat.labels = names(preds)[!(names(preds) %in%
-                                             names(probs))], y = preds[, 1],
-              curves.only = TRUE, start.col = (ncol(probs) - 1))
-  } else {
-    ContCurve(preds[, -1], y = preds[, 1], yhat.labels = names(preds)[-1])
   }
 }

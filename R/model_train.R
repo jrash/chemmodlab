@@ -61,7 +61,7 @@
 #'   accuracy measures are given for each model fit
 #'   to the data.  Regression models are assessed with Pearson's \eqn{r} and
 #'   \eqn{RMSE}. Classification models are assessed with contingency tables.
-#'   For additional model accuracy measures, see \code{\link{ModelAssess}}}.
+#'   For additional model accuracy measures, see \code{ModelAssess}}.
 #' \item{classify}{a logical.  Were classification models used for binary
 #'   response?}
 #' \item{responses}{a numeric vector.  The observed value of the response.}
@@ -132,7 +132,7 @@
 #' @examples
 #' 
 #' # A data set with  binary response and multiple descriptor sets
-#' cml <- ModelTrain(aid364, ids = T, xcol.lengths = c(24, 147), 
+#' cml <- ModelTrain(aid364, ids = TRUE, xcol.lengths = c(24, 147), 
 #'                   des.names = c("BurdenNumbers", "Pharmacophores"))
 #' cml
 #' 
@@ -140,7 +140,15 @@
 #' cml <- ModelTrain(USArrests)
 #' cml
 #' 
+#' @importFrom grDevices dev.off palette rainbow rgb
+#' @importFrom graphics abline axis box image layout legend lines mtext par plot points
+#' @importFrom methods is 
+#' @importFrom stats TukeyHSD anova aov cor df dist fitted.values glm predict qt var
+#' @importFrom utils lsf.str
+#' 
+#' 
 #' @export
+
 ModelTrain <- function(data,
                        ids = FALSE,
                        xcol.lengths = ifelse(ids,
@@ -308,7 +316,7 @@ ModelTrain <- function(data,
         # get the time that expression used
         st <- system.time(tryCatch(work.results <- BackTree(work.data, n.obs,
                                                             n.pred, nfolds, fold.id,
-                                                            classify, current.seed, nperm,
+                                                            classify, current.seed,  
                                                             params),
                                    error = function(e) {
                                      warning(paste("WARNING...Tree not run:", e$message))
@@ -330,7 +338,7 @@ ModelTrain <- function(data,
         st <- system.time(tryCatch(work.results <- BackRpart(work.data, n.obs,
                                                              n.pred, nfolds, fold.id,
                                                              classify, current.seed,
-                                                             nperm, params),
+                                                               params),
                                    error = function(e) {
                                      warning(paste("WARNING...RPart not run:", e$message))
                                      work.results <- list()
@@ -350,7 +358,7 @@ ModelTrain <- function(data,
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackRf(work.data, n.obs,
                                                           n.pred, nfolds, fold.id,
-                                                          classify, current.seed, nperm,
+                                                          classify, current.seed,  
                                                           params),
                                    error = function(e) {
                                      warning(paste("WARNING...RF not run:", e$message))
@@ -371,7 +379,7 @@ ModelTrain <- function(data,
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackSvm(work.data, n.obs,
                                                            n.pred, nfolds, fold.id,
-                                                           classify, current.seed, nperm,
+                                                           classify, current.seed,  
                                                            params),
                                    error = function(e) {
                                      warning(paste("WARNING...SVM not run:", e$message))
@@ -392,7 +400,7 @@ ModelTrain <- function(data,
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackNnet(work.data, n.obs,
                                                             n.pred, nfolds, fold.id,
-                                                            classify, current.seed, nperm,
+                                                            classify, current.seed,  
                                                             params),
                                    error = function(e) {
                                      warning(paste("WARNING...NNet not run:", e$message))
@@ -413,7 +421,7 @@ ModelTrain <- function(data,
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackKnn(work.data, n.obs, n.pred,
                                                            nfolds, fold.id, classify,
-                                                           current.seed, nperm, params),
+                                                           current.seed,   params),
                                   error = function(e) {
                                     warning(paste("WARNING...KNN not run:", e$message))
                                     work.results <- list()
@@ -434,7 +442,7 @@ ModelTrain <- function(data,
         st <- system.time(tryCatch(work.results <- BackPlsLdaNew(work.data,
                                                                  n.obs, n.pred, nfolds,
                                                                  fold.id, classify,
-                                                                 current.seed, nperm),
+                                                                 current.seed),
                                    error = function(e) {
                                      warning(paste("WARNING...PLSLDA not run:", e$message))
                                      work.results <- list()
@@ -455,7 +463,7 @@ ModelTrain <- function(data,
         st <- system.time(tryCatch(work.results <- BackLars(work.data, n.obs,
                                                             n.pred, nfolds, fold.id,
                                                             classify,
-                                                            current.seed, nperm, params),
+                                                            current.seed,   params),
                                    error = function(e) {
                                      warning(paste("WARNING...LAR not run:", e$message))
                                      work.results <- list()
@@ -474,7 +482,7 @@ ModelTrain <- function(data,
         st <- system.time(tryCatch(work.results <- BackRidge(work.data, n.obs,
                                                              n.pred, nfolds, fold.id,
                                                              classify, current.seed,
-                                                             nperm, params),
+                                                               params),
                                    error = function(e) {
                                      warning(paste("WARNING...Ridge not run:", e$message))
                                      work.results <- list()
@@ -492,7 +500,7 @@ ModelTrain <- function(data,
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackEnet(work.data, n.obs,
                                                             n.pred, nfolds, fold.id,
-                                                            classify, current.seed, nperm,
+                                                            classify, current.seed,  
                                                             params),
                                    error = function(e) {
                                      warning(paste("WARNING...ENet not run:", e$message))
@@ -511,7 +519,7 @@ ModelTrain <- function(data,
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackPcr(work.data, n.obs,
                                                            n.pred, nfolds, fold.id,
-                                                           classify, current.seed, nperm,
+                                                           classify, current.seed,  
                                                            params),
                                    error = function(e) {
                                      warning(paste("WARNING...PCR not run:", e$message))
@@ -530,7 +538,7 @@ ModelTrain <- function(data,
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackPlsR(work.data, n.obs,
                                                             n.pred, nfolds, fold.id,
-                                                            classify, current.seed, nperm,
+                                                            classify, current.seed,  
                                                             params),
                                    error = function(e) {
                                      warning(paste("WARNING...PLS not run:", e$message))

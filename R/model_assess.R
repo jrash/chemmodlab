@@ -86,16 +86,18 @@
 #' 
 #' @examples
 #' # A data set with  binary response and multiple descriptor sets
-#' cml <- ModelTrain(aid364, ids = T, xcol.lengths = c(24, 147), 
+#' cml <- ModelTrain(aid364, ids = TRUE, xcol.lengths = c(24, 147), 
 #'                   des.names = c("BurdenNumbers", "Pharmacophores"))
 #' CombineSplits(cml)
 #' 
 #' # A continuous response
 #' cml <- ModelTrain(USArrests)
 #' CombineSplits(cml)
+#' 
 #' @export
+
 CombineSplits <- function(cml.result, metric = "enhancement",
-                          at = NA, thresh = 0.5, ...) {
+                          at = NA, thresh = 0.5) {
   
   file <- NA
   y <- cml.result$responses
@@ -286,18 +288,6 @@ CombineSplits <- function(cml.result, metric = "enhancement",
     out$Trmt[i] <- out$Trmt[i] + 100 * (which(descriptors == out$Descriptor[i]))
   }
   
-  #   if (length(unique(out$Descriptor))==1){
-  #     out$Trmt<-1*(out$Method=="ENet") + 2*(out$Method=="RF") + 3*(out$Method=="KNN") + 4*(out$Method=="LAR") +
-  #     5*(out$Method=="NNet") + 6*(out$Method=="PCR") + 7*(out$Method=="PLS") + 8*(out$Method=="PLSLDA") +
-  #     9*(out$Method=="RPart") + 10*(out$Method=="Ridge") + 11*(out$Method=="SVM") + 12*(out$Method=="Tree")
-  #   } else{
-  #     out$Trmt<-100*( 1*(out$Descriptor=="Atom Pairs") + 2*(out$Descriptor=="Burden Numbers") + 3*(out$Descriptor=="Carhart Atom Pairs")
-  #                     + 4*(out$Descriptor=="Fragment Pairs") + 5*(out$Descriptor=="Pharmacophores") ) +
-  #     1*(out$Method=="ENet") + 2*(out$Method=="RF") + 3*(out$Method=="KNN") + 4*(out$Method=="LAR") +
-  #     5*(out$Method=="NNet") + 6*(out$Method=="PCR") + 7*(out$Method=="PLS") + 8*(out$Method=="PLSLDA") +
-  #     9*(out$Method=="RPart") + 10*(out$Method=="Ridge") + 11*(out$Method=="SVM") + 12*(out$Method=="Tree")
-  #   }
-  
   out$Trmt <- factor(out$Trmt)
   SplitAnova(out, metric, file)
 }
@@ -339,8 +329,8 @@ SplitAnova <- function(splitdata, metric, file = NA) {
   cat(paste("Error ", form.df[3], form.dec[5], form.dec[8], "\n", sep = "   "))
   cat(paste("Total ", form.df[4], form.dec[6], "\n", sep = "   "))
   
-  if (!is.na(file))
-    pdf(file)
+  # if (!is.na(file))
+  #   pdf(file)
   
   # plot(c(-1,1),c(-1,1),xlab='',ylab='',axes=FALSE,type='n')
   # text(-1,.9,str1,adj=c(0,.5),family='mono',cex=.7)
@@ -422,60 +412,4 @@ SplitAnova <- function(splitdata, metric, file = NA) {
     dev.off()
 }
 
-Accumulation <- function(prob, y, at) {
 
-  # Unique prob's, sorted with largest first.  if there are ties,
-  # length(uniq.prob)<length(prob)
-  uniq.prob <- sort(unique(prob), decreasing = TRUE)
-
-  # select contains the number of cases at each unique prob nhits contains the
-  # number of hits at each unique prob accpts contains the partial accumulation for
-  # each prob (not unique)
-  select <- vector("numeric", length(uniq.prob))
-  nhits <- vector("numeric", length(uniq.prob))
-  accpts <- vector("numeric", length(prob))
-
-  accpts.index <- 1
-  for (i in 1:length(uniq.prob)) {
-    cases.sel <- (prob == uniq.prob[i])
-    select[i] <- sum(cases.sel)
-    nhits[i] <- sum(y[cases.sel])
-    accpts[accpts.index:(accpts.index + select[i] - 1)] <- nhits[i]/select[i]
-    accpts.index <- accpts.index + select[i]
-  }
-
-  # return the accumulation for every point, or those specified by 'at'
-  if (missing(at))
-    return(cumsum(accpts)) else return(cumsum(accpts)[at])
-}
-
-
-HitRate <- function(prob, y, at) {
-  # hit rate is accumulation/n for each pt
-  hrpts <- Accumulation(prob, y)/(1:length(y))
-
-  # return the hit rate for every point, or those specified by 'at'
-  if (missing(at))
-    return(hrpts) else return(hrpts[at])
-}
-
-
-Enhancement <- function(prob, y, at) {
-  # enhancement is the hit rate/(M/N)
-  epts <- HitRate(prob, y)/(sum(y)/length(y))
-
-  # return the enhancement for every point, or those specified by 'at'
-  if (missing(at))
-    return(epts) else return(epts[at])
-}
-
-
-EnhancementCont <- function(pred, y, at) {
-  # assumes bigger y is better to avoid problems with negative numbers, convert y
-  # to y-min(y) 'at' assumed to be single number, not vector enhancement@at is
-  # (mean y over top at)/(mean y over all)
-  y <- y - min(y)
-  pred.order <- order(pred, decreasing = TRUE)
-  enh <- mean(y[pred.order[1:at]])/mean(y)
-  return(enh)
-}

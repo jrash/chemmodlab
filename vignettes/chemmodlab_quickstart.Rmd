@@ -11,6 +11,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = T, fig.height=6, fig.width=6, cache=T)
+library(chemmodlab)
 ```
 
 ## Installation
@@ -19,7 +20,7 @@ Use the code below to install the package.  Since you are installing from source
 need to install the package dependencies manually. This will be done automatically once
 this is accepted by CRAN.
 
-```{r install package, eval=F}
+```{r install_package, eval=F}
 
 install.packages(c("class", "e1071", "elasticnet", "foreach", "lars", "MASS",
                    "nnet", "pROC", "randomForest", "rpart", "tree", "pls"))
@@ -72,13 +73,13 @@ validation folds, etc.  See `?ModelTrain` for more details.  In all the output,
 we will name the descriptor sets "BurdenNumbers" and "Pharmacophores".  The function 
 will complain about some colinear variables, do not worry about this at the moment.
 
-```{r fit model code, R.options=list(max.print=10), eval = F}
+```{r fit_model_code, R.options=list(max.print=10), eval = F}
 library(chemmodlab)
 cml <- ModelTrain(aid364, ids = T, xcol.lengths = desc.lengths,
                   des.names = c("BurdenNumbers", "Pharmacophores"))
 ```
 
-```{r fit model, warning=F, cache=TRUE, include=FALSE, R.options=list(max.print=10)}
+```{r fit_model, warning=F, cache=TRUE, include=FALSE, R.options=list(max.print=10)}
 cml <- ModelTrain(aid364, ids = T, xcol.lengths = desc.lengths,
                   des.names = c("BurdenNumbers", "Pharmacophores"))
 ```
@@ -89,8 +90,8 @@ cml <- ModelTrain(aid364, ids = T, xcol.lengths = desc.lengths,
 Next we generate the series of accumulation curves assessing the model fits for all
 CV splits and descriptor set combinations.  See `?plot.chemmodlab` for more details:
 
-```{r accumulation curves}
-plot(cml, splits = 1, models = c("NNet", "KNN"))
+```{r accumulation_curves}
+plot(cml, splits = 1, meths = c("NNet", "KNN"))
 ```
 
 ### Multiple Comparisons Plots
@@ -98,13 +99,13 @@ plot(cml, splits = 1, models = c("NNet", "KNN"))
 Finally, we compare model performance with the multiple comparisons plot.   Here we are using the default model assessment measure (intial enhancement at 300 tests).^[I am aware that while the plots look good in this vignette, the plotting window in the user's r environment needs to be quite large for these plots to be visible.  I am working on improving this at the moment.]  See
 `?CombineSplits` for more information
 
-```{r combine splits IE}
+```{r combine_splits IE}
 CombineSplits(cml)
 ```
 
 We can also assess models using a number of other assessment measures
 
-```{r combine splits others}
+```{r combine_splits_others}
 CombineSplits(cml, metric = "error rate")
 CombineSplits(cml, metric = "sensitivity")
 CombineSplits(cml, metric = "specificity")
