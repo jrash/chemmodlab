@@ -53,4 +53,4 @@ Author: Jacqueline Hughes-Oliver [aut],
 Maintainer: Jeremy Ash <jrash@ncsu.edu>
 Suggests:
     knitr,
-    rmarkdowns
+    rmarkdown
