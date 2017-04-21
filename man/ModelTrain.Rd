@@ -2,30 +2,29 @@
 % Please edit documentation in R/model_train.R
 \name{ModelTrain}
 \alias{ModelTrain}
+\alias{ModelTrain.data.frame}
+\alias{ModelTrain.default}
 \title{Fit predictive models to sets of descriptors.}
 \usage{
-ModelTrain(data, ids = FALSE, xcol.lengths = ifelse(ids, length(data) - 2,
-  length(data) - 1), nfolds = 10, nsplits = 3, seed.in = NA,
-  des.names = NA, models = c("NNet", "PLS", "LAR", "PLSLDA", "Tree", "SVM",
-  "KNN", "RF"), user.params = NULL)
+ModelTrain(...)
+
+\method{ModelTrain}{default}(x, y, nfolds = 10, nsplits = 3, seed.in = NA,
+  des.names = NA, models = c("NNet", "PLS", "LAR", "Lasso", "PLSLDA",
+  "Tree", "SVM", "KNN", "RF"), user.params = NULL, ...)
+
+\method{ModelTrain}{data.frame}(d, ids = FALSE, xcol.lengths = ifelse(ids,
+  length(d) - 2, length(d) - 1), xcols = NA, nfolds = 10, nsplits = 3,
+  seed.in = NA, des.names = NA, models = c("NNet", "PLS", "LAR", "Lasso",
+  "PLSLDA", "Tree", "SVM", "KNN", "RF"), user.params = NULL, ...)
 }
 \arguments{
-\item{data}{a data frame containing an (optional) ID column,
-a response column, and descriptor columns.  The columns should be
-provide in this order.
-The response variable should either be binary
-(represented as a numeric vector with 0 or 1 values) or
-continuous.  At the moment, only numeric descriptors are supported.}
+\item{...}{Additional parameters.}
 
-\item{ids}{a logical.  Is an ID column provided?}
+\item{x}{a list of numeric descriptor set matrices.  At the moment, only
+binary and continuous descriptors are supported.  Binary descriptors should
+be numeric (0 or 1).}
 
-\item{xcol.lengths}{a vector of integers.  It is assumed that the columns
-in \code{data} are grouped by descriptor set.  The integers specify the
-number of descriptors in each descriptor set.  They should be ordered as
-the descriptor sets are ordered in \code{data}.
-Users can specify multiple descriptor sets. By default there is one
-descriptor set, namely all columns in \code{data} except \code{ycol} and
-the optional column ID column.}
+\item{y}{a numeric vector containing the binary or continuous response.}
 
 \item{nfolds}{the number of folds to use for each cross
 validation split.}
@@ -53,30 +52,52 @@ the parameter values for a model.  The list should have the format of
 the list constructed by  \code{\link{MakeModelDefaults}}. One can construct
 a list of parameters using  \code{\link{MakeModelDefaults}} and then
 modify the parameters.}
+
+\item{d}{a data frame containing an (optional) ID column,
+a response column, and descriptor columns.  The columns should be
+provide in this order.}
+
+\item{ids}{a logical.  Is an ID column provided?}
+
+\item{xcol.lengths}{a vector of integers.  It is assumed that the columns
+in \code{d} are grouped by descriptor set.  The integers specify the
+number of descriptors in each descriptor set.  They should be ordered as
+the descriptor sets are ordered in \code{d}.
+Users can specify multiple descriptor sets. By default there is one
+descriptor set, namely all columns in \code{d} except the response
+column and
+the optional ID column.  Specify \code{xcol.lengths} or \code{xcols},
+but not both.}
+
+\item{xcols}{A list of integer vectors.  Each vector contains
+column indices
+of \code{data} where a set of descriptor variables is located.
+Users can specify multiple descriptor sets.  Specify \code{xcol.lengths} or \code{xcols},
+but not both.}
 }
 \value{
 A list is returned of class \code{\link{chemmodlab}} containing:
- \item{all.preds}{a list of lists of dataframes.  The elements of the outer
+ \item{all.preds}{a list of lists of data frames.  The elements of the outer
   list correspond to each CV split performed by \code{\link{ModelTrain}}. The
   elements of the inner list correspond to each descriptor set.  For each
   descriptor set and CV split combination, the output is a dataframe
   containing all model predictions.  The first column of each data frame
   contains the true value of the response.  The remaining columns contain
   the predictions for each model.}
-\item{all.probs}{a list of lists of dataframes. Constructed only if there is
+\item{all.probs}{a list of lists of data frames. Constructed only if there is
   a binary response.  The structure is the same as \code{all.preds}, except
-  that predictions are replaced by "predicted probabilities" (ie. estimated
+  that predictions are replaced by "predicted probabilities" (i.e. estimated
   probabilities of a response
   value of one).  Predicted
   probabilities are only reported for classification models.}
 \item{model.acc}{a list of lists of model accuracy measures.  The elements of
   the outer list correspond to each CV split performed by \code{ModelTrain}.
   The elements of the inner list correspond to each descriptor set.  For each
-  descriptor set and CV split combination model a limited collection of 
-  accuracy measures are given for each model fit
+  descriptor set and CV split combination, a limited collection of 
+  performance measures are given for each model fit
   to the data.  Regression models are assessed with Pearson's \eqn{r} and
   \eqn{RMSE}. Classification models are assessed with contingency tables.
-  For additional model accuracy measures, see \code{ModelAssess}}.
+  For additional model performance measures, see \code{\link{Performance}}}.
 \item{classify}{a logical.  Were classification models used for binary
   response?}
 \item{responses}{a numeric vector.  The observed value of the response.}
@@ -91,14 +112,15 @@ A list is returned of class \code{\link{chemmodlab}} containing:
 \item{nsplits}{number of CV splits performed.}
 }
 \description{
-\code{ModelTrain} fits a series of classification or regression
+\code{ModelTrain} is a generic S3 function that fits a series of 
+classification or regression
 models to sets of descriptors and computes cross-validated measures
 of model performance.
 }
 \details{
 Multiple descriptor sets can be specified
 by the user. For each descriptor set, repeated k-fold cross validation
-is performed for the specified number of regression and/or classification
+is performed for the specified regression and/or classification
 models.
 
 Not all modeling strategies will be appropriate for all response
@@ -108,15 +130,17 @@ is not directly appropriate for continuous response assays such as
 percent inhibition, but it can be applied once a threshold value for
 percent inhibition is used to create a binary (active/inactive) response.
 
-See \url{https://pages.github.ncsu.edu/jrash/chemmodlab/} for more 
+See \url{https://jrash.github.io/chemmodlab/} for more 
 information about the
 models available (including model default parameters).
+The default value for argument models includes only some of 
+the possible values.
 
 Sensible default values are selected for each
 tunable model parameter, however users may set any parameter
 manually using \code{\link{MakeModelDefaults}} and \code{user.params}.
 
-\code{ModelTrain} predictions are based on k-fold cross-validation,
+\code{\link{ModelTrain}} predictions are based on k-fold cross-validation,
 where the dataset is randomly divided into k parts, each containing
 approximately equal numbers of compounds. Treating one of these parts
 as a "test set" the remaining
@@ -143,23 +167,31 @@ assignments, or changes to the training and test sets.
 Statistical tests are used to determine the best performing model and
 descriptor set combination.
 }
+\section{Methods (by class)}{
+\itemize{
+\item \code{default}: Default S3 method
+
+\item \code{data.frame}: S3 method for class 'data.frame'
+}}
 \examples{
 
+\dontrun{
 # A data set with  binary response and multiple descriptor sets
-cml <- ModelTrain(aid364, ids = TRUE, xcol.lengths = c(24, 147), 
+data(aid364)
+
+cml <- ModelTrain(aid364, ids = TRUE, xcol.lengths = c(24, 147),
                   des.names = c("BurdenNumbers", "Pharmacophores"))
 cml
+}
 
 # A continuous response
-cml <- ModelTrain(USArrests)
+cml <- ModelTrain(USArrests, nsplits = 2, nfolds = 2,
+                  models = c("KNN", "Lasso", "Tree"))
 cml
 
 }
 \author{
 Jacqueline Hughes-Oliver, Jeremy Ash, Atina Brooks
-}
-\references{
-?
 }
 \seealso{
 \code{\link{chemmodlab}}, \code{\link{plot.chemmodlab}},

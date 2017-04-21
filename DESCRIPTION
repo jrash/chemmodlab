@@ -1,8 +1,8 @@
 Package: chemmodlab
 Type: Package
 Title: A Cheminformatics Modeling Laboratory for Fitting and Assessing Machine
-        Learning Models
-Version: 0.0.0.9001
+    Learning Models
+Version: 1.0.0
 Date: 2016-11-27
 Authors@R: c(
 	person("Jacqueline", "Hughes-Oliver", email = "hughesol@ncsu.edu", role = c("aut")),
@@ -18,20 +18,40 @@ Description: Contains a set of methods for fitting models and methods for
     quantitative structure-activity relationships (QSARs). However, the user can
     directly input their own choices of descriptors and responses, so the capability
     for comparing models is effectively unlimited.
-Depends: R (>= 3.1.1)
+Depends:
+    R (>= 3.1.1)
 License: GPL-3
 LazyData: TRUE
 URL: https://github.com/jrash/ChemModLab
 BugReports: https://github.com/jrash/ChemModLab/issues
-Imports: class (>= 7.3.14), e1071 (>= 1.6.7), elasticnet (>= 1.1),
-        foreach(>= 1.4.3), lars(>= 1.2), MASS(>= 7.3.45), nnet(>=
-        7.3.12), pROC(>= 1.8), randomForest(>= 4.6.12), rpart(>=
-        4.1.10), tree (>= 1.0.37), pls (>= 2.5.0), stats, graphics, grDevices,
-		utils, datasets, methods
+Imports:
+    class (>= 7.3.14),
+    e1071 (>= 1.6.7),
+    elasticnet (>= 1.1),
+    foreach(>= 1.4.3),
+    lars(>= 1.2),
+    MASS(>= 7.3.45),
+    nnet(>= 7.3.12),
+    pROC(>= 1.8),
+    randomForest(>= 4.6.12),
+    rpart(>= 4.1.10),
+    tree (>= 1.0.37),
+    pls (>= 2.5.0),
+    caret (>= 6.0-71),
+    stats,
+    graphics,
+    grDevices,
+    utils,
+    datasets,
+    methods
 RoxygenNote: 5.0.1
 NeedsCompilation: no
 Packaged: 2017-01-12 16:33:49 UTC; Vestige
 Author: Jacqueline Hughes-Oliver [aut],
-  Jeremy Ash [aut, cre], 
-  Atina Brooks [aut]
+    Jeremy Ash [aut, cre],
+    Atina Brooks [aut]
 Maintainer: Jeremy Ash <jrash@ncsu.edu>
+Suggests:
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

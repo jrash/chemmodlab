@@ -20,13 +20,12 @@
 #' manually by generating a list with this function and assigning
 #' the parameters.
 #'
-#' See \url{https://pages.github.ncsu.edu/jrash/chemmodlab/} for more information about the
+#' See \url{https://jrash.github.io/chemmodlab/} for more information about the
 #' models available (including model default parameters).
 #'
 #' @aliases MakeModelDefaults
 #' @author Jeremy Ash
 #' @seealso \code{\link{ModelTrain}}, \code{\link{chemmodlab}}
-#' @references ?
 #'
 #' @examples
 #' params <- MakeModelDefaults(n = nrow(USArrests),
@@ -45,7 +44,9 @@ MakeModelDefaults <- function(n, p, classify, nfolds){
                  ENet = data.frame(lambda = 1),
                  PLS = data.frame(ncomp = min(floor(n/nfolds), p, 100)),
                  Ridge = data.frame(lambda = .1),
-                 LARs = NULL,
+                 LAR = data.frame(lambda = .05),
+                 Lasso = data.frame(lambda = .2),
+                 # LassoGLM = data.frame(lambda = .1),
                  PLSLDA = data.frame(ncomp = min(floor(n/nfolds), p, 100)),
                  RPart = data.frame(cp = .01),
                  Tree = NULL,
@@ -72,7 +73,7 @@ SetUserParams <- function(params, user.params){
     grid.set <-
       names(user.params[[model]])[names(user.params[[model]]) %in% names(params[[model]])]
     grid.excess <-
-      names(user.params[[model]])[! names(user.params[[model]]) %in% names(params[[model]])]
+      names(user.params[[model]])[!names(user.params[[model]]) %in% names(params[[model]])]
     for (hpar in grid.set) {
       params[[model]][, hpar] <- user.params[[model]][, hpar]
     }

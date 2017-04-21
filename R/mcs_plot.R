@@ -18,8 +18,9 @@ McsPlot <- function(lsmeans, pval, trmts, Edescriptors, Emethods,
 
   # TO DO: Is there a better way to do change figure margins?
   old.par <- par(no.readonly = TRUE)
-  par(pty = "s", oma = c(0, 0, 0, 0), mar = c(5, 5.5, 6, 5.5) + 0)
   on.exit(par(old.par))
+  par(pty = "s", oma = c(0, 0, 0, 0), mar = c(5, 5.5, 6, 5.5) + 0,
+      mfrow = c(1,1), mgp = c(3, 1, 0))
 
   plot(1:n, 1:n, ylim = c(1, n), xaxt = "n", yaxt = "n", pty = "s", col = 0, xlab = "",
        ylab = "")
@@ -93,7 +94,7 @@ McsPlot <- function(lsmeans, pval, trmts, Edescriptors, Emethods,
   mtext(side = 3, line = 5, text = "Multiple Comparisons Similarity (MCS) Plot",
         cex = 0.8)
   mtext(side = 1, line = -4.75, adj = -0.04, cex = 0.65,
-        text = "                 Model\n                Accuracy-> ",
+        text = "                Model\n               Performance-> ",
         outer = TRUE)
   if (single.desc)
     mtext(side = 1, line = -3.5, adj = -0.04, cex = 0.65,
@@ -105,7 +106,7 @@ McsPlot <- function(lsmeans, pval, trmts, Edescriptors, Emethods,
         text = "Model                 ",
         outer = TRUE)
   mtext(side = 3, line = -5.9, adj = 1.04, cex = 0.65,
-        text = " <-Accuracy               ",
+        text = " <-Performance                ",
         outer = TRUE)
   if (single.desc)
     mtext(side = 3, line = -4.6, adj = 1.04, cex = 0.65,

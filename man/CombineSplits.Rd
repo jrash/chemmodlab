@@ -2,31 +2,45 @@
 % Please edit documentation in R/model_assess.R
 \name{CombineSplits}
 \alias{CombineSplits}
+\alias{Performance}
 \title{ANOVA and multiple comparisons for chemmodlab objects}
 \usage{
-CombineSplits(cml.result, metric = "enhancement", at = NA, thresh = 0.5)
+CombineSplits(cml.result, metric = "enhancement", m = NA, thresh = 0.5)
+
+Performance(cml.result, metrics = "enhancement", m = NA, thresh = 0.5)
 }
 \arguments{
 \item{cml.result}{an object of class \code{\link{chemmodlab}}.}
 
 \item{metric}{the model performance measure to use.  This should be
-one of \code{"error rate"}, \code{"enhancement"}, \code{"R2"},
-\code{"rho"}, \code{"auc"}, \code{"sensitivity"}, \code{"specificity"}.}
+one of \code{error rate}, \code{enhancement}, \code{R2},
+\code{rho}, \code{auc}, \code{sensitivity}, \code{specificity},
+\code{ppv}, \code{fmeasure}.}
 
-\item{at}{the number of tests to use for initial \code{enhancement}. If 
-\code{at} is not specified, 
- use \code{floor(min(300,n/4))}, where n is the number of compounds.}
+\item{m}{the number of tests to use for binary model 
+performance measures
+(see Details). 
+If \code{m} is not specified, 
+\code{enhancement} uses \code{floor(min(300,n/4))}, 
+where \code{n} is the number of observations. By default, 
+all other binary performance measures are computed using all observations.}
 
 \item{thresh}{if the predicted probability that a binary response is 
 1 is above this threshold, an observation is classified as 1. Used
-to compute \code{"error rate"}, \code{"sensitivity"}, and 
-\code{"specificity"}}
+to compute \code{error rate}, \code{sensitivity}, 
+\code{specificity}, \code{ppv}, and \code{fmeasure}.}
+
+\item{metrics}{a character vector containing a subset of the performance
+measures above.  \code{Performance} can compute several
+measures.}
 }
 \description{
-\code{CombineSplits} assesses observed performance measures
+\code{CombineSplits} evaluates a specified performance measure
 across all splits created by \code{\link{ModelTrain}} and conducts
 statistical tests to determine the best performing descriptor set and
-model (D-M) combinations.
+model (D-M) combinations. \code{Performance} can evaluate many 
+performance measures across all splits created by \code{ModelTrain},
+then outputs a data frame for each D-M combination.
 }
 \details{
 \code{CombineSplits}
@@ -36,16 +50,20 @@ Intuitively, this
 assesses how much a performance measure may change if a slightly
 different data set is used.
 
-\code{CombineSplits} is a designed study in that 'experimental' 
+\code{ModelTrain} is a designed study in that 'experimental' 
 conditions are defined according to two factors: method (D-M combination) 
-and split (fold assignment).  As such, an analysis
+and split (fold assignment).  The factor "split" is a blocking factor,
+and factor "method" is of primary interest.  The design of this
+experiment is amenable to an analysis
 of variance to identify significant differences between 
-performance measures according to factors and levels is appropriate.
+performance measures according to factors and levels.
+CombineSplits outputs such an analysis of variance decomposition.
 
-The multiple comparisons plot shows the results for tests for signficance
+The multiple comparisons similarity (MCS) plot shows the results
+for tests for signficance
 in all pairwise differences of D-M mean performance measures.
 Because there can be many 
-estimated mean performance measures for an assay, care must be taken 
+estimated mean performance measures for a dataset, care must be taken 
 to adjust for
 multiple testing, and we do this using the Tukey-Kramer multiple
 comparison procedure (see Tukey (1953) and Kramer (1956)).
@@ -54,14 +72,13 @@ make the plotting window larger.
 
 By default, \code{CombineSplits} uses initial enhancement
 proposed by Kearsley et al. (1996) to assess model performance. 
-Enhancement at \code{n} tests is the hit
-rate at \code{n} tests (accumulated actives at \code{n} tests
-divided by \code{n}, the 
-number of tests) divided by the proportion of actives in the entire 
+Enhancement at \code{m} tests is the hit
+rate at \code{m} tests (accumulated actives at \code{m} tests
+divided by \code{m}) divided by the proportion of actives in the entire 
 collection. It is a relative measure of hit rate improvement offered
 by the new method beyond what can be expected under random selection,
 and values much larger than one are desired. Initial enhancement is
-typically taken to be enhancement at \code{n}=300 tests.
+typically taken to be enhancement at \code{m}=300 tests.
 
 Root mean squared error (\code{RMSE}), despite its popularity
 in statistics, may be  
@@ -77,17 +94,28 @@ misclassification rate (\code{error rate})
 (which may be inappropriate because it assigns equal weights to false
 positives and false negatives) include \code{sensitivity},
 \code{specificity},
-area under the receiver operating characteristic curve (\code{ROC}),
+area under the receiver operating characteristic curve (\code{auc}),
+positive predictive value, also known as precision (\code{ppv}), F1 measure (\code{fmeasure}),
 and initial \code{enhancement}.
 }
+\section{Functions}{
+\itemize{
+\item \code{Performance}: outputs a data frame with performance measures for each D-M
+combination.
+}}
 \examples{
+\dontrun{
 # A data set with  binary response and multiple descriptor sets
-cml <- ModelTrain(aid364, ids = TRUE, xcol.lengths = c(24, 147), 
+data(aid364)
+
+cml <- ModelTrain(aid364, ids = TRUE, xcol.lengths = c(24, 147),
                   des.names = c("BurdenNumbers", "Pharmacophores"))
 CombineSplits(cml)
+}
 
 # A continuous response
-cml <- ModelTrain(USArrests)
+cml <- ModelTrain(USArrests, nsplits = 2, nfolds = 2,
+                  models = c("KNN", "Lasso", "Tree"))
 CombineSplits(cml)
 
 }

@@ -1,23 +1,32 @@
 #' Fit predictive models to sets of descriptors.
 #'
-#' \code{ModelTrain} fits a series of classification or regression
+#' \code{ModelTrain} is a generic S3 function that fits a series of 
+#' classification or regression
 #' models to sets of descriptors and computes cross-validated measures
 #' of model performance.
 #'
-#' @param data a data frame containing an (optional) ID column,
+#' @param x a list of numeric descriptor set matrices.  At the moment, only
+#' binary and continuous descriptors are supported.  Binary descriptors should
+#' be numeric (0 or 1).
+#' @param y a numeric vector containing the binary or continuous response.
+#' @param d a data frame containing an (optional) ID column,
 #' a response column, and descriptor columns.  The columns should be
 #' provide in this order.
-#' The response variable should either be binary
-#' (represented as a numeric vector with 0 or 1 values) or
-#' continuous.  At the moment, only numeric descriptors are supported.
 #' @param ids a logical.  Is an ID column provided?
 #' @param xcol.lengths a vector of integers.  It is assumed that the columns
-#'  in \code{data} are grouped by descriptor set.  The integers specify the
-#'  number of descriptors in each descriptor set.  They should be ordered as
-#'  the descriptor sets are ordered in \code{data}.
-#'  Users can specify multiple descriptor sets. By default there is one
-#'  descriptor set, namely all columns in \code{data} except \code{ycol} and
-#'  the optional column ID column.
+#' in \code{d} are grouped by descriptor set.  The integers specify the
+#' number of descriptors in each descriptor set.  They should be ordered as
+#' the descriptor sets are ordered in \code{d}.
+#' Users can specify multiple descriptor sets. By default there is one
+#' descriptor set, namely all columns in \code{d} except the response
+#' column and
+#' the optional ID column.  Specify \code{xcol.lengths} or \code{xcols},
+#' but not both.
+#' @param xcols A list of integer vectors.  Each vector contains
+#' column indices
+#' of \code{data} where a set of descriptor variables is located.
+#' Users can specify multiple descriptor sets.  Specify \code{xcol.lengths} or \code{xcols},
+#' but not both.
 #' @param nfolds the number of folds to use for each cross
 #' validation split.
 #' @param nsplits the number of splits to use for repeated
@@ -39,29 +48,30 @@
 #' the list constructed by  \code{\link{MakeModelDefaults}}. One can construct
 #' a list of parameters using  \code{\link{MakeModelDefaults}} and then
 #' modify the parameters.
+#' @param ... Additional parameters.
 #'
 #' @return A list is returned of class \code{\link{chemmodlab}} containing:
-#'  \item{all.preds}{a list of lists of dataframes.  The elements of the outer
+#'  \item{all.preds}{a list of lists of data frames.  The elements of the outer
 #'   list correspond to each CV split performed by \code{\link{ModelTrain}}. The
 #'   elements of the inner list correspond to each descriptor set.  For each
 #'   descriptor set and CV split combination, the output is a dataframe
 #'   containing all model predictions.  The first column of each data frame
 #'   contains the true value of the response.  The remaining columns contain
 #'   the predictions for each model.}
-#' \item{all.probs}{a list of lists of dataframes. Constructed only if there is
+#' \item{all.probs}{a list of lists of data frames. Constructed only if there is
 #'   a binary response.  The structure is the same as \code{all.preds}, except
-#'   that predictions are replaced by "predicted probabilities" (ie. estimated
+#'   that predictions are replaced by "predicted probabilities" (i.e. estimated
 #'   probabilities of a response
 #'   value of one).  Predicted
 #'   probabilities are only reported for classification models.}
 #' \item{model.acc}{a list of lists of model accuracy measures.  The elements of
 #'   the outer list correspond to each CV split performed by \code{ModelTrain}.
 #'   The elements of the inner list correspond to each descriptor set.  For each
-#'   descriptor set and CV split combination model a limited collection of 
-#'   accuracy measures are given for each model fit
+#'   descriptor set and CV split combination, a limited collection of 
+#'   performance measures are given for each model fit
 #'   to the data.  Regression models are assessed with Pearson's \eqn{r} and
 #'   \eqn{RMSE}. Classification models are assessed with contingency tables.
-#'   For additional model accuracy measures, see \code{ModelAssess}}.
+#'   For additional model performance measures, see \code{\link{Performance}}}.
 #' \item{classify}{a logical.  Were classification models used for binary
 #'   response?}
 #' \item{responses}{a numeric vector.  The observed value of the response.}
@@ -78,7 +88,7 @@
 #' @details
 #' Multiple descriptor sets can be specified
 #' by the user. For each descriptor set, repeated k-fold cross validation
-#' is performed for the specified number of regression and/or classification
+#' is performed for the specified regression and/or classification
 #' models.
 #' 
 #' Not all modeling strategies will be appropriate for all response
@@ -88,15 +98,17 @@
 #' percent inhibition, but it can be applied once a threshold value for
 #' percent inhibition is used to create a binary (active/inactive) response.
 #'
-#' See \url{https://pages.github.ncsu.edu/jrash/chemmodlab/} for more 
+#' See \url{https://jrash.github.io/chemmodlab/} for more 
 #' information about the
 #' models available (including model default parameters).
+#' The default value for argument models includes only some of 
+#' the possible values.
 #'
 #' Sensible default values are selected for each
 #' tunable model parameter, however users may set any parameter
 #' manually using \code{\link{MakeModelDefaults}} and \code{user.params}.
 #'
-#' \code{ModelTrain} predictions are based on k-fold cross-validation,
+#' \code{\link{ModelTrain}} predictions are based on k-fold cross-validation,
 #' where the dataset is randomly divided into k parts, each containing
 #' approximately equal numbers of compounds. Treating one of these parts
 #' as a "test set" the remaining
@@ -127,85 +139,172 @@
 #' @author Jacqueline Hughes-Oliver, Jeremy Ash, Atina Brooks
 #' @seealso \code{\link{chemmodlab}}, \code{\link{plot.chemmodlab}},
 #'   \code{\link{CombineSplits}},
-#' @references ?
 #'
 #' @examples
 #' 
+#' \dontrun{
 #' # A data set with  binary response and multiple descriptor sets
-#' cml <- ModelTrain(aid364, ids = TRUE, xcol.lengths = c(24, 147), 
+#' data(aid364)
+#' 
+#' cml <- ModelTrain(aid364, ids = TRUE, xcol.lengths = c(24, 147),
 #'                   des.names = c("BurdenNumbers", "Pharmacophores"))
 #' cml
+#' }
 #' 
 #' # A continuous response
-#' cml <- ModelTrain(USArrests)
+#' cml <- ModelTrain(USArrests, nsplits = 2, nfolds = 2,
+#'                   models = c("KNN", "Lasso", "Tree"))
 #' cml
 #' 
-#' @importFrom grDevices dev.off palette rainbow rgb
-#' @importFrom graphics abline axis box image layout legend lines mtext par plot points
-#' @importFrom methods is 
-#' @importFrom stats TukeyHSD anova aov cor df dist fitted.values glm predict qt var
-#' @importFrom utils lsf.str
-#' 
+#' @import methods
+#' @import stats
+#' @import utils
 #' 
 #' @export
+ModelTrain <- function(...) UseMethod("ModelTrain")
 
-ModelTrain <- function(data,
-                       ids = FALSE,
-                       xcol.lengths = ifelse(ids,
-                                      length(data) - 2,
-                                      length(data) - 1),
-                       nfolds = 10,
-                       nsplits = 3,
-                       seed.in = NA,
-                       des.names = NA,
-                       models = c("NNet", "PLS", "LAR",
-                                  "PLSLDA", "Tree", "SVM", "KNN", "RF"),
-                       user.params = NULL) {
-  # TO DO: probably can get rid of the idcol parameter
-
+#' @describeIn ModelTrain Default S3 method
+#' @export
+ModelTrain.default <- function(x, y, 
+                               nfolds = 10,
+                               nsplits = 3,
+                               seed.in = NA,
+                               des.names = NA,
+                               models = c("NNet", "PLS", "LAR", "Lasso",
+                                          "PLSLDA", "Tree", "SVM", "KNN", "RF"),
+                               user.params = NULL,
+                               ...) {
+  
+  s3method <- "default"
   # checking parameters specified correctly
-  if (!is(data, "data.frame"))
-    stop("'data' must be a data frame")
+  # TODO check if each column is numeric in each matrix?
+  # or should we keep just converting to numeric matrix?
+  if (!is(x, "list")) {
+    stop("'x' must be a list of numeric matrices")
+  } else {
+    for (i in seq_along(x)) {
+      if (!is(x[[i]], "matrix"))
+        stop("'x' must be a list of numeric matrices")
+    }
+  }
+  if (!is(y, "numeric")) stop("'y' must be a numeric vector")
+
+  BackModelTrain(x = x, y = y,
+                 nfolds = nfolds, nsplits = nsplits, seed.in = seed.in, 
+                 des.names = des.names, models = models, user.params = user.params,
+                 s3method = s3method)
+}
+
+#' @describeIn ModelTrain S3 method for class 'data.frame'
+#' @export
+ModelTrain.data.frame <- function(d,
+                            ids = FALSE,
+                            xcol.lengths = ifelse(ids,
+                                                  length(d) - 2,
+                                                  length(d) - 1),
+                            xcols = NA,
+                            nfolds = 10,
+                            nsplits = 3,
+                            seed.in = NA,
+                            des.names = NA,
+                            models = c("NNet", "PLS", "LAR", "Lasso",
+                                       "PLSLDA", "Tree", "SVM", "KNN", "RF"),
+                            user.params = NULL,
+                            ...) {
+  s3method <- "data.frame"
+  # checking parameters specified correctly
+  if (!is(d, "data.frame"))
+    stop("'d' must be a data frame")
+  if (!is(xcol.lengths, "vector"))
+    stop("'xcol.lengths' must be a vector of integers") 
+  else {
+      for (i in 1:length(xcol.lengths)) {
+        if (!(xcol.lengths[[i]]%%1 == 0) || !is.numeric(xcol.lengths[[i]]))
+          stop("'xcol.lengths' must be a list of integers")
+      }
+  }
+  if (!is.na(xcols[[1]])) {
+    if (!is(xcols, "list")) {
+      stop("'xcols' must be a list of integer vectors") 
+      } else {
+        for (i in 1:length(xcols)) {
+          if (!(all.equal(xcols[[i]], as.integer(xcols[[i]]))))
+            stop("'xcols' must be a list of integer vectors")
+        }
+      }
+    }
+  if (!is(ids, "logical")) {
+    stop("'ids' should be a logical")
+  }
+  if (ids == F) {
+    if (sum(c(1, xcol.lengths)) > ncol(d))
+      stop("there number of columns given is larger than number of columns in 'd'")
+  } else {
+    if (sum(c(2, xcol.lengths) > ncol(d)))
+      stop("there number of columns given is larger than number of columns in 'd'")
+  }
+  
+  ycol <- ifelse(ids, 2, 1)
+  idcol <- ifelse(ids, 1, NA)
+  
+  if (is.na(xcols)) {
+    # use the descriptor column numbers to find the corresponding columns in the 
+    # data frame
+    xcols <- list()
+    xcols[[1]] <- 1:xcol.lengths[1]
+    if (length(xcol.lengths) > 1){
+      for(i in 2:length(xcol.lengths)){
+        l1 <- xcols[[i-1]][xcol.lengths[i-1]]
+        l2 <- xcol.lengths[i]
+        xcols[[i]] <- (l1+1):(l1+l2)
+      }
+    }
+    # shift up indices by 1 if there is a response column, or 2 if there is a 
+    # response and id columns
+    for(i in 1:length(xcols)) {
+      if(is.na(idcol)) {
+        xcols[[i]] <- xcols[[i]] + 1
+      } else {
+        xcols[[i]] <- xcols[[i]] + 2
+      }
+    }
+  }
+  print(nfolds)
+  BackModelTrain(d = d, ids = ids, xcol.lengths = xcol.lengths, xcols = xcols,
+                 nfolds = nfolds, nsplits = nsplits, seed.in = seed.in, 
+                 des.names = des.names, models = models, user.params = user.params,
+                 s3method = s3method, idcol = idcol, ycol = ycol)
+}
+
+BackModelTrain <- function(x = NA, y = NA, d = NA, ids = NA,
+                           xcol.lengths = NA, xcols = NA,
+                           idcol = NA, ycol = NA, nfolds, nsplits, seed.in, 
+                           des.names, models, user.params, s3method) {
+  
+  if (s3method == "data.frame") {
+    n.des <- length(xcols)
+  } else {
+    n.des <- length(x)
+  }
+  if (!(NA %in% des.names)) {
+    if (length(des.names) != n.des)
+      stop("'des.names' must be the same length as 'x'")
+  } else {
+    des.names <- c()
+    for (i in 1:n.des) {
+      des.names <- c(des.names, paste0("Descriptor Set ", i))
+    }
+  }
+  # checking parameters specified correctly
   if (!(nfolds%%1 == 0) || !is.numeric(nfolds))
     stop("'nfolds' must be an integer")
   # if(length(seed.in) != nsplits)
     # stop("length of 'seed.in' must equal number of splits")
   if (!(nsplits%%1 == 0) || !is.numeric(nsplits))
     stop("'nsplits' must be an integer")
-  if (!is(xcol.lengths, "vector"))
-    stop("'xcol.lengths' must be a vector of integers") else {
-      for (i in 1:length(xcol.lengths)) {
-        if (!(xcol.lengths[[i]]%%1 == 0) || !is.numeric(xcol.lengths[[i]]))
-          stop("'xcol.lengths' must be a list of integers")
-      }
-    }
   if (!all(models %in% c("NNet", "PCR", "ENet", "PLS", "Ridge", "LAR", "PLSLDA",
-                         "RPart", "Tree", "SVM", "KNN", "RF"))) {
+                         "RPart", "Tree", "SVM", "KNN", "RF", "Lasso"))) {
     stop("'models' should be a character vector containing models existing in chemmodlab")
-  }
-  if (!is(ids, "logical")) {
-    stop("'ids' should be a logical")
-  }
-  if (ids == F) {
-    if (sum(c(1, xcol.lengths)) > ncol(data))
-      stop("there number of columns given is larger than number of columns in 'data'")
-  } else {
-    if (sum(c(2, xcol.lengths) > ncol(data)))
-      stop("there number of columns given is larger than number of columns in 'data'")
-  }
-  
-  
-  ycol <- ifelse(ids, 2, 1)
-  idcol <- ifelse(ids, 1, NA)
-
-  if (!(NA %in% des.names)) {
-    if (length(des.names) != length(xcol.lengths))
-      stop("'des.names' must be the same length as 'xcol.lengths'")
-  } else {
-    des.names <- c()
-    for (i in 1:length(xcol.lengths)) {
-      des.names <- c(des.names, paste0("Descriptor Set ", i))
-    }
   }
 
   if (!is.na(seed.in[1])) {
@@ -222,8 +321,12 @@ ModelTrain <- function(data,
   split.probs.ls <- list()
   split.model.acc.ls <- list()
   work.data.ls <- list()
-
-  n.obs <- nrow(data)
+  
+  if (s3method == "data.frame") {
+    n.obs <- nrow(d)
+  } else {
+    n.obs <- length(y)
+  }
 
   Funcs <- lsf.str()
   for(seed.idx in 1:length(seed.in)){
@@ -238,40 +341,32 @@ ModelTrain <- function(data,
       fold.id[sample((1:n.obs)[(is.na(fold.id))], num.in.folds, replace = FALSE)] <- id
     }
     fold.id[(1:n.obs)[(is.na(fold.id))]] <- nfolds
-
-    # use the descriptor column numbers to find the corresponding columns in the 
-    # data frame
-    xcols <- list()
-    xcols[[1]] <- 1:xcol.lengths[1]
-    if (length(xcol.lengths) > 1){
-      for(i in 2:length(xcol.lengths)){
-        l1 <- xcols[[i-1]][xcol.lengths[i-1]]
-        l2 <- xcol.lengths[i]
-        xcols[[i]] <- (l1+1):(l1+l2)
-      }
-    }
-    # shift up indices by 1 if there is a response column, or 2 if there is a 
-    # response and id columns
-    for(i in 1:length(xcols)){
-      if(is.na(idcol)){
-        xcols[[i]] <- xcols[[i]] + 1
-      } else {
-        xcols[[i]] <- xcols[[i]] + 2
-      }
-    }
+    
+    # all.xcols <- c()
+    # for(i in seq_along(xcols)) {
+    #   all.xcols <- c(all.xcols, xcols[[i]])
+    # }
+    # all.xcols <- unique(all.xcols)
+    # 
+    # all.data <- ReadInData(d, ycol, all.xcols, idcol)[[1]]
     
     des.preds.ls <- list()
     des.probs.ls <- list()
     des.model.acc.ls <- list()
 
-    for (des.idx in 1:length(xcol.lengths)) {
+    for (des.idx in 1:length(xcols)) {
       model.acc.ls <- list()
-      work.data <- ReadInData(data, ycol, xcols[[des.idx]], idcol)[[1]]
+      
+      # take response and current descriptor set columns
+      if (s3method == "data.frame") {
+        work.data <- ReadInData(d, ycol, xcols[[des.idx]], idcol)[[1]]
+      } else {
+        work.data <- data.frame(y = y, x[[des.idx]])
+      }
       n.pred <- ncol(work.data) - 1
 
       #-----Determine if we have binary or continuous data
-      # if sum == 0 then all of the response is either 0 or 1.  This is interpreted as
-      # F go to else
+      # if sum == 0 then all of the response is either 0 or 1.  
       if (!exists("classify")) {
         if (sum(!(work.data$y %in% c(1, 0))))
           classify <- F 
@@ -280,7 +375,6 @@ ModelTrain <- function(data,
       }
 
       #-----Make model parameter list
-
       if (!is.null(user.params)) {
         params <- MakeModelDefaults(n.obs, n.pred, classify, nfolds)
         params <- SetUserParams(params, user.params)
@@ -289,7 +383,7 @@ ModelTrain <- function(data,
       }
 
       #-----Start outputing progress to console
-      cat("Begining Analysis for Split: ", seed.idx, "and Descriptor Set: ",
+      cat("Beginning Analysis for Split: ", seed.idx, "and Descriptor Set: ",
           des.names[des.idx], "\n")
       cat("Number of Descriptors: ", n.pred, "\n")
       cat("Responses: ", n.obs, "\n")
@@ -338,7 +432,7 @@ ModelTrain <- function(data,
         st <- system.time(tryCatch(work.results <- BackRpart(work.data, n.obs,
                                                              n.pred, nfolds, fold.id,
                                                              classify, current.seed,
-                                                               params),
+                                                             params),
                                    error = function(e) {
                                      warning(paste("WARNING...RPart not run:", e$message))
                                      work.results <- list()
@@ -395,7 +489,7 @@ ModelTrain <- function(data,
       }
 
       #-----'nnet' method
-      if ((sum(models %in% "NNet") == 1) && (classify)) {
+      if (sum(models %in% "NNet") == 1) {
         work.results <- list()
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackNnet(work.data, n.obs,
@@ -416,12 +510,13 @@ ModelTrain <- function(data,
       }
 
       #-----'knn' method
-      if ((sum(models %in% "KNN") == 1) && (classify)) {
+      if (sum(models %in% "KNN") == 1) {
         work.results <- list()
         pt <- proc.time()
         st <- system.time(tryCatch(work.results <- BackKnn(work.data, n.obs, n.pred,
                                                            nfolds, fold.id, classify,
-                                                           current.seed,   params),
+                                                           current.seed,   
+                                                           params),
                                   error = function(e) {
                                     warning(paste("WARNING...KNN not run:", e$message))
                                     work.results <- list()
@@ -463,7 +558,8 @@ ModelTrain <- function(data,
         st <- system.time(tryCatch(work.results <- BackLars(work.data, n.obs,
                                                             n.pred, nfolds, fold.id,
                                                             classify,
-                                                            current.seed,   params),
+                                                            current.seed,   
+                                                            params),
                                    error = function(e) {
                                      warning(paste("WARNING...LAR not run:", e$message))
                                      work.results <- list()
@@ -482,7 +578,7 @@ ModelTrain <- function(data,
         st <- system.time(tryCatch(work.results <- BackRidge(work.data, n.obs,
                                                              n.pred, nfolds, fold.id,
                                                              classify, current.seed,
-                                                               params),
+                                                             params),
                                    error = function(e) {
                                      warning(paste("WARNING...Ridge not run:", e$message))
                                      work.results <- list()
@@ -493,6 +589,45 @@ ModelTrain <- function(data,
           model.acc.ls <- c(model.acc.ls, Ridge = list(work.results$model.acc))
         }
       }
+      
+      #-----'lm.lasso' method
+      if (sum(models %in% "Lasso") == 1) {
+        work.results <- list()
+        pt <- proc.time()
+        st <- system.time(tryCatch(work.results <- BackLasso(work.data, n.obs,
+                                                             n.pred, nfolds, fold.id,
+                                                             classify, current.seed,
+                                                             params),
+                                   error = function(e) {
+                                     warning(paste("WARNING...Lasso not run:", e$message))
+                                     work.results <- list()
+                                   }))
+        PrintTime(pt, st)
+        if (length(work.results) > 0) {
+          all.preds <- data.frame(all.preds, Lasso = work.results$pred)
+          model.acc.ls <- c(model.acc.ls, Lasso = list(work.results$model.acc))
+        }
+      }
+      
+      # TODO suspending lassoGLM until we can get it work right
+      # #-----'lm.lassoGLM' method
+      # if (sum(models %in% "LassoGLM") == 1) {
+      #   work.results <- list()
+      #   pt <- proc.time()
+      #   st <- system.time(tryCatch(work.results <- BackLassoGLM(work.data, n.obs,
+      #                                                        n.pred, nfolds, fold.id,
+      #                                                        classify, current.seed,
+      #                                                        params),
+      #                              error = function(e) {
+      #                                warning(paste("WARNING...LassoGLM not run:", e$message))
+      #                                work.results <- list()
+      #                              }))
+      #   PrintTime(pt, st)
+      #   if (length(work.results) > 0) {
+      #     all.preds <- data.frame(all.preds, LassoGLM = work.results$pred)
+      #     model.acc.ls <- c(model.acc.ls, LassoGLM = list(work.results$model.acc))
+      #   }
+      # }
 
       #-----'enet' method
       if (sum(models %in% "ENet") == 1) {
@@ -558,11 +693,11 @@ ModelTrain <- function(data,
       #-----Create 'predictions', 'probabilities' and 'model accuracy' lists 
       # for descriptor set
 
-      # TO DO at the moment, some of the columns are factors and need to be converted
+      # TODO at the moment, some of the columns are factors and need to be converted
       # to numeric
       all.preds <- as.data.frame(apply(all.preds, 2,
                                        function(x) as.numeric(as.character(x))))
-      # TO DO make the lists data frames if they only have one element
+      # TODO make the lists data frames if they only have one element
       if (classify) {
         rownames(all.probs) <- IDS
         des.probs.ls <- c(des.probs.ls, list(all.probs))
@@ -591,3 +726,4 @@ ModelTrain <- function(data,
 
   return(cml.result)
 }
+

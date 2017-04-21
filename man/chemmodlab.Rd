@@ -56,9 +56,6 @@ Constructor for the chemmodlab object
 \author{
 Jacqueline Hughes-Oliver, Jeremy Ash
 }
-\references{
-?
-}
 \seealso{
 \code{\link{chemmodlab}}, \code{\link{plot.chemmodlab}},
   \code{\link{CombineSplits}},

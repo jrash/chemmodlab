@@ -14,7 +14,7 @@
 #'
 #' The accumulation curve has also been extended to continuous responses.
 #' Assuming large positive values of a continuous response y are preferable,
-#' ChemModLab
+#' \code{chemmodlab}
 #' accumulates \code{y} so that \eqn{\sum y_i} is the sum of the \code{y}
 #' over the first \code{n} tests. This extension includes the binary-response
 #' accumulation curve as a special case.
@@ -25,13 +25,14 @@
 #'
 #' There are two main series of plots generated:
 #'
-#' @section First plot series:
+#' @section Methods plot series:
 #'  There is one plot per CV split and descriptor set
-#'  combination. The accumulation curve for each model is compared.
+#'  combination. The accumulation curves for each modeling
+#'   method is compared.
 #'
-#' @section Second plot series:
+#' @section Descriptors plot series:
 #'  There is one plot per CV split and model fit. The
-#'  accumulation curve for each descriptor set is
+#'  accumulation curves for each descriptor set is
 #'  compared.
 #'
 #' @aliases plot.chemmodlab
@@ -39,13 +40,17 @@
 #' @param max.select the maximum number of tests to plot for the
 #'  accumulation curve. If \code{max.select} is not specified, 
 #'  use \code{floor(min(300,n/4))},
-#'  where n is the number of compounds.
+#'  where \code{n} is the number of compounds.
 #' @param splits a numeric vector containing the indices of the splits to use to construct
 #' accumulation curves.  Default is to use all splits. \code{NA} means the first series
 #' of plots are not generated. See \code{Details}.
 #' @param meths a character vector with statistical methods implemented in
 #' \code{chemmodlab}.  The 
-#' statistical methods to use for the second series of plots.  See \code{Details}.
+#' statistical methods to use for the second series of plots.  
+#' This argument can take the same values
+#' as argument \code{models} in function \code{\link{ModelTrain}}. See \code{Details}.
+#' @param series a character vector.  Which series of plots to construct. Can be one of
+#'  \code{"descriptors"}, \code{"methods"}, \code{"both"}.
 #' @param ... other parameters to be passed through to plotting functions.
 #' 
 #' @author Jacqueline Hughes-Oliver, Jeremy Ash, Atina Brooks
@@ -54,29 +59,41 @@
 #'   William J. Welch 2001-2002
 #'   
 #' @examples
+#' \dontrun{
 #' # A data set with  binary response and multiple descriptor sets
+#' data(aid364)
+#' 
 #' cml <- ModelTrain(aid364, ids = TRUE, xcol.lengths = c(24, 147), 
 #'                   des.names = c("BurdenNumbers", "Pharmacophores"))
 #' plot(cml)
+#' }
 #' 
 #' # A continuous response
-#' cml <- ModelTrain(USArrests)
+#' cml <- ModelTrain(USArrests, nsplits = 2, nfolds = 2,
+#'                   models = c("KNN", "Lasso", "Tree"))
 #' plot(cml)
+#' 
+#' @import grDevices
+#' @import graphics
+#' @import methods
+#' @import stats
+#' @import utils
+#' 
 #' @export
 plot.chemmodlab <- function(x, max.select = NA, splits = 1:x$nsplits,
-                            meths = x$models, ...) {
+                            meths = x$models, series = "both", ...) {
   
   # This function will modify graphical parameters
   # Reset old parameters upon exiting
   old.par <- par(no.readonly = TRUE)
   on.exit(par(old.par))
+  par(mfrow = c(1,1))
   
   if (!all(meths %in% c("NNet", "PCR", "ENet", "PLS", "Ridge", "LAR", "PLSLDA",
-                         "RPart", "Tree", "SVM", "KNN", "RF"))) {
+                         "Lasso","RPart", "Tree", "SVM", "KNN", "RF"))) {
     stop("'meths' should be a character vector containing methods existing in chemmodlab")
   }
-  
-  if (missing(max.select))
+  if (is.na(max.select))
     max.select <- min(300,(length(x$responses)/4))
 
   nsplit <- length(x$all.preds)
@@ -101,56 +118,59 @@ plot.chemmodlab <- function(x, max.select = NA, splits = 1:x$nsplits,
     titles <- paste0("Split ", splidx, " : ", gsub("_", " ", names(preds)))
 
     y <- x$responses
-    if (sum(!(y %in% c(1, 0)))) classify <- "N" else classify <- "Y"
-    if (classify == "Y")
+    classify <- x$classify
+    if (classify)
       num.actives <- sum(y)
-    if (classify == "Y")
+    if (classify)
       probs <- x$all.probs[[splidx]]
 
     # TO DO why removing KNN, etc predictions?
-    if (classify == "N") {
+    if (!classify) {
       for (i in length(titles))
-        preds[[i]] <- preds[[i]][, !(names(preds[[i]]) %in% c("KNN", "NNet", "PLSLDA"))]
+        preds[[i]] <- preds[[i]][, !(names(preds[[i]]) %in% c("PLSLDA"))]
     }
     
     #Plot all methods for each descriptor set
-    for (i in 1:num.desc) {
-      if ((classify == "Y") && (ncol(probs[[i]]) > 1)) {
-        HitCurve(probs[[i]][, -1], y = y, title = titles[i],
-                 phat.labels = names(probs[[i]])[-1])
-        ContCurve(preds[[i]][, !(names(preds[[i]]) %in% names(probs[[i]]))],
-                  y = y, curves.only = TRUE, start.col = (ncol(probs[[i]]) - 1),
-                  title = titles[i],
-                  yhat.labels =
-                    names(preds[[i]])[!(names(preds[[i]]) %in% names(probs[[i]]))])
-      } else {
-        ContCurve(preds[[i]][, -1], y = y, title = titles[i],
-                  yhat.labels = names(preds[[i]])[-1])
+    if (series %in% c("descriptors", "both")) {
+      for (i in 1:num.desc) {
+        if ((classify) && (ncol(probs[[i]]) > 1)) {
+          HitCurve(probs[[i]][, -1], y = y, title = titles[i],
+                   phat.labels = names(probs[[i]])[-1])
+          ContCurve(preds[[i]][, !(names(preds[[i]]) %in% names(probs[[i]]))],
+                    y = y, curves.only = TRUE, start.col = (ncol(probs[[i]]) - 1),
+                    title = titles[i],
+                    yhat.labels =
+                      names(preds[[i]])[!(names(preds[[i]]) %in% names(probs[[i]]))])
+        } else {
+          ContCurve(preds[[i]][, -1], y = y, title = titles[i],
+                    yhat.labels = names(preds[[i]])[-1])
+        }
       }
     }
-    
     # Plot all descriptor accumulation curves for each method
     # DONT make these plots if there is only one descriptor set
-    if (num.desc > 1){
+    if (num.desc > 1 && series %in% c("methods", "both")){
+      
       # Only use the models that were succesfully fit to the data
       # these will be the models with columns in the all.preds dataframes
       pred.meths <- c()
       for (i in length(titles)) pred.meths <- c(pred.meths, names(preds[[i]])[-1])
-      meths <- meths[(meths %in% pred.meths)]
+      
+      # some models selected by user may not have been succefully fit
+      pred.meths <- meths[(meths %in% pred.meths)]
       
       # Make sure method names are unique
-      meths <- unique(meths)
-      
-      if (classify == "Y") {
+      pred.meths <- unique(pred.meths)
+      if (classify) {
         prob.meths <- c()
         for (i in length(titles)) prob.meths <- c(prob.meths, names(probs[[i]])[-1])
         prob.meths <- unique(prob.meths)
-        prob.meths <- meths[meths %in% prob.meths]
-        meths <- meths[!(meths %in% prob.meths)]
-        for (j in 1:length(prob.meths)) {
+        prob.meths <- pred.meths[pred.meths %in% prob.meths]
+        pred.meths <- pred.meths[!(pred.meths %in% prob.meths)]
+        for (j in seq_along(prob.meths)) {
           p <- data.frame()
           p.labels <- c()
-          for (i in 1:length(titles)) {
+          for (i in seq_along(titles)) {
             if (sum(names(probs[[i]]) %in% prob.meths[j]) == 1) {
               if (ncol(p) == 0) {
                 p <- data.frame(probs[[i]][, prob.meths[j]])
@@ -168,22 +188,22 @@ plot.chemmodlab <- function(x, max.select = NA, splits = 1:x$nsplits,
         }
       }
       
-      for (j in seq_along(meths)) {
+      for (j in seq_along(pred.meths)) {
         p <- data.frame()
         p.labels <- c()
         for (i in seq_along(titles)) {
-          if (sum(names(preds[[i]]) %in% meths[j]) == 1) {
+          if (sum(names(preds[[i]]) %in% pred.meths[j]) == 1) {
             if (ncol(p) == 0) {
-              p <- data.frame(preds[[i]][, meths[j]])
+              p <- data.frame(preds[[i]][, pred.meths[j]])
             } else {
-              p <- data.frame(p, preds[[i]][, meths[j]])
+              p <- data.frame(p, preds[[i]][, pred.meths[j]])
             }
             names(p)[ncol(p)] <- abbrev.names[i]
             p.labels <- c(p.labels, abbrev.names[i])
           }
         }
         if (ncol(p) > 0) {
-          ContCurve(p, y = y, title = paste("Split", splidx, ":", meths[j]),
+          ContCurve(p, y = y, title = paste("Split", splidx, ":", pred.meths[j]),
                     yhat.labels = p.labels)
         }
       }

@@ -5,7 +5,7 @@
 \title{Plot method for the chemmodlab class.}
 \usage{
 \method{plot}{chemmodlab}(x, max.select = NA, splits = 1:x$nsplits,
-  meths = x$models, ...)
+  meths = x$models, series = "both", ...)
 }
 \arguments{
 \item{x}{an object of class \code{\link{chemmodlab}}.}
@@ -13,7 +13,7 @@
 \item{max.select}{the maximum number of tests to plot for the
 accumulation curve. If \code{max.select} is not specified, 
 use \code{floor(min(300,n/4))},
-where n is the number of compounds.}
+where \code{n} is the number of compounds.}
 
 \item{splits}{a numeric vector containing the indices of the splits to use to construct
 accumulation curves.  Default is to use all splits. \code{NA} means the first series
@@ -21,7 +21,12 @@ of plots are not generated. See \code{Details}.}
 
 \item{meths}{a character vector with statistical methods implemented in
 \code{chemmodlab}.  The 
-statistical methods to use for the second series of plots.  See \code{Details}.}
+statistical methods to use for the second series of plots.  
+This argument can take the same values
+as argument \code{models} in function \code{\link{ModelTrain}}. See \code{Details}.}
+
+\item{series}{a character vector.  Which series of plots to construct. Can be one of
+\code{"descriptors"}, \code{"methods"}, \code{"both"}.}
 
 \item{...}{other parameters to be passed through to plotting functions.}
 }
@@ -40,7 +45,7 @@ preferable.
 
 The accumulation curve has also been extended to continuous responses.
 Assuming large positive values of a continuous response y are preferable,
-ChemModLab
+\code{chemmodlab}
 accumulates \code{y} so that \eqn{\sum y_i} is the sum of the \code{y}
 over the first \code{n} tests. This extension includes the binary-response
 accumulation curve as a special case.
@@ -51,27 +56,34 @@ possible.
 
 There are two main series of plots generated:
 }
-\section{First plot series}{
+\section{Methods plot series}{
 
  There is one plot per CV split and descriptor set
- combination. The accumulation curve for each model is compared.
+ combination. The accumulation curves for each modeling
+  method is compared.
 }
 
-\section{Second plot series}{
+\section{Descriptors plot series}{
 
  There is one plot per CV split and model fit. The
- accumulation curve for each descriptor set is
+ accumulation curves for each descriptor set is
  compared.
 }
 \examples{
+\dontrun{
 # A data set with  binary response and multiple descriptor sets
+data(aid364)
+
 cml <- ModelTrain(aid364, ids = TRUE, xcol.lengths = c(24, 147), 
                   des.names = c("BurdenNumbers", "Pharmacophores"))
 plot(cml)
+}
 
 # A continuous response
-cml <- ModelTrain(USArrests)
+cml <- ModelTrain(USArrests, nsplits = 2, nfolds = 2,
+                  models = c("KNN", "Lasso", "Tree"))
 plot(cml)
+
 }
 \author{
 Jacqueline Hughes-Oliver, Jeremy Ash, Atina Brooks

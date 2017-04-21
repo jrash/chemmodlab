@@ -20,10 +20,7 @@ HitCurve <- function(phat.list, y, max.select = NA, phat.labels = NA,
   palette(c("black", "grey", rainbow(20)[c(1, 6, 11, 16, 2, 12, 17, 3, 13, 4, 19,
                                            10, 15, 1, 6, 11, 16, 2, 12, 17, 3,
                                            13, 4, 19, 10, 15)]))
-  # palette(c('black','grey','blue','cyan','red','green','tomato','purple',
-  # 'magenta','orange','seagreen','brown','yellow','steelblue',
-  # 'blue','cyan','red','green','tomato','purple','magenta','orange','seagreen',
-  # 'brown','yellow','steelblue'))
+  
   ch.list <- c(45, 3, 0, 2, 4, 5, 6, 8, 11, 13, 12, 14)
   layout(matrix(c(1, 2), 1, 2), c(3.5, 1))
 
@@ -58,11 +55,16 @@ HitCurve <- function(phat.list, y, max.select = NA, phat.labels = NA,
       uniq.phat <- uniq.phat[1:i.max]
       nhits <- nhits[1:i.max]
       select <- select[1:i.max]
-
+      
       # Plot ideal HitCurve & random expectation the first time through
       if (list.index == 1) {
         x.max <- min(sum(select), max.select)
-        y.max <- sum(y)
+        # [Changed 4/16]
+        # y.max = sum(y) was different from the y.max used for 
+        # continuous models treated as classfication models - 
+        # see ContCurve
+        # y.max <- sum(y)
+        y.max <- max(cumsum(rev(sort(y)))[1:x.max])
         par(mar = c(3, 3, 2, 0.5), mgp = c(3, 0.5, 0))
         plot(0:x.max, c(0, cumsum(rev(sort(y))))[1:(x.max + 1)], type = "l",
              xlim = c(0, x.max), ylim = c(0, y.max), xlab = "", ylab = "",
@@ -120,11 +122,11 @@ ContCurve <- function(yhat.list, y, max.select = NA, yhat.labels = NA, title = "
   palette(c("black", "grey", rainbow(20)[c(1, 6, 11, 16, 2, 12, 17, 3, 13, 4, 19,
                                            10, 15, 1, 6, 11, 16, 2, 12, 17, 3, 13,
                                            4, 19, 10, 15)]))
-  # palette(c('black','grey','blue','cyan','red','green','tomato','purple','magenta',
-  # 'orange','seagreen','brown','yellow','steelblue',
-  # 'blue','cyan','red','green','tomato','purple','magenta','orange','seagreen',
-  # 'brown','yellow','steelblue'))
   x.max <- min(length(y), max.select)
+  # [Changed 4/16]
+  # y.max = max(cumsum(rev(sort(y)))[1:x.max]) is different 
+  # from the y.max = sum(y) used for 
+  # classfication models - see HitCurve
   y.max <- max(cumsum(rev(sort(y)))[1:x.max])
   y.min <- min(cumsum(rev(sort(y)))[1:x.max], 0)
 
@@ -135,6 +137,7 @@ ContCurve <- function(yhat.list, y, max.select = NA, yhat.labels = NA, title = "
 
   if (curves.only) {
     layout(matrix(c(1, 2), 1, 2), c(3.5, 1))
+    # draw plot on first figure in array
     par(mfg = c(1, 1))
     par(mar = c(3, 3, 2, 0.5), mgp = c(3, 0.5, 0))
     plot((0:x.max), c(0, cumsum(rev(sort(y))))[1:(x.max + 1)], type = "n", ylab = "", xlab = "",
@@ -156,10 +159,17 @@ ContCurve <- function(yhat.list, y, max.select = NA, yhat.labels = NA, title = "
     } else {
       yhat <- unlist(yhat.list[list.index])
     }
+    # TODO if ties, then break tie by ordering according to negative y?
     order <- order(yhat, -y, decreasing = TRUE)
     ploty <- c(0, cumsum(y[order]))[1:(x.max + 1)]
-    lines((0:x.max), ploty, lty = (((list.index - 1)%%5) + 2), col = list.index +
-            2 + start.col)
+    line_type <- (((list.index - 1)%%5) + 2)
+    if (line_type == 3) {
+      lines((0:x.max), ploty, lty = line_type, 
+            col = list.index + 2 + start.col, lwd = 2)
+    } else {
+      lines((0:x.max), ploty, lty = line_type, 
+            col = list.index + 2 + start.col, lwd = 1)
+    }
     list.index <- list.index + 1
   }
 
@@ -201,35 +211,4 @@ Accumulation <- function(prob, y, at) {
   # return the accumulation for every point, or those specified by 'at'
   if (missing(at))
     return(cumsum(accpts)) else return(cumsum(accpts)[at])
-}
-
-
-HitRate <- function(prob, y, at) {
-  # hit rate is accumulation/n for each pt
-  hrpts <- Accumulation(prob, y)/(1:length(y))
-  
-  # return the hit rate for every point, or those specified by 'at'
-  if (missing(at))
-    return(hrpts) else return(hrpts[at])
-}
-
-
-Enhancement <- function(prob, y, at) {
-  # enhancement is the hit rate/(M/N)
-  epts <- HitRate(prob, y)/(sum(y)/length(y))
-  
-  # return the enhancement for every point, or those specified by 'at'
-  if (missing(at))
-    return(epts) else return(epts[at])
-}
-
-
-EnhancementCont <- function(pred, y, at) {
-  # assumes bigger y is better to avoid problems with negative numbers, convert y
-  # to y-min(y) 'at' assumed to be single number, not vector enhancement@at is
-  # (mean y over top at)/(mean y over all)
-  y <- y - min(y)
-  pred.order <- order(pred, decreasing = TRUE)
-  enh <- mean(y[pred.order[1:at]])/mean(y)
-  return(enh)
 }
