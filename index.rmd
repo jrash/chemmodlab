@@ -1,0 +1,145 @@
+
+---
+title: "chemmodlab Models"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Elastic Net
+
+`models = "ENet"`
+
+Type: Classification, Regression
+
+Tuning parameter defaults:
+
+* `lambda = 1`
+    + The shrinkage.
+    
+Required packages: `elasticnet`
+
+### K Nearest Neighbors
+
+`models = "KNN"`
+
+Type: Classification, Regression
+
+Tuning parameter defaults:
+
+* `k = 10`
+    + The number of nearest neighbors to consider.
+    
+Required packages: `class`
+
+### Least Angle Regression
+
+`models = "LARs"`
+
+Type: Classification, Regression
+    
+Required packages: `lars`
+
+### Neural Nets
+
+`models = "NNet"`
+
+Type: Classification, Regression
+
+* `size = 2`
+    + The number of neurons in the hidden layer.
+* `decay = 0`
+    + Weight decay. Controls the regularization of the cost function.
+    
+Required packages: `nnet`
+
+### Partial Least Squares Linear Discriminant Analysis 
+
+`models = "PLSLDA"`
+
+Type: Classification
+
+Tuning parameter defaults:
+
+* `ncomp = min(floor(n/nfolds), p, 100))`
+    + The number of components. `n` is the number of observations. `nfolds` is the number of folds. `p` is the number of parameters.
+
+### Principal Components Regression
+
+`models = "PCR"`
+
+Type: Classification, Regression
+
+Required packages: `pls`
+
+### Ridge Regression
+
+`models = "Ridge"`
+
+Type: Classification, Regression
+
+Tuning parameter defaults:
+
+* `lambda = .1`
+    + The shrinkage.
+    
+Required packages: `MASS`
+
+### Random Forest
+
+`models = "Forest"`
+
+Type: Classification, Regression
+
+Tuning parameter defaults:
+
+* `mtry = ifelse(classify, max(floor(p/3), 1), floor(sqrt(p)))`
+    + Number of variables randomly sampled as candidates at each split. `p` is the number of descriptors. 
+    
+Required packages: `randomForest`
+
+### Rpart
+
+`models = "RPart"`
+
+Type: Classification, Regression
+
+Tuning parameter defaults:
+
+* `cp = .01`
+    + The overall R-squared must increase by cp with each split.
+    
+Required packages: `rpart`
+
+### Support Vector Machines
+
+`models = "SVM"`
+
+Type: Classification, Regression
+
+#### Notes 
+
+Depending on whether y is binary or continuous, C-classification or eps-regression is used. 
+
+Tuning parameter defaults:
+
+* `gamma = 1`
+    + The gamma controls how local/flexible the fit is (the larger, the more local the fit)
+* `cost = 1`
+    + For C-classification, controls the number and the severity of the violations of the margin in maximal margin classification.  The larger C is, the more "budget" for violations.
+* `epsilon = .01`
+    + For epsilon-Regression, epsilon controls what is comparable to the size of the margin in C-classification
+
+Required packages: `e1071`
+
+### Tree
+
+`models = "Tree"`
+
+Type: Classification, Regression
+
+Required packages: `tree`
+
+

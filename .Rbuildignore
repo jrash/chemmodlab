@@ -3,5 +3,6 @@
 ^data-raw$
 ^\.travis\.yml$
 ^cran\-comments\.md$
+^README\.md$
 ^README\.Rmd$
 ^README-.*\.png$
