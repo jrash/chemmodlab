@@ -62,7 +62,15 @@ BackPPV <- function(pred, yhat, y, at) {
   y <- y[pred.order[1:at]]
   yhat <- yhat[pred.order[1:at]]
   idx <- yhat == 1
-  mean(y[idx] == yhat[idx])
+  ppv <- mean(y[idx] == yhat[idx])
+  if (is.na(ppv)) {
+    # warning("ppv evaluated to NA because there were no predicted
+    #         positives for a model. Use Performance to find these cases.
+    #         The ppv for this split will be imputed using the mean
+    #         of the other splits that are not NA")
+    warning("WARNING...ppv evaluated to NA. Using imputation")
+  }
+  ppv
 }
 
 BackFMeasure <- function(pred, yhat, y, at, b) {

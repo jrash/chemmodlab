@@ -269,7 +269,6 @@ ModelTrain.data.frame <- function(d,
       }
     }
   }
-  print(nfolds)
   BackModelTrain(d = d, ids = ids, xcol.lengths = xcol.lengths, xcols = xcols,
                  nfolds = nfolds, nsplits = nsplits, seed.in = seed.in, 
                  des.names = des.names, models = models, user.params = user.params,
@@ -283,6 +282,7 @@ BackModelTrain <- function(x = NA, y = NA, d = NA, ids = NA,
   
   if (s3method == "data.frame") {
     n.des <- length(xcols)
+    print(n.des)
   } else {
     n.des <- length(x)
   }

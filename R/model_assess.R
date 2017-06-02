@@ -141,6 +141,17 @@ CombineSplits <- function(cml.result, metric = "enhancement",
   }
   
   out$Trmt <- factor(out$Trmt)
+  for (i in 1:nrow(out)) {
+    if (is.na(out$Model.Acc[i])) {
+      index <- out$Trmt == out$Trmt[i]
+      out$Model.Acc[i] <- mean(out$Model.Acc[index], na.rm = T) 
+    }
+    if (is.na(out$Model.Acc[i])) {
+      # If we still have an NA then there is no non NA split.  
+      # This is a bad model.  Assign 0
+      out$Model.Acc[i] <- 0
+    }
+  }
   SplitAnova(out, metric)
 }
 
@@ -349,7 +360,6 @@ Performance <- function(cml.result, metrics = "enhancement",
   
   out <- out[!duplicated(out[, 1:3]), ]
   out$Split <- factor(out$Split)
-  
   out
 }
 
