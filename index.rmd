@@ -1,7 +1,10 @@
 
 ---
 title: "chemmodlab Models"
-output: html_document
+output:
+  html_document:
+    toc: true
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
@@ -34,19 +37,6 @@ Tuning parameter defaults:
     
 Required packages: `class`
 
-### Least Angle Regression
-
-`models = "LARs"`
-
-Tuning parameter defaults:
-
-* `lambda = .05`
-    + The shrinkage.
-
-Type: Classification, Regression
-    
-Required packages: `lars`
-
 ### Lasso
 
 `models = "Lasso"`
@@ -54,6 +44,19 @@ Required packages: `lars`
 Tuning parameter defaults:
 
 * `lambda = .2`
+    + The shrinkage.
+
+Type: Classification, Regression
+    
+Required packages: `lars`
+
+### Least Angle Regression
+
+`models = "LARs"`
+
+Tuning parameter defaults:
+
+* `lambda = .05`
     + The shrinkage.
 
 Type: Classification, Regression
@@ -105,19 +108,6 @@ Tuning parameter defaults:
     
 Required packages: `randomForest`
 
-### Ridge Regression
-
-`models = "Ridge"`
-
-Type: Classification, Regression
-
-Tuning parameter defaults:
-
-* `lambda = .1`
-    + The shrinkage.
-    
-Required packages: `MASS`
-
 ### Recursive Partitioning (RPart)
 
 `models = "RPart"`
@@ -138,6 +128,19 @@ Required packages: `rpart`
 Type: Classification, Regression
 
 Required packages: `tree`
+
+### Ridge Regression
+
+`models = "Ridge"`
+
+Type: Classification, Regression
+
+Tuning parameter defaults:
+
+* `lambda = .1`
+    + The shrinkage.
+    
+Required packages: `MASS`
 
 ### Support Vector Machines
 
