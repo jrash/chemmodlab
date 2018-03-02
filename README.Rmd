@@ -12,7 +12,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Overview
+# chemmodlab
+
+[![Build Status](https://travis-ci.org/jrash/chemmodlab.svg?branch=master)](https://travis-ci.org/jrash/chemmodlab) [![CRAN](https://img.shields.io/cran/v/chemmodlab.svg)]()
 
 `chemmodlab` contains a suite of methods for fitting machine learning models and for validating the resulting models:
     
