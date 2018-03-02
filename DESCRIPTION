@@ -22,7 +22,7 @@ Depends:
     R (>= 3.1.1)
 License: GPL-3
 LazyData: TRUE
-URL: https://github.com/jrash/ChemModLab
+URL: https://github.com/jrash/chemmodlab
 BugReports: https://github.com/jrash/ChemModLab/issues
 Imports:
     class (>= 7.3.14),
