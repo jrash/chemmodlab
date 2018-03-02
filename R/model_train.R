@@ -98,7 +98,7 @@
 #' percent inhibition, but it can be applied once a threshold value for
 #' percent inhibition is used to create a binary (active/inactive) response.
 #'
-#' See \url{https://jrash.github.io/chemmodlab/} for more 
+#' See \url{https://pages.github.ncsu.edu/jrash/chemmodlab/} for more 
 #' information about the
 #' models available (including model default parameters).
 #' The default value for argument models includes only some of 
