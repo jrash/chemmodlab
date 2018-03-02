@@ -28,7 +28,6 @@ Imports:
     class (>= 7.3.14),
     e1071 (>= 1.6.7),
     elasticnet (>= 1.1),
-    foreach(>= 1.4.3),
     lars(>= 1.2),
     MASS(>= 7.3.45),
     nnet(>= 7.3.12),
@@ -42,7 +41,6 @@ Imports:
     graphics,
     grDevices,
     utils,
-    datasets,
     methods
 RoxygenNote: 5.0.1
 NeedsCompilation: no
