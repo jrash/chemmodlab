@@ -4,20 +4,9 @@
 * win-builder (devel and release) 
 
 ## R CMD check results
-There were no ERRORs or WARNINGs
+0 errors | 0 warnings | 0 notes
 
-There was 1 NOTE:
-
-* checking CRAN incoming feasibility ... NOTE
-Maintainer: 'Jeremy Ash <jrash@ncsu.edu>'
-
-New submission
-
-Possibly mis-spelled words in DESCRIPTION:
-  Cheminformatics (3:10, 15:37)
-  QSARs (18:52)
-
-This is the first submission of the package.  Those words aren't mis-spelled.  
+There was 1 NOTE: 
   
 ## Downstream dependencies
 There are currently no downstream dependencies for this package.
