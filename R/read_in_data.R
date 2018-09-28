@@ -14,13 +14,15 @@ ReadInData <- function(data, ycol, xcols, idcol, type = "ANALYZE") {
   # might still need this for prediction
 
   #-----Read in data
-  #   if (is.na(ycol)) missingy = TRUE
-  #   else missingy = FALSE
-
-  work.data.response <- subset(data, select = ycol)
-  work.data <- subset(data, select = xcols)
-  work.data <- cbind(work.data.response, work.data)
-  rm(work.data.response)
+  if (!is.na(ycol)) {
+    work.data.response <- subset(data, select = ycol)
+    work.data <- subset(data, select = xcols)
+    work.data <- cbind(work.data.response, work.data)
+    rm(work.data.response)
+  }
+  else {
+    work.data <- subset(data, select = xcols)
+  }
 
   if (!is.na(idcol)) {
     row.names(work.data) <- data[, idcol]
@@ -42,6 +44,14 @@ ReadInData <- function(data, ycol, xcols, idcol, type = "ANALYZE") {
     work.data <- subset(work.data, !rm.desc)
   }
   rm(rm.desc)
+  
+  if (sum(!(apply(work.data, 1, is.numeric))) > 0) {
+    stop(paste(
+      "ERROR..... non-numeric responses or descriptors were found,
+      responses and descriptors must be numeric",
+      dim(work.data)[1]))
+  }
+  
   if (type == "ANALYZE") {
     if (length(unique(work.data$y)) == 1) {
       stop(paste("ERROR..... at least 2 different responses are required for analysis"))
@@ -53,20 +63,15 @@ ReadInData <- function(data, ycol, xcols, idcol, type = "ANALYZE") {
                     "constant descriptor columns were provided and will not be used"))
       work.data <- subset(work.data, select = (!rm.cols))
     }
-  } else rm.cols <- 0
-
-  if (sum(!(apply(work.data, 1, is.numeric))) > 0) {
-    stop(paste(
-      "ERROR..... non-numeric responses or descriptors were found,
-      responses and descriptors must be numeric",
-      dim(work.data)[1]))
+  } else {
+    rm.cols <- 0
   }
 
-  #   if (missingy) {
-  #     work.data <- cbind( rep(NA,nrow(work.data)), work.data )
-  #     names( work.data )[1] <- 'y'
-  #   }
-
+  if (type == "PREDICTION") {
+    work.data <- cbind(rep(NA,nrow(work.data)), work.data)
+    names(work.data)[1] <- 'y'
+  }
+  
   return(list(work.data, rm.cols))
 }
 

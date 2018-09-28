@@ -34,4 +34,3 @@ molecular viewing, descriptor generation, data analysis and hit evaluation. Jour
 of chemical information and modeling, 45(2), 515-522.
 }
 \keyword{datasets}
-

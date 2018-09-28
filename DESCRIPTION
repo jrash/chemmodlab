@@ -2,8 +2,8 @@ Package: chemmodlab
 Type: Package
 Title: A Cheminformatics Modeling Laboratory for Fitting and Assessing Machine
     Learning Models
-Version: 1.0.1.9000
-Date: 2018-03-02
+Version: 1.0.0
+Date: 2017-04-21
 Authors@R: c(
 	person("Jacqueline", "Hughes-Oliver", email = "hughesol@ncsu.edu", role = c("aut")),
 	person("Jeremy", "Ash", email = "jrash@ncsu.edu", role = c("aut", "cre")), 
@@ -22,12 +22,16 @@ Depends:
     R (>= 3.1.1)
 License: GPL-3
 LazyData: TRUE
-URL: https://github.com/jrash/chemmodlab
-BugReports: https://github.com/jrash/chemmodlab/issues
+URL: https://github.com/jrash/ChemModLab
+BugReports: https://github.com/jrash/ChemModLab/issues
 Imports:
-    class (>= 7.3.14),
+    fingerprint,
+    rcdk,
+    MSQC,
+	class (>= 7.3.14),
     e1071 (>= 1.6.7),
     elasticnet (>= 1.1),
+    foreach(>= 1.4.3),
     lars(>= 1.2),
     MASS(>= 7.3.45),
     nnet(>= 7.3.12),
@@ -41,8 +45,9 @@ Imports:
     graphics,
     grDevices,
     utils,
+    datasets,
     methods
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 NeedsCompilation: no
 Packaged: 2017-01-12 16:33:49 UTC; Vestige
 Author: Jacqueline Hughes-Oliver [aut],

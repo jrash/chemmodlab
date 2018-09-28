@@ -46,10 +46,9 @@ cml <- ModelTrain(USArrests, models = "RF", nsplits = 3,
 
 
 }
-\author{
-Jeremy Ash
-}
 \seealso{
 \code{\link{ModelTrain}}, \code{\link{chemmodlab}}
 }
-
+\author{
+Jeremy Ash
+}

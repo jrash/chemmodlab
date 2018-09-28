@@ -103,6 +103,7 @@ and initial \code{enhancement}.
 \item \code{Performance}: outputs a data frame with performance measures for each D-M
 combination.
 }}
+
 \examples{
 \dontrun{
 # A data set with  binary response and multiple descriptor sets
@@ -119,9 +120,6 @@ cml <- ModelTrain(USArrests, nsplits = 2, nfolds = 2,
 CombineSplits(cml)
 
 }
-\author{
-Jacqueline Hughes-Oliver, Jeremy Ash, Atina Brooks
-}
 \references{
 Kearsley, S.K., Sallamack, S., Fluder, E.M., Andose, J.D., Mosley, R.T.,
 and Sheridan, R.P. (1996). Chemical similarity using physiochemical
@@ -137,4 +135,6 @@ Comparisons: 1948-1983, Chapman and Hall, New York.
 \seealso{
 \code{\link{chemmodlab}}, \code{\link{ModelTrain}}
 }
-
+\author{
+Jacqueline Hughes-Oliver, Jeremy Ash, Atina Brooks
+}

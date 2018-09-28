@@ -53,11 +53,10 @@ unspecified.}
 \description{
 Constructor for the chemmodlab object
 }
-\author{
-Jacqueline Hughes-Oliver, Jeremy Ash
-}
 \seealso{
 \code{\link{chemmodlab}}, \code{\link{plot.chemmodlab}},
   \code{\link{CombineSplits}},
 }
-
+\author{
+Jacqueline Hughes-Oliver, Jeremy Ash
+}
