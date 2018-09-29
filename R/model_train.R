@@ -195,12 +195,12 @@ ModelTrain.default <- function(x, y,
     BackModelTrain(x = x, y = y, xcol.lengths = xcol.lengths,
                nfolds = nfolds, nsplits = nsplits, seed.in = seed.in, 
                des.names = des.names, models = models, user.params = user.params,
-               s3method = s3method, verbose = FALSE)
+               s3method = s3method, verbose = verbose)
   } else {
     suppressWarnings(BackModelTrain(x = x, y = y, xcol.lengths = xcol.lengths,
              nfolds = nfolds, nsplits = nsplits, seed.in = seed.in, 
              des.names = des.names, models = models, user.params = user.params,
-             s3method = s3method, verbose = FALSE))
+             s3method = s3method, verbose = verbose))
   }
 }
 
@@ -258,7 +258,7 @@ ModelTrain.character <- function(descriptors, y, mols,
   }
   df <- as.data.frame(df)
   
-  ModelTrain.data.frame(d = df, ids = F, xcol.lengths = xcol.lengths) 
+  ModelTrain.data.frame(d = df, ids = F, xcol.lengths = xcol.lengths, verbose = verbose) 
 }
 
 
@@ -343,12 +343,12 @@ ModelTrain.data.frame <- function(d,
     BackModelTrain(d = d, ids = ids, xcol.lengths = xcol.lengths, xcols = xcols,
                    nfolds = nfolds, nsplits = nsplits, seed.in = seed.in, 
                    des.names = des.names, models = models, user.params = user.params,
-                   s3method = s3method, idcol = idcol, ycol = ycol, verbose = FALSE)
+                   s3method = s3method, idcol = idcol, ycol = ycol, verbose = verbose)
   } else {
     suppressWarnings(BackModelTrain(d = d, ids = ids, xcol.lengths = xcol.lengths, xcols = xcols,
                    nfolds = nfolds, nsplits = nsplits, seed.in = seed.in, 
                    des.names = des.names, models = models, user.params = user.params,
-                   s3method = s3method, idcol = idcol, ycol = ycol, verbose = FALSE))
+                   s3method = s3method, idcol = idcol, ycol = ycol, verbose = verbose))
   }
 }
 
@@ -357,7 +357,7 @@ BackModelTrain <- function(x = NA, y = NA, d = NA, ids = NA,
                            idcol = NA, ycol = NA, nfolds, nsplits, seed.in, 
                            des.names, models, user.params, s3method,
                            verbose = FALSE) {
-  
+  rn <- rownames(d)
   if (s3method == "data.frame") {
     n.des <- length(xcols)
   } else {
@@ -390,7 +390,7 @@ BackModelTrain <- function(x = NA, y = NA, d = NA, ids = NA,
   } else {
     seed.in <- c()
     for (i in 1:nsplits) {
-      seed.in <- c(seed.in, as.numeric(paste(rep(i, 3), collapse = "")))
+      seed.in <- c(seed.in, as.numeric(paste(rep(i, 5), collapse = "")))
     }
   }
 
@@ -398,6 +398,7 @@ BackModelTrain <- function(x = NA, y = NA, d = NA, ids = NA,
   split.probs.ls <- list()
   split.model.acc.ls <- list()
   work.data.ls <- list()
+  rm.rows <- c()
 
   for(seed.idx in 1:length(seed.in)){
     
@@ -420,10 +421,14 @@ BackModelTrain <- function(x = NA, y = NA, d = NA, ids = NA,
       
       # take response and current descriptor set columns
       if (s3method == "data.frame") {
-        if (verbose) 
-          work.data <- ReadInData(d, ycol, xcols[[des.idx]], idcol)[[1]]
-        else
-          suppressWarnings(work.data <- ReadInData(d, ycol, xcols[[des.idx]], idcol)[[1]])
+        if (verbose) {
+          rid.obj <- ReadInData(d, ycol, xcols[[des.idx]], idcol)
+        }
+        else {
+          suppressWarnings(rid.obj  <- ReadInData(d, ycol, xcols[[des.idx]], idcol))
+        }
+        work.data <- rid.obj[[1]]
+        rm.rows <- c(rm.rows, rid.obj[[3]])
       } else {
         work.data <- data.frame(y = y, x[[des.idx]])
       }
@@ -875,9 +880,10 @@ BackModelTrain <- function(x = NA, y = NA, d = NA, ids = NA,
       rownames(all.preds) <- IDS
       des.preds.ls <- c(des.preds.ls, list(all.preds))
       des.model.acc.ls <- c(des.model.acc.ls, list(model.acc.ls))
-      if (seed.idx == 1)
+      if (seed.idx == 1) {
         work.data.ls <- c(work.data.ls,
                           list(work.data[, colnames(work.data) != "y"]))
+      }
     }
     names(des.preds.ls) <- des.names
     names(des.model.acc.ls) <- des.names
@@ -888,9 +894,27 @@ BackModelTrain <- function(x = NA, y = NA, d = NA, ids = NA,
     if (classify)
       split.probs.ls <- c(split.probs.ls, list(des.probs.ls))
   }
+  
+  # Remove missing observations in all descriptor sets
+  # print(rm.rows)
+  if(length(rm.rows) > 0) {
+    rm.rows <- unique(rm.rows)
+    rm.rows.rn <- rn[rm.rows]
+    for(seed.idx in 1:length(seed.in)){
+      for (des.idx in 1:n.des) {
+        work.data.rn <- rownames(split.preds.ls[[seed.idx]][[des.idx]])
+        split.preds.ls[[seed.idx]][[des.idx]] <- split.preds.ls[[seed.idx]][[des.idx]][!work.data.rn %in% rm.rows.rn, ]
+        if (classify)
+          split.prob.ls[[seed.idx]][[des.idx]] <- split.prob.ls[[seed.idx]][[des.idx]][!work.data.rn %in% rm.rows.rn, ]
+      }
+    }
+    y <- work.data$y[!work.data.rn %in% rm.rows.rn]
+    } else {
+      y <- work.data$y
+    }
 
   cml.result <- chemmodlab(split.preds.ls, split.probs.ls, split.model.acc.ls,
-                           classify, work.data$y, work.data.ls, params, des.names,
+                           classify, y, work.data.ls, params, des.names,
                            models, nsplits)
 
   return(cml.result)

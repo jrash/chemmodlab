@@ -34,16 +34,20 @@ ReadInData <- function(data, ycol, xcols, idcol, type = "ANALYZE") {
     warning(paste("WARNING.....", sum(rm.y),
                   "missing responses were provided and will not be used"))
     work.data <- subset(work.data, !rm.y)
+    rm.y.idx <- which(rm.y)
+  } else {
+    rm.y.idx <- c()
   }
-  rm(rm.y)
 
   rm.desc <- apply(work.data, 1, function(x) sum(is.na(x)) > 0)
   if (sum(rm.desc) > 0) {
     warning(paste("WARNING.....", sum(rm.desc),
                   "rows with missing responses or descriptors were provided and will not be used"))
     work.data <- subset(work.data, !rm.desc)
+    rm.desc.idx <- which(rm.desc)
+  } else {
+    rm.desc.idx <- c()
   }
-  rm(rm.desc)
   
   if (sum(!(apply(work.data, 1, is.numeric))) > 0) {
     stop(paste(
@@ -72,6 +76,6 @@ ReadInData <- function(data, ycol, xcols, idcol, type = "ANALYZE") {
     names(work.data)[1] <- 'y'
   }
   
-  return(list(work.data, rm.cols))
+  return(list(work.data, rm.cols, c(rm.y.idx, rm.desc.idx)))
 }
 
