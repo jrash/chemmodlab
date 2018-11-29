@@ -3,6 +3,11 @@
 #' \code{ApplicabilityDomain} evaluates the applicability domain for a chemmodlab model
 #' using a Hotteling T2 control chart.
 #' 
+#' @param traindata training data
+#' @param testdata test data
+#' @param pvalue significance level for control limit threshold
+#' @param desname descriptor set name
+#' 
 #' @import MSQC
 #' @import MASS
 #' 

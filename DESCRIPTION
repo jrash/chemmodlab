@@ -46,7 +46,7 @@ Imports:
     utils,
     datasets,
     methods
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 NeedsCompilation: no
 Packaged: 2017-01-12 16:33:49 UTC; Vestige
 Author: Jacqueline Hughes-Oliver [aut],
@@ -56,3 +56,4 @@ Maintainer: Jeremy Ash <jrash@ncsu.edu>
 Suggests:
     knitr,
     rmarkdown
+Encoding: UTF-8

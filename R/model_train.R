@@ -48,6 +48,9 @@
 #' the list constructed by  \code{\link{MakeModelDefaults}}. One can construct
 #' a list of parameters using  \code{\link{MakeModelDefaults}} and then
 #' modify the parameters.
+#' @param verbose verbose mode or not?
+#' @param descriptors descriptor sets to compute
+#' @param mols molecule file created by rcdk
 #' @param ... Additional parameters.
 #'
 #' @return A list is returned of class \code{\link{chemmodlab}} containing:

@@ -6,6 +6,15 @@
 \usage{
 ApplicabilityDomain(traindata, testdata, pvalue = 0.01, desname = NULL)
 }
+\arguments{
+\item{traindata}{training data}
+
+\item{testdata}{test data}
+
+\item{pvalue}{significance level for control limit threshold}
+
+\item{desname}{descriptor set name}
+}
 \description{
 \code{ApplicabilityDomain} evaluates the applicability domain for a chemmodlab model
 using a Hotteling T2 control chart.
