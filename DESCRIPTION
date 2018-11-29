@@ -1,7 +1,6 @@
 Package: chemmodlab
 Type: Package
-Title: A Cheminformatics Modeling Laboratory for Fitting and Assessing Machine
-    Learning Models
+Title: A Cheminformatics Modeling Laboratory for Fitting and Assessing Machine Learning Models
 Version: 1.0.0
 Date: 2017-04-21
 Authors@R: c(
