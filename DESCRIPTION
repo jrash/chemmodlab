@@ -27,7 +27,7 @@ Imports:
     fingerprint,
     rcdk,
     MSQC,
-	class (>= 7.3.14),
+    class (>= 7.3.14),
     e1071 (>= 1.6.7),
     elasticnet (>= 1.1),
     foreach(>= 1.4.3),
