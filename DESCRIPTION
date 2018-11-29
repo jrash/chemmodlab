@@ -4,10 +4,10 @@ Title: A Cheminformatics Modeling Laboratory for Fitting and Assessing Machine L
 Version: 1.0.0
 Date: 2017-04-21
 Authors@R: c(
-	person("Jacqueline", "Hughes-Oliver", email = "hughesol@ncsu.edu", role = c("aut")),
-	person("Jeremy", "Ash", email = "jrash@ncsu.edu", role = c("aut", "cre")), 
-	person("Atina", "Brooks", email = "atina.brooks@alumni.ncsu.edu", role = c("aut"))
-	)
+    person("Jacqueline", "Hughes-Oliver", email = "hughesol@ncsu.edu", role = c("aut")),
+    person("Jeremy", "Ash", email = "jrash@ncsu.edu", role = c("aut", "cre")), 
+    person("Atina", "Brooks", email = "atina.brooks@alumni.ncsu.edu", role = c("aut"))
+    )
 Description: Contains a set of methods for fitting models and methods for
     validating the resulting models. The statistical methodologies comprise
     a comprehensive collection of approaches whose validity and utility have
