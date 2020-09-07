@@ -1,5 +1,7 @@
 # chemmodlab 1.1.0
 
+## Major changes
+
 * This version of `chemmodlab` has all of the functionality mentioned in the following paper: https://jcheminf.biomedcentral.com/articles/10.1186/s13321-018-0309-4
 
 * Added function `ApplicabilityDomain` which uses a Hotelling T2 control chart to identify outliers in an external data set for which predictions are desired, hence identifying observations whose model predictions may be considered extrapolations.
