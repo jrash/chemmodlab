@@ -1,7 +1,7 @@
 Package: chemmodlab
 Type: Package
 Title: A Cheminformatics Modeling Laboratory for Fitting and Assessing Machine Learning Models
-Version: 1.1.0
+Version: 1.1.0.9000
 Date: 2020-09-06
 Authors@R: c(
     person("Jacqueline", "Hughes-Oliver", email = "hughesol@ncsu.edu", role = c("aut")),
