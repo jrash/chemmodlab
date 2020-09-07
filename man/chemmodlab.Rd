@@ -4,8 +4,18 @@
 \alias{chemmodlab}
 \title{Constructor for the chemmodlab object}
 \usage{
-chemmodlab(all.preds, all.probs, model.acc, classify, responses, data,
-  params, des.names, models, nsplits)
+chemmodlab(
+  all.preds,
+  all.probs,
+  model.acc,
+  classify,
+  responses,
+  data,
+  params,
+  des.names,
+  models,
+  nsplits
+)
 }
 \arguments{
 \item{all.preds}{a list of lists of dataframes.  The elements of the outer

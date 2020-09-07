@@ -4,7 +4,8 @@
 \name{aid364}
 \alias{aid364}
 \title{Cytotoxicity assay using the Jurkat human T-Cell line}
-\format{Data frame with 500 rows and 173 columns.  The first column contains the compound ids. 
+\format{
+Data frame with 500 rows and 173 columns.  The first column contains the compound ids. 
 The second contains the outcome of the assay (a binary variable, indicating active/inactive).
 The next columns are chemical descriptor columns.  Two descriptor sets are present.
 Both of these sets were computed
@@ -12,7 +13,8 @@ using the software, PowerMV - see Liu et al. (2005) for more information. The fi
 continuous descriptors are a modification of the Burden number descriptors (Burden, 1989). 
 The second set contains 147 binary descriptors,
 indicating the presence/absence of "pharmacophore" features, described in more detail in
-Liu et al. (2005).}
+Liu et al. (2005).
+}
 \source{
 \url{http://pubchem.ncbi.nlm.nih.gov/assay/assay.cgi?aid=364}
 }

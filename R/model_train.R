@@ -193,6 +193,12 @@ ModelTrain.default <- function(x, y,
     }
   }
   if (!is(y, "numeric")) stop("'y' must be a numeric vector")
+  
+  xcol.lengths <- c()
+  for (i in 1:length(x)) {
+    xcol.lengths <- c(xcol.lengths, ncol(x[[i]]))
+  }
+  
 
   if (verbose) {
     BackModelTrain(x = x, y = y, xcol.lengths = xcol.lengths,

@@ -4,8 +4,14 @@
 \alias{plot.chemmodlab}
 \title{Plot method for the chemmodlab class.}
 \usage{
-\method{plot}{chemmodlab}(x, max.select = NA, splits = 1:x$nsplits,
-  meths = x$models, series = "both", ...)
+\method{plot}{chemmodlab}(
+  x,
+  max.select = NA,
+  splits = 1:x$nsplits,
+  meths = x$models,
+  series = "both",
+  ...
+)
 }
 \arguments{
 \item{x}{an object of class \code{\link{chemmodlab}}.}

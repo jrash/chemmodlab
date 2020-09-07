@@ -5,11 +5,9 @@
 \alias{Performance}
 \title{ANOVA and multiple comparisons for chemmodlab objects}
 \usage{
-CombineSplits(cml.result, metric = "enhancement", m = NA,
-  thresh = 0.5)
+CombineSplits(cml.result, metric = "enhancement", m = NA, thresh = 0.5)
 
-Performance(cml.result, metrics = "enhancement", m = NA,
-  thresh = 0.5)
+Performance(cml.result, metrics = "enhancement", m = NA, thresh = 0.5)
 }
 \arguments{
 \item{cml.result}{an object of class \code{\link{chemmodlab}}.}

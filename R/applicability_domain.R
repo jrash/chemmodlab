@@ -18,26 +18,8 @@ ApplicabilityDomain <- function(traindata, testdata, pvalue = .01,
   # TODO Need a way to filter the same columns in the testdata that were
   # filtered by ModelTrain
     
-  # TODO, suppressing the training set Hotelling Control Chart for now
-  #
-  # old.par <- par(no.readonly = TRUE)
-  # on.exit(par(old.par))
-  # if (is.null(testdata)) {
-  #   par(mfrow = c(1,1))
-  # } else {
-  #   par(mfrow = c(2,1))
-  # }
-  # if (!is.null(desname))
-  #   main.title <- paste(desname, "Hotelling Control Chart")
-  # else
-  #   main.title <- "Hotelling Control Chart"
-  # 
   p1 <- HotellingControlChart(traindata, type = "t2", phase = 1,
                               alpha = pvalue)
-  # if (is.null(testdata[1])) {
-  #   train.outliers <- rownames(traindata)[which(p1$t2 > p1$ucl)]
-  #   return(list(train.outliers = train.outliers, test.outliers = NA))
-  # } else {
   if (!is.null(desname))
     main.title <- paste0(desname, ": Hotelling Control Chart")
   else
@@ -49,8 +31,7 @@ ApplicabilityDomain <- function(traindata, testdata, pvalue = .01,
   p2 <- HotellingControlChart(testdata, type = "t2", Xmv = Xmv, S = S,
                             colm = colm, main = main.title, phase = 2,
                             alpha = pvalue)
-  # train.outliers <- rownames(cml$all.preds[[1]][[1]])[which(p1$t2 > p1$ucl)]
-  test.outliers <- rownames(cml$all.preds[[1]][[1]])[which(p2$t2 > p2$ucl)]
+  test.outliers <- rownames(testdata)[which(p2$t2 > p2$ucl)]
   
   return(list(test.outliers = test.outliers))
 }

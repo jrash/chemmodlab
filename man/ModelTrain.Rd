@@ -9,21 +9,47 @@
 \usage{
 ModelTrain(...)
 
-\method{ModelTrain}{default}(x, y, nfolds = 10, nsplits = 3,
-  seed.in = NA, des.names = NA, models = c("NNet", "PLS", "LAR",
-  "Lasso", "PLSLDA", "Tree", "SVM", "KNN", "RF"), user.params = NULL,
-  verbose = FALSE, ...)
+\method{ModelTrain}{default}(
+  x,
+  y,
+  nfolds = 10,
+  nsplits = 3,
+  seed.in = NA,
+  des.names = NA,
+  models = c("NNet", "PLS", "LAR", "Lasso", "PLSLDA", "Tree", "SVM", "KNN", "RF"),
+  user.params = NULL,
+  verbose = FALSE,
+  ...
+)
 
-\method{ModelTrain}{character}(descriptors, y, mols, nfolds = 10,
-  nsplits = 3, seed.in = NA, des.names = NA, models = c("NNet",
-  "PLS", "LAR", "Lasso", "PLSLDA", "Tree", "SVM", "KNN", "RF"),
-  user.params = NULL, verbose = FALSE, ...)
+\method{ModelTrain}{character}(
+  descriptors,
+  y,
+  mols,
+  nfolds = 10,
+  nsplits = 3,
+  seed.in = NA,
+  des.names = NA,
+  models = c("NNet", "PLS", "LAR", "Lasso", "PLSLDA", "Tree", "SVM", "KNN", "RF"),
+  user.params = NULL,
+  verbose = FALSE,
+  ...
+)
 
-\method{ModelTrain}{data.frame}(d, ids = FALSE,
-  xcol.lengths = ifelse(ids, length(d) - 2, length(d) - 1), xcols = NA,
-  nfolds = 10, nsplits = 3, seed.in = NA, des.names = NA,
-  models = c("NNet", "PLS", "LAR", "Lasso", "PLSLDA", "Tree", "SVM",
-  "KNN", "RF"), user.params = NULL, verbose = FALSE, ...)
+\method{ModelTrain}{data.frame}(
+  d,
+  ids = FALSE,
+  xcol.lengths = ifelse(ids, length(d) - 2, length(d) - 1),
+  xcols = NA,
+  nfolds = 10,
+  nsplits = 3,
+  seed.in = NA,
+  des.names = NA,
+  models = c("NNet", "PLS", "LAR", "Lasso", "PLSLDA", "Tree", "SVM", "KNN", "RF"),
+  user.params = NULL,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{...}{Additional parameters.}
