@@ -1,7 +1,6 @@
 ## Test environments
-* local Windows 7 install, R 3.3.2
-* local Ubuntu 14.04 install, R 3.3.3
-* win-builder (devel and release) 
+* local OS X install, R 4.0.2
+* win-builder (devel, release, and oldrelease)
 
 ## R CMD check results
 0 errors | 0 warnings | 0 notes
