@@ -18,7 +18,7 @@ Description: Contains a set of methods for fitting models and methods for
     directly input their own choices of descriptors and responses, so the capability
     for comparing models is effectively unlimited.
 Depends:
-    R (>= 3.1.1)
+    R (>= 3.6.0)
 License: GPL-3
 LazyData: TRUE
 URL: https://github.com/jrash/ChemModLab
