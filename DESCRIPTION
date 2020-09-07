@@ -2,7 +2,7 @@ Package: chemmodlab
 Type: Package
 Title: A Cheminformatics Modeling Laboratory for Fitting and Assessing Machine Learning Models
 Version: 1.1.0
-Date: 2017-04-21
+Date: 2020-09-06
 Authors@R: c(
     person("Jacqueline", "Hughes-Oliver", email = "hughesol@ncsu.edu", role = c("aut")),
     person("Jeremy", "Ash", email = "jrash@ncsu.edu", role = c("aut", "cre")), 
@@ -46,7 +46,6 @@ Imports:
     methods
 RoxygenNote: 7.1.1
 NeedsCompilation: no
-Packaged: 2017-01-12 16:33:49 UTC; Vestige
 Author: Jacqueline Hughes-Oliver [aut],
     Jeremy Ash [aut, cre],
     Atina Brooks [aut]
