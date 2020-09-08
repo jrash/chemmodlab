@@ -53,5 +53,6 @@ Maintainer: Jeremy Ash <jrash@ncsu.edu>
 Suggests:
     knitr,
     rmarkdown,
-    testthat
+    testthat,
+    vdiffr (>= 0.3.0)
 Encoding: UTF-8
