@@ -4,12 +4,11 @@ test_that("Hotteling T2 outlier results matches results in paper", {
   
   skip_on_cran()
   data("aid364")
-
   train <- aid364[1:400, ]
   test.burd <- aid364[401:500, 3:26]
   
   cml <- ModelTrain(train, ids = T, xcol.lengths = c(24, 147),
-                    des.names = c("BurdenNumbers", "Pharmacophores"))
+                    des.names = c("BurdenNumbers", "Pharmacophores"), verbose = F)
   
   
   expect_doppelganger("applicability-domain", ApplicabilityDomain(traindata = cml$data[[1]],
