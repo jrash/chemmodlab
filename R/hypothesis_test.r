@@ -1,7 +1,6 @@
 
-PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "JZ", correction = "JZ",
-                           conf.level = .95, myseed = 111){
-  set.seed(myseed)
+PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "JZ",
+                          correction = "JZ", conf.level = .95){
   
   # Compute indices of the testing fractions
   m <- length(S)
