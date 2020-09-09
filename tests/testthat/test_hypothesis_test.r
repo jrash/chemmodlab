@@ -1,6 +1,6 @@
-context("Confidence Bands - Pointwise")
+context("Hypothesis Tests")
 
-test_that("PerfCurveBands confidence bands match those computed for Case 1 in the paper", {
+test_that("PerfCurveTest confidence intervals match those computed for Figure 5 in the paper", {
   
   skip_on_cran()
   
@@ -28,8 +28,8 @@ test_that("PerfCurveBands confidence bands match those computed for Case 1 in th
   S1 <- bvn1[, 1]
   S2 <- bvn1[, 2]
   
-  method.v <- c("JZ", "JZ", "binomial", "binomial", "JZ Ind", "JZ Ind", "mcnemar", "mcnemar", "binomial Ind", "binomial Ind")
-  correction.v <- c("none", "JZ", "none", "JZ", "none", "JZ", "none", "JZ", "none", "JZ")
+  method.v <- c("AH", "AH", "binomial", "binomial", "JZ Ind", "JZ Ind", "mcnemar", "mcnemar", "binomial Ind", "binomial Ind")
+  correction.v <- c("none", "Plus2", "none", "Plus2", "none", "Plus2", "none", "Plus2", "none", "Plus2")
   
   # JZ Ind is failing for some reason
   for(i in c(1:4, 7:10)) {

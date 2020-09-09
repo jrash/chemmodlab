@@ -1,9 +1,9 @@
 
-PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "JZ",
-                          correction = "JZ", conf.level = .95){
+PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "AH",
+                          correction = "Plus2", conf.level = .95){
   
   # Compute indices of the testing fractions
-  m <- length(S)
+  m <- length(S1)
   r.all <- (1:m)/m
   idx <- which(r.all %in% r)
   
@@ -26,7 +26,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "JZ",
     hits12[i] <- sum(X*(S1 >= c1[i] & S2 >= c2[i]))
   }
   pi.0 <- mean(X)
-  if(correction == "JZ") {
+  if(correction == "Plus2") {
     # Treat the additional hits as if they were not same compounds
     # In either scoring algorithm.  The reason for this is that treating the
     # the compounds as shared can inflate the covariance when the number of 
@@ -57,7 +57,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "JZ",
   CI.int <- matrix(ncol = 2, nrow = length(k1))
   p.val <- vector(length = length(pi1))
   if(metric == "k") {
-    if(method %in% c("JZ Ind", "JZ")){
+    if(method %in% c("JZ Ind", "AH")){
       Sorder1.idx <- Sorder1[idx]
       Sorder2.idx <- Sorder2[idx]
       for(j in seq_along(k1)) {
@@ -74,7 +74,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "JZ",
         # assuming independence of k
         if(method == "JZ Ind"){
           var.k <- var1.k + var2.k
-        } else if(method == "JZ") {
+        } else if(method == "AH") {
           var.k <- var1.k + var2.k - 2*cov.k
         }
         # Check to see if var.k is negative due to machine precision problem
@@ -125,7 +125,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "JZ",
     # difference estimates
     est <- k1 - k2
   } else if(metric == "pi") {
-    if(method %in% c("JZ Ind", "JZ")) {
+    if(method %in% c("JZ Ind", "AH")) {
       Sorder1.idx <- Sorder1[idx]
       Sorder2.idx <- Sorder2[idx]
       for(j in seq_along(pi1)) {
@@ -139,7 +139,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "JZ",
         
         if(method == "JZ Ind") {
           var.pi <- var1.pi + var1.pi
-        } else if(method == "JZ") {
+        } else if(method == "AH") {
           var.pi <- var1.pi + var2.pi - 2*cov.pi
         }
         # Check to see if var.k is negative due to machine precision problem
@@ -183,7 +183,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "JZ",
         p.1 <- e/n1
         p.2 <- g/n1
         p.bar <- (e + g)/(2*n1)
-        if(correction == "JZ") {
+        if(correction == "Plus2") {
           n1 <- n1 + 4
           e <- e + 2
           g <- g + 2
