@@ -9,8 +9,9 @@ apt_packages:
   - r-cran-rjava
   - libgdal-dev
   - libproj-dev
+  - libcgal-dev
+  - libglu1-mesa-dev
+  - mesa-common-dev
 
 before_install:
   - sudo $(which R) CMD javareconf
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install libcgal-dev libglu1-mesa-dev mesa-common-dev; fi
-
