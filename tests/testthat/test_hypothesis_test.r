@@ -32,7 +32,7 @@ test_that("PerfCurveTest confidence intervals match those computed for Figure 5 
   correction.v <- c("none", "Plus2", "none", "Plus2", "none", "Plus2", "none", "Plus2", "none", "Plus2")
   
   # JZ Ind is failing for some reason
-  for(i in c(1:4, 7:10)) {
+  for(i in c(1:10)) {
     
     # Test recall
     ls <- PerfCurveTest(S1, S2, X, r, metric = "k", method = method.v[i], 

@@ -138,7 +138,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "AH",
         cov.pi <- ((m^-1*r[j]^-2))*(r12[j]*pi12[j]*(1 - pi12[j]) + (pi12[j]-Lam1)*(pi12[j]-Lam2)*(r12[j] - r[j]^2))
         
         if(method == "JZ Ind") {
-          var.pi <- var1.pi + var1.pi
+          var.pi <- var1.pi + var2.pi
         } else if(method == "AH") {
           var.pi <- var1.pi + var2.pi - 2*cov.pi
         }
