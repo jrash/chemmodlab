@@ -1,6 +1,6 @@
 
 PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "AH",
-                          correction = "Plus2", conf.level = .95){
+                          correction = "plus2", conf.level = .95){
   
   # Compute indices of the testing fractions
   m <- length(S1)
@@ -26,7 +26,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "AH",
     hits12[i] <- sum(X*(S1 >= c1[i] & S2 >= c2[i]))
   }
   pi.0 <- mean(X)
-  if(correction == "Plus2") {
+  if(correction == "plus2") {
     # Treat the additional hits as if they were not same compounds
     # In either scoring algorithm.  The reason for this is that treating the
     # the compounds as shared can inflate the covariance when the number of 
@@ -183,7 +183,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "AH",
         p.1 <- e/n1
         p.2 <- g/n1
         p.bar <- (e + g)/(2*n1)
-        if(correction == "Plus2") {
+        if(correction == "plus2") {
           n1 <- n1 + 4
           e <- e + 2
           g <- g + 2
