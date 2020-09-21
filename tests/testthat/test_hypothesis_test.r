@@ -29,7 +29,7 @@ test_that("PerfCurveTest confidence intervals match those computed for Figure 5 
   S2 <- bvn1[, 2]
   
   method.v <- c("AH", "AH", "binomial", "binomial", "JZ Ind", "JZ Ind", "mcnemar", "mcnemar", "binomial Ind", "binomial Ind")
-  correction.v <- c("none", "Plus2", "none", "Plus2", "none", "Plus2", "none", "Plus2", "none", "Plus2")
+  correction.v <- c("none", "plus2", "none", "plus2", "none", "plus2", "none", "plus2", "none", "plus2")
   
   # JZ Ind is failing for some reason
   for(i in c(1:10)) {
