@@ -4,7 +4,8 @@ test_that("PerfCurveBands pointwise confidence intervals match those computed fo
   
   skip_on_cran()
   # TODO make sure this works on your windows machine
-  skip_on_travis()
+  if (Sys.info()['sysname'] != "Windows") skip("Results only match on windows")
+  # skip_on_travis()
 
   load("test_confidence_bands_pw_type.rdata")
 
