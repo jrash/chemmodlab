@@ -3,6 +3,9 @@ context("ModelTrain with molecule input")
 test_that("ModelTrain with molecule input matches the results in the paper", {
   
   skip_on_cran()
+  # TODO make sure this works on your windows machine
+  skip_on_travis()
+  
   load("test_model_train_character.rdata")
   mols <- rcdk::parse.smiles(bpdata[, 1])
   bp <- bpdata[, 2]
