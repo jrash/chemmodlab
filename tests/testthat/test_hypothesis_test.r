@@ -3,6 +3,9 @@ context("Hypothesis Tests")
 test_that("PerfCurveTest confidence intervals match those computed for Figure 5 in the paper", {
   
   skip_on_cran()
+  # TODO make sure this works on your windows machine
+  skip_on_os('mac')
+  skip_on_os('linux')
   
   load("test_hypothesis_test.rdata")
   
