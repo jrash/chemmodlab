@@ -27,7 +27,7 @@ test_that("PerfCurveBands pointwise confidence intervals match those computed fo
   for(i in 1:6) {
     
     # Test recall
-    act_ci <- PerfCurveBands(S, X, r, metric = "k", method = method.v[i], type = "pointwise",
+    act_ci <- PerfCurveBands(S, X, r, metric = "rec", method = method.v[i], type = "pointwise",
                              plus2 = correction.v[i], conf.level = .95, boot.rep = 100, myseed = 567)
     
     exp_ci <- k.ls[[i]]$interval.ls[[1]]
@@ -35,7 +35,7 @@ test_that("PerfCurveBands pointwise confidence intervals match those computed fo
     expect_equal(act_ci, exp_ci, check.attribute = F)
     
     # Test precision
-    act_ci <- PerfCurveBands(S, X, r, metric = "pi", method = method.v[i], type = "pointwise",
+    act_ci <- PerfCurveBands(S, X, r, metric = "prec", method = method.v[i], type = "pointwise",
                              plus2 = correction.v[i], conf.level = .95, boot.rep = 100, myseed = 567)
     
     
@@ -51,6 +51,9 @@ test_that("PerfCurveBands pointwise confidence intervals match those computed fo
 test_that("PerfCurveBands confidence bands match those computed for Case 1 in the paper", {
   
   skip_on_cran()
+  # TODO make sure this works on your windows machine
+  skip_on_os('mac')
+  skip_on_os('linux')
   
   load("test_confidence_bands_band_type.rdata")
   
@@ -72,7 +75,7 @@ test_that("PerfCurveBands confidence bands match those computed for Case 1 in th
   for(i in 1:4) {
     
     # Test recall
-    act_ci <- PerfCurveBands(S, X, r, metric = "k", method = method.v[i], type = "band",
+    act_ci <- PerfCurveBands(S, X, r, metric = "rec", method = method.v[i], type = "band",
                              plus2 = correction.v[i], conf.level = .95, boot.rep = 100,
                              mc.rep = 100000, myseed = 111)
     
@@ -81,7 +84,7 @@ test_that("PerfCurveBands confidence bands match those computed for Case 1 in th
     expect_equal(act_ci, exp_ci, check.attribute = F)
     
     # Test precision
-    act_ci <- PerfCurveBands(S, X, r, metric = "pi", method = method.v[i], type = "band",
+    act_ci <- PerfCurveBands(S, X, r, metric = "prec", method = method.v[i], type = "band",
                              plus2 = correction.v[i], conf.level = .95, boot.rep = 100,
                              mc.rep = 100000, myseed = 111)
     

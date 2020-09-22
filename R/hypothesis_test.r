@@ -8,14 +8,14 @@
 #' @param S2 a vector of scores for scoring algorithm 2.
 #' @param X a vector of activities.
 #' @param r a vector of testing fractions.
-#' @param metric the performance curve to use. Options are recall ("k") and precision ("pi").
+#' @param metric the performance curve to use. Options are recall ("rec") and precision ("prec").
 #' @param method the method to use. Recall options are 
 #' c("AH", "binomial", "JZ ind", "mcnemar", "binomial ind"). Precision options are
 #' c("AH", "binomial", "JZ ind", "stouffer", "binomial ind").
 #' @param alpha the significance level.
 #' 
 #' @export
-PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "AH",
+PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
                           correction = "plus2", alpha = .05){
   
   # Compute indices of the testing fractions
@@ -71,7 +71,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "AH",
   
   CI.int <- matrix(ncol = 2, nrow = length(k1))
   p.val <- vector(length = length(pi1))
-  if(metric == "k") {
+  if(metric == "rec") {
     if(method %in% c("JZ ind", "AH")){
       Sorder1.idx <- Sorder1[idx]
       Sorder2.idx <- Sorder2[idx]
@@ -139,7 +139,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "AH",
     }
     # difference estimates
     est <- k1 - k2
-  } else if(metric == "pi") {
+  } else if(metric == "prec") {
     if(method %in% c("JZ ind", "AH")) {
       Sorder1.idx <- Sorder1[idx]
       Sorder2.idx <- Sorder2[idx]

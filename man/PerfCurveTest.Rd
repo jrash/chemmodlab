@@ -9,7 +9,7 @@ PerfCurveTest(
   S2,
   X,
   r,
-  metric = "k",
+  metric = "rec",
   method = "AH",
   correction = "plus2",
   alpha = 0.05
@@ -24,7 +24,7 @@ PerfCurveTest(
 
 \item{r}{a vector of testing fractions.}
 
-\item{metric}{the performance curve to use. Options are recall ("k") and precision ("pi").}
+\item{metric}{the performance curve to use. Options are recall ("rec") and precision ("prec").}
 
 \item{method}{the method to use. Recall options are 
 c("AH", "binomial", "JZ ind", "mcnemar", "binomial ind"). Precision options are

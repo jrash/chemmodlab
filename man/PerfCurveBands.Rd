@@ -8,7 +8,7 @@ PerfCurveBands(
   S,
   X,
   r,
-  metric = "k",
+  metric = "rec",
   type = "band",
   method = "sup-t",
   plus2 = T,
@@ -25,13 +25,13 @@ PerfCurveBands(
 
 \item{r}{a vector of testing fractions.}
 
-\item{metric}{the performance curve to use. Options are recall ("k") and precision ("pi").}
+\item{metric}{the performance curve to use. Options are recall ("rec") and precision ("prec").}
 
 \item{type}{specifies whether a point-wise confidence interval 
 ("pointwise") or a confidence band ("band") should be constructed.}
 
 \item{method}{the method to use. Point-wise confidence interval options
-are c("binomial", "JZ", "bootstrap"). Confidence band options are c("sup-t", "theta-projection").}
+are "binomial", "JZ", "bootstrap". Confidence band options are "sup-t", "theta-projection".}
 
 \item{plus2}{should plus2 correction be used or not?}
 

@@ -32,9 +32,9 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
       pi <- (hits+plus2.yes)/(m*r+4)
       k <- r/pi.0*pi
     }
-    if(metric == "k") {
+    if(metric == "rec") {
       storeout[,1+i] = k
-    } else if(metric == "pi") {
+    } else if(metric == "prec") {
       storeout[,1+i] = pi
     } else if(metric == "lift") {
       storeout[,1+i] = k/r
@@ -54,11 +54,11 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
 #' @param S a vector of scores.
 #' @param X a vector of activities.
 #' @param r a vector of testing fractions.
-#' @param metric the performance curve to use. Options are recall ("k") and precision ("pi").
+#' @param metric the performance curve to use. Options are recall ("rec") and precision ("prec").
 #' @param type specifies whether a point-wise confidence interval 
 #' ("pointwise") or a confidence band ("band") should be constructed.
 #' @param method the method to use. Point-wise confidence interval options
-#' are c("binomial", "JZ", "bootstrap"). Confidence band options are c("sup-t", "theta-projection").
+#' are "binomial", "JZ", "bootstrap". Confidence band options are "sup-t", "theta-projection".
 #' @param plus2 should plus2 correction be used or not?
 #' @param conf.level the confidence level for the bands.
 #' @param boot.rep the number of replicates to use for the bootstrap method.
@@ -69,7 +69,7 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
 #' @import MASS
 #' 
 #' @export
-PerfCurveBands <- function(S, X, r, metric = "k", type = "band", method = "sup-t",
+PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup-t",
                            plus2 = T, conf.level = .95, boot.rep = 100,
                            mc.rep = 100000, myseed = 111){
   
@@ -103,7 +103,7 @@ PerfCurveBands <- function(S, X, r, metric = "k", type = "band", method = "sup-t
   
   CI.int <- matrix(ncol = 2, nrow = length(k))
   if(type == "pointwise") {
-    if(metric == "k") {
+    if(metric == "rec") {
       if(method == "JZ"){
         for(j in seq_along(k)) {
           Lam <- EstLambda(S, X, m, t = S[Sorder.idx][j])
@@ -115,7 +115,7 @@ PerfCurveBands <- function(S, X, r, metric = "k", type = "band", method = "sup-t
         }
       } else if(method == "bootstrap") {
         # bootstrap quantiles
-        CI.int <- BootCI(X, S, m, pi.0, boot.rep, metric = "k", plus2, r, myseed=myseed)
+        CI.int <- BootCI(X, S, m, pi.0, boot.rep, metric = "rec", plus2, r, myseed=myseed)
       } else if(method == "binomial") {
         for(j in seq_along(k)) {
           var.k <- ((m*pi.0)^-1)*k.c[j]*(1-k.c[j])
@@ -124,7 +124,7 @@ PerfCurveBands <- function(S, X, r, metric = "k", type = "band", method = "sup-t
           CI.int[j, ]  <- cbind(k[j] - quant*sd.k, k[j] + quant*sd.k)
         }
       }
-    } else if(metric == "pi") {
+    } else if(metric == "prec") {
       if(method == "JZ") {
         for(j in seq_along(k)) {
           Lam <- EstLambda(S, X, m, t = S[Sorder.idx][j])
@@ -136,7 +136,7 @@ PerfCurveBands <- function(S, X, r, metric = "k", type = "band", method = "sup-t
         }
       } else if(method == "bootstrap") {
         # bootstrap quantiles
-        CI.int <- BootCI(X, S, m, pi.0, boot.rep, metric = "pi", plus2, r, myseed=myseed)
+        CI.int <- BootCI(X, S, m, pi.0, boot.rep, metric = "prec", plus2, r, myseed=myseed)
       } else if(method == "binomial") {
         for(j in seq_along(pi)) {
           var.pi <- ((m*r[j])^-1)*pi.c[j]*(1-pi.c[j])
@@ -148,7 +148,7 @@ PerfCurveBands <- function(S, X, r, metric = "k", type = "band", method = "sup-t
       }
     }
   } else if(type == "band") {
-      if(metric == "k") {
+      if(metric == "rec") {
         if(method == "sup-t") {
           cor.C <- matrix(NA, ncol = length(k), nrow = length(k))
           for(f in seq_along(k)) {
@@ -187,7 +187,7 @@ PerfCurveBands <- function(S, X, r, metric = "k", type = "band", method = "sup-t
           sd.k <- sqrt(var.k)
           CI.int[j, ] <- c(k[j] - quant*sd.k, k[j] + quant*sd.k)
         }
-      } else if(metric == "pi") {
+      } else if(metric == "prec") {
         if(method == "sup-t") {
           cor.C <- matrix(NA, ncol = length(k), nrow = length(k))
           for(f in seq_along(pi)) {

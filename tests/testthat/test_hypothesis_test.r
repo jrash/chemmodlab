@@ -34,8 +34,8 @@ test_that("PerfCurveTest confidence intervals match those computed for Figure 5 
   for(i in c(1:10)) {
     
     # Test recall
-    ls <- PerfCurveTest(S1, S2, X, r, metric = "k", method = method.v[i], 
-                        correction = correction.v[i], conf.level = .95)
+    ls <- PerfCurveTest(S1, S2, X, r, metric = "rec", method = method.v[i], 
+                        correction = correction.v[i], alpha = .95)
     act_ci <- ls[[2]]
     
     exp_ci <- k.ls[[i]]$interval.ls[[1]]
@@ -43,7 +43,7 @@ test_that("PerfCurveTest confidence intervals match those computed for Figure 5 
     expect_equal(act_ci, exp_ci, check.attribute = F)
     
     # Test precision
-    ls <- PerfCurveTest(S1, S2, X, r, metric = "pi", method = method.v[i], 
+    ls <- PerfCurveTest(S1, S2, X, r, metric = "prec", method = method.v[i], 
                         correction = correction.v[i],  alpha = .05)
     act_ci <- ls[[2]]
     
