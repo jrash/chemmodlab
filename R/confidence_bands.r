@@ -69,6 +69,9 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
 #' @import MASS
 #' 
 #' @export
+#' 
+#' 
+# 
 PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup-t",
                            plus2 = T, conf.level = .95, boot.rep = 100,
                            mc.rep = 100000, myseed = 111){
@@ -78,6 +81,7 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
   # Compute indices of the testing fractions
   m <- length(S)
   r.all <- (1:m)/m
+  # TODO This breaks when r contains zeros.  Need some error handling
   idx <- which(r.all %in% r)
   
   # Z Quantile for CIs
@@ -227,6 +231,6 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
       }
   }
   
-  CI.int
+  list(CI = CI.int, rec = k, prec = pi)
   
 }
