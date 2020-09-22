@@ -1,6 +1,22 @@
-
+#' Perform a hypothesis test for the difference between two performance curves.
+#' 
+#' \code{PerfCurveTest} takes score vectors for two scoring algorithms and an activity vector.
+#' A performance curve is created for the two scoring algorithms and hypothesis tests are performed
+#' at the selected testing fractions. 
+#' 
+#' @param S1 a vector of scores for scoring algorithm 1.
+#' @param S2 a vector of scores for scoring algorithm 2.
+#' @param X a vector of activities.
+#' @param r a vector of testing fractions.
+#' @param metric the performance curve to use. Options are recall ("k") and precision ("pi").
+#' @param method the method to use. Recall options are 
+#' c("AH", "binomial", "JZ ind", "mcnemar", "binomial ind"). Precision options are
+#' c("AH", "binomial", "JZ ind", "stouffer", "binomial ind").
+#' @param alpha the significance level.
+#' 
+#' @export
 PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "AH",
-                          correction = "plus2", conf.level = .95){
+                          correction = "plus2", alpha = .05){
   
   # Compute indices of the testing fractions
   m <- length(S1)
@@ -8,7 +24,6 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "AH",
   idx <- which(r.all %in% r)
   
   # Z Quantile for CIs
-  alpha <- 1-conf.level
   quant <- qnorm(1-alpha/2)
   
   Sorder1 <-  order(S1,decreasing=TRUE)
@@ -57,7 +72,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "AH",
   CI.int <- matrix(ncol = 2, nrow = length(k1))
   p.val <- vector(length = length(pi1))
   if(metric == "k") {
-    if(method %in% c("JZ Ind", "AH")){
+    if(method %in% c("JZ ind", "AH")){
       Sorder1.idx <- Sorder1[idx]
       Sorder2.idx <- Sorder2[idx]
       for(j in seq_along(k1)) {
@@ -72,7 +87,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "AH",
         cov.k <- (m^-1*pi.0^-2)*(pi.0*(k12[j]-k1[j]*k2[j])*(1-Lam1-Lam2) + (r12[j]-r[j]^2)*Lam1*Lam2)
         
         # assuming independence of k
-        if(method == "JZ Ind"){
+        if(method == "JZ ind"){
           var.k <- var1.k + var2.k
         } else if(method == "AH") {
           var.k <- var1.k + var2.k - 2*cov.k
@@ -85,14 +100,14 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "AH",
         p.val[j] <- 2*pnorm(-abs(zscore))
         p.val[j] <- ifelse(is.na(p.val[j]), 1, p.val[j])
       }
-    } else if(method %in% c("binomial Ind", "binomial")) {
+    } else if(method %in% c("binomial ind", "binomial")) {
       for(j in seq_along(k1)) {
         var1.k <- (m*pi.0)^-1*(k[j])*(1-k[j])
         var2.k <- (m*pi.0)^-1*(k[j])*(1-k[j])
         cov.k <- (m*pi.0)^-1*(k12[j] - k[j]*k[j])
         if(method == "binomial") {
           var.k <- var1.k + var1.k - 2*cov.k
-        } else if(method == "binomial Ind") {
+        } else if(method == "binomial ind") {
           var.k <- var1.k + var1.k
         }
         var.k <- ifelse(var.k < 0, 0, var.k)
@@ -125,7 +140,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "AH",
     # difference estimates
     est <- k1 - k2
   } else if(metric == "pi") {
-    if(method %in% c("JZ Ind", "AH")) {
+    if(method %in% c("JZ ind", "AH")) {
       Sorder1.idx <- Sorder1[idx]
       Sorder2.idx <- Sorder2[idx]
       for(j in seq_along(pi1)) {
@@ -137,7 +152,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "AH",
         var2.pi <- ifelse(var2.pi < 0, 0, var2.pi)
         cov.pi <- ((m^-1*r[j]^-2))*(r12[j]*pi12[j]*(1 - pi12[j]) + (pi12[j]-Lam1)*(pi12[j]-Lam2)*(r12[j] - r[j]^2))
         
-        if(method == "JZ Ind") {
+        if(method == "JZ ind") {
           var.pi <- var1.pi + var2.pi
         } else if(method == "AH") {
           var.pi <- var1.pi + var2.pi - 2*cov.pi
@@ -150,7 +165,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "AH",
         p.val[j] <- 2*pnorm(-abs(zscore))
         p.val[j] <- ifelse(is.na(p.val[j]), 1, p.val[j])
       }
-    } else if(method %in% c("binomial Ind", "binomial")) {
+    } else if(method %in% c("binomial ind", "binomial")) {
       for(j in seq_along(k1)) {
         var1.pi <- (pi[j]*(1-pi[j]))/(m*r[j])
         var2.pi <- (pi[j]*(1-pi[j]))/(m*r[j])
@@ -158,7 +173,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "k", method = "AH",
         
         if(method == "binomial") {
           var.pi <- var1.pi + var1.pi - 2*cov.pi
-        } else if(method == "binomial Ind") {
+        } else if(method == "binomial ind") {
           var.pi <- var1.pi + var1.pi
         }
         # Check to see if var.k is negative due to machine precision problem

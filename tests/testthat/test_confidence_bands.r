@@ -19,13 +19,13 @@ test_that("PerfCurveBands pointwise confidence intervals match those computed fo
   S <- rnorm(n=m, mu.mix[1], sd.mix)*X + rnorm(n=m, mu.mix[2], sd.mix)*(1-X)
 
   method.v <- c("binomial", "binomial", "JZ", "JZ", "bootstrap", "bootstrap")
-  correction.v <- c("none", "plus2", "none", "plus2", "none", "plus2")
+  correction.v <- c(F, T, F, T, F, T)
 
   for(i in 1:6) {
     
     # Test recall
     act_ci <- PerfCurveBands(S, X, r, metric = "k", method = method.v[i], type = "pointwise",
-                             correction = correction.v[i], conf.level = .95, boot.rep = 100, myseed = 567)
+                             plus2 = correction.v[i], conf.level = .95, boot.rep = 100, myseed = 567)
     
     exp_ci <- k.ls[[i]]$interval.ls[[1]]
     
@@ -33,7 +33,7 @@ test_that("PerfCurveBands pointwise confidence intervals match those computed fo
     
     # Test precision
     act_ci <- PerfCurveBands(S, X, r, metric = "pi", method = method.v[i], type = "pointwise",
-                             correction = correction.v[i], conf.level = .95, boot.rep = 100, myseed = 567)
+                             plus2 = correction.v[i], conf.level = .95, boot.rep = 100, myseed = 567)
     
     
     exp_ci <- pi.ls[[i]]$interval.ls[[1]]
@@ -64,13 +64,13 @@ test_that("PerfCurveBands confidence bands match those computed for Case 1 in th
   S <- rnorm(n=m, mu.mix[1], sd.mix)*X + rnorm(n=m, mu.mix[2], sd.mix)*(1-X)
   
   method.v <- c("sup-t", "sup-t", "theta-proj", "theta-proj")
-  correction.v <- c("none", "plus2", "none", "plus2")
+  correction.v <- c(F, T, F, T, F, T)
   
   for(i in 1:4) {
     
     # Test recall
     act_ci <- PerfCurveBands(S, X, r, metric = "k", method = method.v[i], type = "band",
-                             correction = correction.v[i], conf.level = .95, boot.rep = 100,
+                             plus2 = correction.v[i], conf.level = .95, boot.rep = 100,
                              mc.rep = 100000, myseed = 111)
     
     exp_ci <- k.ls[[i]]$interval.ls[[1]]
@@ -79,7 +79,7 @@ test_that("PerfCurveBands confidence bands match those computed for Case 1 in th
     
     # Test precision
     act_ci <- PerfCurveBands(S, X, r, metric = "pi", method = method.v[i], type = "band",
-                             correction = correction.v[i], conf.level = .95, boot.rep = 100,
+                             plus2 = correction.v[i], conf.level = .95, boot.rep = 100,
                              mc.rep = 100000, myseed = 111)
     
     

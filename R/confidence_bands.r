@@ -10,7 +10,7 @@ EstLambda = function(S, X, t, m){
 }
 
 # Bootstrap percentile CI
-BootCI = function(X, S, m, pi.0, boot.rep, metric, correction, r, myseed=111){
+BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
   storeout=matrix(NA, nrow=m, ncol=1+boot.rep)
   r.all <- (1:m)/m
   idx <- which(r.all %in% r)
@@ -26,7 +26,7 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, correction, r, myseed=111){
     pi.0 <- mean(X.star)
     pi <- (hits)/(m*r)
     k <- (hits)/(sum(X.star))
-    if (correction == "plus2") {
+    if (plus2) {
       # using random plus2 correction
       plus2.yes <- rbinom(1, 4, .5)
       pi <- (hits+plus2.yes)/(m*r+4)
@@ -48,26 +48,29 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, correction, r, myseed=111){
 
 #' Construct a confidence band for a recall or precision curve
 #' 
-#' \code{PerfCurveBands} takes a pair of score and activity vectors as input.  
-#' A point-wise confidence interval or confidence band is constructed for
-#' the selected testing fractions.
+#' \code{PerfCurveBands} takes a pair of score and activity vectors as input.
+#' A performance curve and confidence band is created for the selected testing fractions.
 #' 
 #' @param S a vector of scores.
 #' @param X a vector of activities.
-#' @param r a vector of testing fractions
-#' @param metric a string specifying whether recall ("k") or precision ("pi")
-#' should be computed.
-#' @param type a string specifying whether a pointwise confidence interval 
+#' @param r a vector of testing fractions.
+#' @param metric the performance curve to use. Options are recall ("k") and precision ("pi").
+#' @param type specifies whether a point-wise confidence interval 
 #' ("pointwise") or a confidence band ("band") should be constructed.
-#' @param method a string specifying the method to use. Pointwise confidence interval options
-#' are c("binomial", "JZ", "bootstrap").
+#' @param method the method to use. Point-wise confidence interval options
+#' are c("binomial", "JZ", "bootstrap"). Confidence band options are c("sup-t", "theta-projection").
+#' @param plus2 should plus2 correction be used or not?
+#' @param conf.level the confidence level for the bands.
+#' @param boot.rep the number of replicates to use for the bootstrap method.
+#' @param mc.rep the number of Monte Carlo replicates to use for the sup-t method.
+#' @param myseed the random seed.
 #' 
-#' @import MSQC
+#' 
 #' @import MASS
 #' 
 #' @export
 PerfCurveBands <- function(S, X, r, metric = "k", type = "band", method = "sup-t",
-                           correction = "plus2", conf.level = .95, boot.rep = 100,
+                           plus2 = T, conf.level = .95, boot.rep = 100,
                            mc.rep = 100000, myseed = 111){
   
   set.seed(myseed)
@@ -90,10 +93,10 @@ PerfCurveBands <- function(S, X, r, metric = "k", type = "band", method = "sup-t
   k <- (hits)/(sum(X))
   
   # Plus 2 correction
-  if(correction == "plus2") {
+  if (plus2) {
     pi.c <- (hits+2)/(m*r+4)
     k.c <- r/pi.0*pi.c
-  } else if(correction == "none") {
+  } else {
     pi.c <- pi
     k.c <- k
   }
@@ -112,7 +115,7 @@ PerfCurveBands <- function(S, X, r, metric = "k", type = "band", method = "sup-t
         }
       } else if(method == "bootstrap") {
         # bootstrap quantiles
-        CI.int <- BootCI(X, S, m, pi.0, boot.rep, metric = "k", correction, r, myseed=myseed)
+        CI.int <- BootCI(X, S, m, pi.0, boot.rep, metric = "k", plus2, r, myseed=myseed)
       } else if(method == "binomial") {
         for(j in seq_along(k)) {
           var.k <- ((m*pi.0)^-1)*k.c[j]*(1-k.c[j])
@@ -133,7 +136,7 @@ PerfCurveBands <- function(S, X, r, metric = "k", type = "band", method = "sup-t
         }
       } else if(method == "bootstrap") {
         # bootstrap quantiles
-        CI.int <- BootCI(X, S, m, pi.0, boot.rep, metric = "pi", correction, r, myseed=myseed)
+        CI.int <- BootCI(X, S, m, pi.0, boot.rep, metric = "pi", plus2, r, myseed=myseed)
       } else if(method == "binomial") {
         for(j in seq_along(pi)) {
           var.pi <- ((m*r[j])^-1)*pi.c[j]*(1-pi.c[j])
@@ -167,7 +170,7 @@ PerfCurveBands <- function(S, X, r, metric = "k", type = "band", method = "sup-t
               cor.C[f, e] <- cor.k
             }
           }
-          mc.samples <- mvrnorm(n = mc.rep, rep(0, length = length(k)), cor.C, tol = 1)
+          mc.samples <- MASS::mvrnorm(n = mc.rep, rep(0, length = length(k)), cor.C, tol = 1)
           max.q <- vector(length = mc.rep)
           for(j in 1:mc.rep) {
             max.q[j] <- max(abs(mc.samples[j, ]))
@@ -204,7 +207,7 @@ PerfCurveBands <- function(S, X, r, metric = "k", type = "band", method = "sup-t
               cor.C[f, e] <- cor.pi
             }
           }
-          mc.samples <- mvrnorm(n = mc.rep, rep(0, length = length(k)), cor.C, tol = 1)
+          mc.samples <- MASS::mvrnorm(n = mc.rep, rep(0, length = length(k)), cor.C, tol = 1)
           max.q <- vector(length = mc.rep)
           for(j in 1:mc.rep) {
             max.q[j] <- max(abs(mc.samples[j, ]))

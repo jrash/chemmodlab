@@ -28,10 +28,9 @@ test_that("PerfCurveTest confidence intervals match those computed for Figure 5 
   S1 <- bvn1[, 1]
   S2 <- bvn1[, 2]
   
-  method.v <- c("AH", "AH", "binomial", "binomial", "JZ Ind", "JZ Ind", "mcnemar", "mcnemar", "binomial Ind", "binomial Ind")
+  method.v <- c("AH", "AH", "binomial", "binomial", "JZ ind", "JZ ind", "mcnemar", "mcnemar", "binomial ind", "binomial ind")
   correction.v <- c("none", "plus2", "none", "plus2", "none", "plus2", "none", "plus2", "none", "plus2")
   
-  # JZ Ind is failing for some reason
   for(i in c(1:10)) {
     
     # Test recall
@@ -45,7 +44,7 @@ test_that("PerfCurveTest confidence intervals match those computed for Figure 5 
     
     # Test precision
     ls <- PerfCurveTest(S1, S2, X, r, metric = "pi", method = method.v[i], 
-                        correction = correction.v[i],  conf.level = .95)
+                        correction = correction.v[i],  alpha = .05)
     act_ci <- ls[[2]]
     
     exp_ci <- pi.ls[[i]]$interval.ls[[1]]
