@@ -37,8 +37,8 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
   hits12 <- vector(length = length(idx))
   r12 <- vector(length = length(r))
   for(i in 1:length(idx)) {
-    r12[i] <-  mean(S1 >= c1[i] & S2 >= c2[i])
-    hits12[i] <- sum(X*(S1 >= c1[i] & S2 >= c2[i]))
+    r12[i] <-  mean(S1 > c1[i] & S2 > c2[i])
+    hits12[i] <- sum(X*(S1 > c1[i] & S2 > c2[i]))
   }
   pi.0 <- mean(X)
   if(correction == "plus2") {
