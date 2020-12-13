@@ -31,7 +31,7 @@ PerfCurveBands(
 ("pointwise") or a confidence band ("band") should be constructed.}
 
 \item{method}{the method to use. Point-wise confidence interval options
-are "binomial", "JZ", "bootstrap". Confidence band options are "sup-t", "theta-projection".}
+are "binomial", "JZ", "bootstrap". Confidence band options are "sup-t", "theta-proj".}
 
 \item{plus2}{should plus2 correction be used or not?}
 

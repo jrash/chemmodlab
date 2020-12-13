@@ -9,6 +9,7 @@ EstLambda = function(S, X, t, m){
   exp.X.and.I/exp.I
 }
 
+
 # Bootstrap percentile CI
 BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
   storeout=matrix(NA, nrow=m, ncol=1+boot.rep)
@@ -46,6 +47,7 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
   A=t(A)
 }
 
+
 #' Construct a confidence band for a recall or precision curve
 #' 
 #' \code{PerfCurveBands} takes a pair of score and activity vectors as input.
@@ -58,7 +60,7 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
 #' @param type specifies whether a point-wise confidence interval 
 #' ("pointwise") or a confidence band ("band") should be constructed.
 #' @param method the method to use. Point-wise confidence interval options
-#' are "binomial", "JZ", "bootstrap". Confidence band options are "sup-t", "theta-projection".
+#' are "binomial", "JZ", "bootstrap". Confidence band options are "sup-t", "theta-proj".
 #' @param plus2 should plus2 correction be used or not?
 #' @param conf.level the confidence level for the bands.
 #' @param boot.rep the number of replicates to use for the bootstrap method.
@@ -67,6 +69,7 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
 #' 
 #' 
 #' @import MASS
+#' @import signal
 #' 
 #' @export
 #' 
@@ -75,18 +78,15 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
 PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup-t",
                            plus2 = T, conf.level = .95, boot.rep = 100,
                            mc.rep = 100000, myseed = 111){
-  
+
   set.seed(myseed)
+  alpha <- 1-conf.level
   
   # Compute indices of the testing fractions
   m <- length(S)
   r.all <- (1:m)/m
   # TODO This breaks when r contains zeros.  Need some error handling
   idx <- which(r.all %in% r)
-  
-  # Z Quantile for CIs
-  alpha <- 1-conf.level
-  quant <- qnorm(1-alpha/2)
   
   # Computing the performance measures
   Sorder <- order(S,decreasing=TRUE)
@@ -107,10 +107,15 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
   
   CI.int <- matrix(ncol = 2, nrow = length(k))
   if(type == "pointwise") {
+    
+    # Z Quantile for CIs
+    quant <- qnorm(1-alpha/2)
+    
     if(metric == "rec") {
       if(method == "JZ"){
         for(j in seq_along(k)) {
-          Lam <- EstLambda(S, X, m, t = S[Sorder.idx][j])
+          Lam <- EstLambda(S[Sorder.idx], X[Sorder.idx], m, t = S[Sorder.idx][j])
+          Lam <- signal::sgolayfilt(X[Sorder], p = 0, n = 11)[idx[j]]
           var.k <- ((k.c[j]*(1-k.c[j]))/(m*pi.0))*(1-2*Lam) + (Lam^2*(1-r[j])*r[j])/(m*pi.0^2)
           # Check to see if var.k is negative due to machine precision problem
           var.k <- ifelse(var.k < 0, 0, var.k)
@@ -132,6 +137,7 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
       if(method == "JZ") {
         for(j in seq_along(k)) {
           Lam <- EstLambda(S, X, m, t = S[Sorder.idx][j])
+          Lam <- signal::sgolayfilt(X[Sorder], p = 0, n = 11)[idx[j]]
           var.pi <- (pi.c[j]*(1-pi.c[j]))/(m*r[j]) + (1-r[j])*(pi.c[j]-Lam)^2/(m*r[j])
           # Check to see if var.pi is negative due to machine precision issues
           var.pi <- ifelse(var.pi < 0, 0, var.pi)
@@ -158,10 +164,12 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           for(f in seq_along(k)) {
             for(e in 1:f) {
               Lam1 <- EstLambda(S, X, m, t = S[Sorder.idx][e])
+              Lam1 <- signal::sgolayfilt(X[Sorder], p = 0, n = 11)[idx[e]]
               var.k1 <- ((k.c[e]*(1-k.c[e]))/(m*pi.0))*(1-2*Lam1) 
                         + (Lam1^2*(1-r[e])*r[e])/(m*pi.0^2)
               var.k1 <- ifelse(var.k1 < 0, 0, var.k1)
               Lam2 <- EstLambda(S, X, m, t = S[Sorder.idx][f])
+              Lam2 <- signal::sgolayfilt(X[Sorder], p = 0, n = 11)[idx[f]]
               var.k2 <- ((k.c[f]*(1-k.c[f]))/(m*pi.0))*(1-2*Lam2) 
                         + (Lam2^2*(1-r[f])*r[f])/(m*pi.0^2)
               var.k2 <- ifelse(var.k2 < 0, 0, var.k2)
@@ -179,12 +187,13 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           for(j in 1:mc.rep) {
             max.q[j] <- max(abs(mc.samples[j, ]))
           }
-          quant <- quantile(max.q, probs = .975)
+          quant <- quantile(max.q, probs = 1-alpha/2)
         } else if(method == "theta-proj") {
-          quant <- sqrt(qchisq(.95, length(k)))
+          quant <- sqrt(qchisq(1-alpha, length(k)))
         }
         for(j in seq_along(k)) {
           Lam <- EstLambda(S, X, m, t = S[Sorder.idx][j])
+          Lam <- signal::sgolayfilt(X[Sorder], p = 0, n = 11)[idx[j]]
           var.k <- ((k.c[j]*(1-k.c[j]))/(m*pi.0))*(1-2*Lam) + (Lam^2*(1-r[j])*r[j])/(m*pi.0^2)
           # Check to see if var.k is negative due to machine precision problem
           var.k <- ifelse(var.k < 0, 0, var.k)
@@ -216,9 +225,9 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           for(j in 1:mc.rep) {
             max.q[j] <- max(abs(mc.samples[j, ]))
           }
-          quant <- quantile(max.q, probs = .975)
+          quant <- quantile(max.q, probs = 1-alpha/2)
         } else if(method == "theta-proj") {
-          quant <- sqrt(qchisq(.95, length(pi)))
+          quant <- sqrt(qchisq(1-alpha, length(pi)))
         }
         for(j in seq_along(pi)) {
           Lam <- EstLambda(S, X, m, t = S[Sorder.idx][j])

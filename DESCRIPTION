@@ -43,7 +43,8 @@ Imports:
     graphics,
     grDevices,
     utils,
-    methods
+    methods,
+    signal
 RoxygenNote: 7.1.1
 NeedsCompilation: no
 Author: Jacqueline Hughes-Oliver [aut],
