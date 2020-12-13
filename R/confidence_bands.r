@@ -73,12 +73,30 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
 #' 
 #' @export
 #' 
-#' 
-# 
 PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup-t",
                            plus2 = T, conf.level = .95, boot.rep = 100,
                            mc.rep = 100000, myseed = 111){
-
+  
+  # Some error handeling
+  
+  if (!(method %in% c("binomial", "JZ", "bootstrap", "sup-t", "theta-proj"))) {
+    stop("'method' should be a string specifiying a performance curve method in chemmodlab.
+         Point-wise confidence interval options are 'binomial', 'JZ', 'bootstrap'. Confidence band options
+         are 'sup-t', 'theta-proj'.")
+  }
+  
+  if (!(metric %in% c("rec", "prec"))) {
+    stop("'metric' should be a string specifiying a performance curve metric in chemmodlab.
+         Point-wise confidence interval options are 'binomial', 'JZ', 'bootstrap'. Options
+         are recall ('rec') and precision ('prec').")
+  }
+  
+  if (!(type %in% c("band", "pointwise"))) {
+    stop("'type' should be a string specifiying a performance curve type in chemmodlab.
+         Point-wise confidence interval options are 'binomial', 'JZ', 'bootstrap'. Options
+         are point-wise confidence interval ('pointwise') or a confidence band ('band').")
+  }
+  
   set.seed(myseed)
   alpha <- 1-conf.level
   
