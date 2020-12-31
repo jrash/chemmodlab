@@ -75,7 +75,9 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
 #' 
 PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup-t",
                            plus2 = T, conf.level = .95, boot.rep = 100,
-                           mc.rep = 100000, myseed = 111){
+                           mc.rep = 100000, myseed = 111, 
+                           win.size = ifelse((round(length(S)/100) %% 2) == 0,
+                                             round(length(S)/100) + 1, round(length(S)/100))){
   
   # Some error handeling
   
@@ -133,7 +135,7 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
       if(method == "JZ"){
         for(j in seq_along(k)) {
           Lam <- EstLambda(S[Sorder.idx], X[Sorder.idx], m, t = S[Sorder.idx][j])
-          Lam <- signal::sgolayfilt(X[Sorder], p = 0, n = 11)[idx[j]]
+          Lam <- signal::sgolayfilt(X[Sorder], p = 0, n = win.size)[idx[j]]
           var.k <- ((k.c[j]*(1-k.c[j]))/(m*pi.0))*(1-2*Lam) + (Lam^2*(1-r[j])*r[j])/(m*pi.0^2)
           # Check to see if var.k is negative due to machine precision problem
           var.k <- ifelse(var.k < 0, 0, var.k)
@@ -155,7 +157,7 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
       if(method == "JZ") {
         for(j in seq_along(k)) {
           Lam <- EstLambda(S, X, m, t = S[Sorder.idx][j])
-          Lam <- signal::sgolayfilt(X[Sorder], p = 0, n = 11)[idx[j]]
+          Lam <- signal::sgolayfilt(X[Sorder], p = 0, n = win.size)[idx[j]]
           var.pi <- (pi.c[j]*(1-pi.c[j]))/(m*r[j]) + (1-r[j])*(pi.c[j]-Lam)^2/(m*r[j])
           # Check to see if var.pi is negative due to machine precision issues
           var.pi <- ifelse(var.pi < 0, 0, var.pi)
@@ -182,12 +184,12 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           for(f in seq_along(k)) {
             for(e in 1:f) {
               Lam1 <- EstLambda(S, X, m, t = S[Sorder.idx][e])
-              Lam1 <- signal::sgolayfilt(X[Sorder], p = 0, n = 11)[idx[e]]
+              Lam1 <- signal::sgolayfilt(X[Sorder], p = 0, n = win.size)[idx[e]]
               var.k1 <- ((k.c[e]*(1-k.c[e]))/(m*pi.0))*(1-2*Lam1) 
                         + (Lam1^2*(1-r[e])*r[e])/(m*pi.0^2)
               var.k1 <- ifelse(var.k1 < 0, 0, var.k1)
               Lam2 <- EstLambda(S, X, m, t = S[Sorder.idx][f])
-              Lam2 <- signal::sgolayfilt(X[Sorder], p = 0, n = 11)[idx[f]]
+              Lam2 <- signal::sgolayfilt(X[Sorder], p = 0, n = win.size)[idx[f]]
               var.k2 <- ((k.c[f]*(1-k.c[f]))/(m*pi.0))*(1-2*Lam2) 
                         + (Lam2^2*(1-r[f])*r[f])/(m*pi.0^2)
               var.k2 <- ifelse(var.k2 < 0, 0, var.k2)
@@ -211,7 +213,7 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
         }
         for(j in seq_along(k)) {
           Lam <- EstLambda(S, X, m, t = S[Sorder.idx][j])
-          Lam <- signal::sgolayfilt(X[Sorder], p = 0, n = 11)[idx[j]]
+          Lam <- signal::sgolayfilt(X[Sorder], p = 0, n = win.size)[idx[j]]
           var.k <- ((k.c[j]*(1-k.c[j]))/(m*pi.0))*(1-2*Lam) + (Lam^2*(1-r[j])*r[j])/(m*pi.0^2)
           # Check to see if var.k is negative due to machine precision problem
           var.k <- ifelse(var.k < 0, 0, var.k)
