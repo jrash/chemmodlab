@@ -17,7 +17,6 @@
 #' @export
 PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
                           correction = "plus2", alpha = .05){
-  #jackie test
   # Compute indices of the testing fractions
   m <- length(S1)
   r.all <- (1:m)/m
