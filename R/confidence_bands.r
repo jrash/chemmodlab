@@ -1,12 +1,49 @@
+# # Returns Lambda, or P(+|S=t)
+# EstLambda = function(S, X, t, m){ 
+#   #h is the bandwidth, t is called c in the JZ paper
+#   #m is the sample size, S and X are the vectors of scores and labels
+#   h <- m^{-1/3}
+#   ind.win <- (S < t + h) & (S > t - h)
+#   exp.X.and.I <- sum(X*ind.win)/m
+#   exp.I <- sum(ind.win)/m
+#   exp.X.and.I/exp.I
+# }
+
+# # Returns Lambda, or P(+|S=t)
+# EstLambda3 = function(S, X, t, Sorder){ 
+# 
+#   h <- KernSmooth::dpill(x = S, y = X)
+#   
+#   lp0 <- KernSmooth::locpoly(x = S, y = X, bandwidth = h, degree = 0,
+#                      range.x = range(S), gridsize = min(length(S), 10000))
+#   
+#   # lp0.idx <- vector(length = length(t))
+#   # for(i in 1:length(t)){
+#   #   lp0.idx[i] <- which.min(abs(lp0$x - t[i]))
+#   # }
+#   
+#   plot(S, X)
+#   lines(lp0$x, lp0$y)
+#   
+#   return(lp0$y[lp0.idx])
+# }
+
 # Returns Lambda, or P(+|S=t)
-EstLambda = function(S, X, t, m){ 
-  #h is the bandwidth, t is called c in the JZ paper
-  #m is the sample size, S and X are the vectors of scores and labels
-  h <- m^{-1/3}
-  ind.win <- (S < t + h) & (S > t - h)
-  exp.X.and.I <- sum(X*ind.win)/m
-  exp.I <- sum(ind.win)/m
-  exp.X.and.I/exp.I
+EstLambda = function(S, X, t, idx, Sorder, h = NULL){
+
+  idx.range <- c(max(1, idx - 100), min(length(S), idx + 100))
+
+  S.ordered <- S[Sorder][idx.range[1]:idx.range[2]]
+  X.ordered <- X[Sorder][idx.range[1]:idx.range[2]]
+
+  if(is.null(h)) h <- KernSmooth::dpill(x = S.ordered, y = X.ordered, gridsize = 100)
+
+  lp0 <- KernSmooth::locpoly(x = S.ordered, y = X.ordered, bandwidth = h, degree = 0,
+                             range.x = range(S.ordered), gridsize = 10000)
+
+  lp0.idx <- which.min(abs(lp0$x - t))
+
+  return(lp0$y[lp0.idx])
 }
 
 
@@ -47,7 +84,6 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
   A=t(A)
 }
 
-
 #' Construct a confidence band for a recall or precision curve
 #' 
 #' \code{PerfCurveBands} takes a pair of score and activity vectors as input.
@@ -70,14 +106,15 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
 #' 
 #' @import MASS
 #' @import signal
+#' @import KernSmooth
 #' 
 #' @export
 #' 
 PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup-t",
                            plus2 = T, conf.level = .95, boot.rep = 100,
-                           mc.rep = 100000, myseed = 111, 
-                           win.size = ifelse((round(length(S)/100) %% 2) == 0,
-                                             round(length(S)/100) + 1, round(length(S)/100))){
+                           mc.rep = 100000, myseed = 111, h = NULL){
+  
+  # TODO add support for EF
   
   # Some error handeling
   
@@ -115,6 +152,8 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
   pi.0 <- mean(X)
   pi <- (hits)/(m*r)
   k <- (hits)/(sum(X))
+  k.ide <- (cumsum(rev(sort(X)))[idx]/sum(X))
+  # Lam <- EstLambda(S, X, t = S[Sorder.idx], Sorder, h)
   
   # Plus 2 correction
   if (plus2) {
@@ -134,13 +173,18 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
     if(metric == "rec") {
       if(method == "JZ"){
         for(j in seq_along(k)) {
-          Lam <- EstLambda(S[Sorder.idx], X[Sorder.idx], m, t = S[Sorder.idx][j])
-          Lam <- signal::sgolayfilt(X[Sorder], p = 0, n = win.size)[idx[j]]
+          # print(j)
+          Lam <- EstLambda(S, X, t = S[Sorder.idx][j], idx = idx[j], Sorder, h)
+        # }
           var.k <- ((k.c[j]*(1-k.c[j]))/(m*pi.0))*(1-2*Lam) + (Lam^2*(1-r[j])*r[j])/(m*pi.0^2)
           # Check to see if var.k is negative due to machine precision problem
           var.k <- ifelse(var.k < 0, 0, var.k)
           sd.k <- sqrt(var.k)
-          CI.int[j, ] <- c(k[j] - quant*sd.k, k[j] + quant*sd.k)
+          lcl <- k[j] - quant*sd.k
+          lcl <- ifelse(lcl < 0, 0, lcl)
+          ucl <- k[j] + quant*sd.k
+          ucl <- ifelse(ucl > k.ide[j], k.ide[j], ucl)
+          CI.int[j, ] <- c(lcl, ucl)
         }
       } else if(method == "bootstrap") {
         # bootstrap quantiles
@@ -156,8 +200,7 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
     } else if(metric == "prec") {
       if(method == "JZ") {
         for(j in seq_along(k)) {
-          Lam <- EstLambda(S, X, m, t = S[Sorder.idx][j])
-          Lam <- signal::sgolayfilt(X[Sorder], p = 0, n = win.size)[idx[j]]
+          Lam <- EstLambda(S, X, t = S[Sorder.idx][j], idx = idx[j], Sorder, h)
           var.pi <- (pi.c[j]*(1-pi.c[j]))/(m*r[j]) + (1-r[j])*(pi.c[j]-Lam)^2/(m*r[j])
           # Check to see if var.pi is negative due to machine precision issues
           var.pi <- ifelse(var.pi < 0, 0, var.pi)
@@ -183,13 +226,12 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           cor.C <- matrix(NA, ncol = length(k), nrow = length(k))
           for(f in seq_along(k)) {
             for(e in 1:f) {
-              Lam1 <- EstLambda(S, X, m, t = S[Sorder.idx][e])
-              Lam1 <- signal::sgolayfilt(X[Sorder], p = 0, n = win.size)[idx[e]]
+              Lam1 <- EstLambda(S, X, t = S[Sorder.idx][e], idx = idx[e], Sorder, h)
               var.k1 <- ((k.c[e]*(1-k.c[e]))/(m*pi.0))*(1-2*Lam1) 
                         + (Lam1^2*(1-r[e])*r[e])/(m*pi.0^2)
               var.k1 <- ifelse(var.k1 < 0, 0, var.k1)
-              Lam2 <- EstLambda(S, X, m, t = S[Sorder.idx][f])
-              Lam2 <- signal::sgolayfilt(X[Sorder], p = 0, n = win.size)[idx[f]]
+              # Lam2 <- EstLambda(S, X, m, t = S[Sorder.idx][f])
+              Lam2 <- EstLambda(S, X, t = S[Sorder.idx][f], idx = idx[f], Sorder, h)
               var.k2 <- ((k.c[f]*(1-k.c[f]))/(m*pi.0))*(1-2*Lam2) 
                         + (Lam2^2*(1-r[f])*r[f])/(m*pi.0^2)
               var.k2 <- ifelse(var.k2 < 0, 0, var.k2)
@@ -212,23 +254,26 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           quant <- sqrt(qchisq(1-alpha, length(k)))
         }
         for(j in seq_along(k)) {
-          Lam <- EstLambda(S, X, m, t = S[Sorder.idx][j])
-          Lam <- signal::sgolayfilt(X[Sorder], p = 0, n = win.size)[idx[j]]
+          Lam <- EstLambda(S, X, t = S[Sorder.idx][j], idx = idx[j], Sorder, h)
           var.k <- ((k.c[j]*(1-k.c[j]))/(m*pi.0))*(1-2*Lam) + (Lam^2*(1-r[j])*r[j])/(m*pi.0^2)
           # Check to see if var.k is negative due to machine precision problem
           var.k <- ifelse(var.k < 0, 0, var.k)
           sd.k <- sqrt(var.k)
-          CI.int[j, ] <- c(k[j] - quant*sd.k, k[j] + quant*sd.k)
+          lcl <- k[j] - quant*sd.k
+          lcl <- ifelse(lcl < 0, 0, lcl)
+          ucl <- k[j] + quant*sd.k
+          ucl <- ifelse(ucl > k.ide[j], k.ide[j], ucl)
+          CI.int[j, ] <- c(lcl, ucl)
         }
       } else if(metric == "prec") {
         if(method == "sup-t") {
           cor.C <- matrix(NA, ncol = length(k), nrow = length(k))
           for(f in seq_along(pi)) {
             for(e in 1:f) {
-              Lam1 <- EstLambda(S, X, m, t = S[Sorder.idx][e])
+              Lam1 <- EstLambda(S, X, t = S[Sorder.idx][e], idx = idx[e], Sorder, h)
               var.pi1 <- (pi.c[e]*(1-pi.c[e]))/(m*r[e]) + (1-r[e])*(pi.c[e]-Lam1)^2/(m*r[e])
               var.pi1 <- ifelse(var.pi1 < 0, 0, var.pi1)
-              Lam2 <- EstLambda(S, X, m, t = S[Sorder.idx][f])
+              Lam2 <- EstLambda(S, X, t = S[Sorder.idx][f], idx = idx[f], Sorder, h)
               var.pi2 <- (pi.c[f]*(1-pi.c[f]))/(m*r[f]) + (1-r[f])*(pi.c[f]-Lam2)^2/(m*r[f])
               var.pi2 <- ifelse(var.pi2 < 0, 0, var.pi2)
               cov.pi <- ((m*r[e]*r[f])^{-1})*(r[e]*pi.c[e]*(1 - pi.c[e])
@@ -250,7 +295,7 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           quant <- sqrt(qchisq(1-alpha, length(pi)))
         }
         for(j in seq_along(pi)) {
-          Lam <- EstLambda(S, X, m, t = S[Sorder.idx][j])
+          Lam <- EstLambda(S, X, t = S[Sorder.idx][j], idx = idx[j], Sorder, h)
           var.pi <- (pi.c[j]*(1-pi.c[j]))/(m*r[j]) + (1-r[j])*(pi.c[j]-Lam)^2/(m*r[j])
           # Check to see if var.k is negative due to machine precision problem
           var.pi <- ifelse(var.pi < 0, 0, var.pi)
@@ -260,6 +305,6 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
       }
   }
   
-  list(CI = CI.int, rec = k, prec = pi)
+  list(CI = CI.int, rec = k, prec = pi, h = h)
   
 }

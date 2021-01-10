@@ -15,7 +15,8 @@ PerfCurveBands(
   conf.level = 0.95,
   boot.rep = 100,
   mc.rep = 1e+05,
-  myseed = 111
+  myseed = 111,
+  h = NULL
 )
 }
 \arguments{

@@ -44,7 +44,8 @@ Imports:
     grDevices,
     utils,
     methods,
-    signal
+    signal,
+    KernSmooth
 RoxygenNote: 7.1.1
 NeedsCompilation: no
 Author: Jacqueline Hughes-Oliver [aut],
