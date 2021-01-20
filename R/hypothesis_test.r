@@ -17,6 +17,9 @@
 #' @export
 PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
                           correction = "plus2", alpha = .05){
+  
+  # TODO Change correction argument to plus2 for consistency
+  # TODO Rename AH to CorEmpProc, binomial to CorBinom, JZ ind to IndEmpProc, binomial ind to IndBinom
   # Compute indices of the testing fractions
   m <- length(S1)
   r.all <- (1:m)/m
@@ -26,10 +29,12 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
   quant <- qnorm(1-alpha/2)
   
   Sorder1 <-  order(S1,decreasing=TRUE)
+  Sorder1.idx <- Sorder1[idx]
   S1.o <- S1[Sorder1]
   c1 <- S1.o[idx]
   hits1 <- cumsum(X[Sorder1])[idx]
   Sorder2 <-  order(S2,decreasing=TRUE)
+  Sorder2.idx <- Sorder2[idx]
   S2.o <- S2[Sorder2]
   c2 <- S2.o[idx]
   hits2 <- cumsum(X[Sorder2])[idx]
@@ -68,6 +73,16 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
   }
   pi12 <- ifelse(is.na(pi12), 0, pi12)
   
+  Lam.vec1 <- vector(length = length(k))
+  for(j in seq_along(k)){
+    Lam.vec1[j] <- EstLambda(S1, X, t = S1[Sorder1.idx][j], idx = idx[j], Sorder1, h)
+  }
+  
+  Lam.vec2 <- vector(length = length(k))
+  for(j in seq_along(k)){
+    Lam.vec2[j] <- EstLambda(S2, X, t = S2[Sorder2.idx][j], idx = idx[j], Sorder2, h)
+  }
+  
   CI.int <- matrix(ncol = 2, nrow = length(k1))
   p.val <- vector(length = length(pi1))
   if(metric == "rec") {
@@ -75,11 +90,11 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
       Sorder1.idx <- Sorder1[idx]
       Sorder2.idx <- Sorder2[idx]
       for(j in seq_along(k1)) {
-        Lam1 <- EstLambda(S1, X, m, t = S1[Sorder1.idx][j])
+        Lam1 <- Lam.vec1[j]
         var1.k <- ((k1[j]*(1-k1[j]))/(m*pi.0))*(1-2*Lam1) + (Lam1^2*(1-r[j])*r[j])/(m*pi.0^2)
         # Check to see if var.k is negative due to machine precision problem
         var1.k <- ifelse(var1.k < 0, 0, var1.k)
-        Lam2 <- EstLambda(S2, X, m, t = S2[Sorder2.idx][j])
+        Lam2 <- Lam.vec2[j]
         var2.k <- ((k2[j]*(1-k2[j]))/(m*pi.0))*(1-2*Lam2) + (Lam2^2*(1-r[j])*r[j])/(m*pi.0^2)
         # Check to see if var.k is negative due to machine precision problem
         var2.k <- ifelse(var2.k < 0, 0, var2.k)
@@ -143,10 +158,10 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
       Sorder1.idx <- Sorder1[idx]
       Sorder2.idx <- Sorder2[idx]
       for(j in seq_along(pi1)) {
-        Lam1 <- EstLambda(S1, X, m, t = S1[Sorder1.idx][j])
+        Lam1 <- Lam.vec1[j]
         var1.pi <- (pi1[j]*(1-pi1[j]))/(m*r[j]) + (1-r[j])*(pi1[j]-Lam1)^2/(m*r[j])
         var1.pi <- ifelse(var1.pi < 0, 0, var1.pi)
-        Lam2 <- EstLambda(S2, X, m, t = S2[Sorder2.idx][j])
+        Lam2 <- Lam.vec2[j]
         var2.pi <- (pi2[j]*(1-pi2[j]))/(m*r[j]) + (1-r[j])*(pi2[j]-Lam2)^2/(m*r[j])
         var2.pi <- ifelse(var2.pi < 0, 0, var2.pi)
         cov.pi <- ((m^-1*r[j]^-2))*(r12[j]*pi12[j]*(1 - pi12[j]) + (pi12[j]-Lam1)*(pi12[j]-Lam2)*(r12[j] - r[j]^2))

@@ -45,7 +45,7 @@ Imports:
     utils,
     methods,
     signal,
-    KernSmooth
+    np
 RoxygenNote: 7.1.1
 NeedsCompilation: no
 Author: Jacqueline Hughes-Oliver [aut],
