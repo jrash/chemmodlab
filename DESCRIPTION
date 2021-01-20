@@ -44,7 +44,6 @@ Imports:
     grDevices,
     utils,
     methods,
-    signal,
     np
 RoxygenNote: 7.1.1
 NeedsCompilation: no
