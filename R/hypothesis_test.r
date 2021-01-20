@@ -16,7 +16,7 @@
 #' 
 #' @export
 PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
-                          correction = "plus2", alpha = .05){
+                          correction = "plus2", alpha = .05, h = NULL){
   
   # TODO Change correction argument to plus2 for consistency
   # TODO Rename AH to CorEmpProc, binomial to CorBinom, JZ ind to IndEmpProc, binomial ind to IndBinom
