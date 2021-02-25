@@ -16,35 +16,37 @@
 #' 
 #' @export
 PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
-                          correction = "plus2", alpha = .05, h = NULL){
+                          correction = "plus2", alpha = .05){
   
-  # TODO Change correction argument to plus2 for consistency
-  # TODO Rename AH to CorEmpProc, binomial to CorBinom, JZ ind to IndEmpProc, binomial ind to IndBinom
-  # Compute indices of the testing fractions
-  m <- length(S1)
-  r.all <- (1:m)/m
-  idx <- which(r.all %in% r)
+  m <- length(S1) #total sample size
+  nact <- sum(X)  #total number of actives
+  
+  # this block no longer needed ---
+  #  # Compute indices of the testing fractions
+  #  m <- length(S1)
+  #  r.all <- (1:m)/m
+  #  idx <- which(r.all %in% r)
   
   # Z Quantile for CIs
   quant <- qnorm(1-alpha/2)
   
-  Sorder1 <-  order(S1,decreasing=TRUE)
-  Sorder1.idx <- Sorder1[idx]
-  S1.o <- S1[Sorder1]
-  c1 <- S1.o[idx]
-  hits1 <- cumsum(X[Sorder1])[idx]
-  Sorder2 <-  order(S2,decreasing=TRUE)
-  Sorder2.idx <- Sorder2[idx]
-  S2.o <- S2[Sorder2]
-  c2 <- S2.o[idx]
-  hits2 <- cumsum(X[Sorder2])[idx]
-  hits12 <- vector(length = length(idx))
-  r12 <- vector(length = length(r))
-  for(i in 1:length(idx)) {
-    r12[i] <-  mean(S1 >= c1[i] & S2 >= c2[i])
-    hits12[i] <- sum(X*(S1 >= c1[i] & S2 >= c2[i]))
+  # Convert fractions in r to thresholds, for both sets of scores
+  # Also accumulate the number of actives, for each score and jointly
+  F1cdf <- ecdf(S1); yyobs <- sort(unique(S1))
+  F1inv <- stepfun(x = F1cdf(yyobs), y = c(yyobs, max(yyobs)), right=TRUE, f=1)
+  F2cdf <- ecdf(S2); yyobs <- sort(unique(S2))
+  F2inv <- stepfun(x = F2cdf(yyobs), y = c(yyobs, max(yyobs)), right=TRUE, f=1)
+  hits1 <- hits2 <- hits12 <- r12 <- vector(length = length(r))
+  for(i in 1:length(r)) {
+    t1 <- F1inv(1-r[i])
+    t2 <- F2inv(1-r[i])
+    hits1[i] <- sum(X*(S1 > t1))
+    hits2[i] <- sum(X*(S2 > t2))
+    hits12[i] <- sum(X*(S1 > t1 & S2 > t2))
+    r12[i] <- mean(S1 > t1 & S2 > t2)
   }
-  pi.0 <- mean(X)
+  
+  pi.0 <- mean(X) #fraction of actives
   if(correction == "plus2") {
     # Treat the additional hits as if they were not same compounds
     # In either scoring algorithm.  The reason for this is that treating the
@@ -63,42 +65,33 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
     k12 <- r/pi.0*pi12
   } else if(correction == "none") {
     pi1 <- (hits1)/(m*r)
-    k1 <- (hits1)/(sum(X))
+    k1 <- (hits1)/nact
     pi2 <- (hits2)/(m*r)
-    k2 <- (hits2)/(sum(X))
+    k2 <- (hits2)/nact
     pi12 <- (hits12)/(m*r12)
-    k12 <- (hits12)/(sum(X))
+    k12 <- (hits12)/nact
     pi <- (pi1 + pi2)/2
     k <- (k1 + k2)/2
   }
   pi12 <- ifelse(is.na(pi12), 0, pi12)
   
-  Lam.vec1 <- vector(length = length(k))
-  for(j in seq_along(k)){
-    Lam.vec1[j] <- EstLambda(S1, X, t = S1[Sorder1.idx][j], idx = idx[j], Sorder1, h)
-  }
-  
-  Lam.vec2 <- vector(length = length(k))
-  for(j in seq_along(k)){
-    Lam.vec2[j] <- EstLambda(S2, X, t = S2[Sorder2.idx][j], idx = idx[j], Sorder2, h)
-  }
-  
   CI.int <- matrix(ncol = 2, nrow = length(k1))
-  p.val <- vector(length = length(pi1))
+  se <- p.val <- vector(length = length(pi1))
   if(metric == "rec") {
     if(method %in% c("JZ ind", "AH")){
-      Sorder1.idx <- Sorder1[idx]
-      Sorder2.idx <- Sorder2[idx]
       for(j in seq_along(k1)) {
-        Lam1 <- Lam.vec1[j]
-        var1.k <- ((k1[j]*(1-k1[j]))/(m*pi.0))*(1-2*Lam1) + (Lam1^2*(1-r[j])*r[j])/(m*pi.0^2)
+        Lam1 <- EstLambda(S1, X, m, t = F1inv(1-r[j]))   #jho change!
+        var1.k <- ((k1[j]*(1-k1[j]))/(m*pi.0))*(1-2*Lam1) +
+          (Lam1^2*(1-r[j])*r[j])/(m*pi.0^2)
         # Check to see if var.k is negative due to machine precision problem
         var1.k <- ifelse(var1.k < 0, 0, var1.k)
-        Lam2 <- Lam.vec2[j]
-        var2.k <- ((k2[j]*(1-k2[j]))/(m*pi.0))*(1-2*Lam2) + (Lam2^2*(1-r[j])*r[j])/(m*pi.0^2)
+        Lam2 <- EstLambda(S2, X, m, t = F2inv(1-r[j]))   #jho change!
+        var2.k <- ((k2[j]*(1-k2[j]))/(m*pi.0))*(1-2*Lam2) +
+          (Lam2^2*(1-r[j])*r[j])/(m*pi.0^2)
         # Check to see if var.k is negative due to machine precision problem
         var2.k <- ifelse(var2.k < 0, 0, var2.k)
-        cov.k <- (m^-1*pi.0^-2)*(pi.0*(k12[j]-k1[j]*k2[j])*(1-Lam1-Lam2) + (r12[j]-r[j]^2)*Lam1*Lam2)
+        cov.k <- (m^-1*pi.0^-2)*(pi.0*(k12[j]-k1[j]*k2[j])*(1-Lam1-Lam2) +
+                                   (r12[j]-r[j]^2)*Lam1*Lam2)
         
         # assuming independence of k
         if(method == "JZ ind"){
@@ -108,9 +101,10 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
         }
         # Check to see if var.k is negative due to machine precision problem
         var.k <- ifelse(var.k < 0, 0, var.k)
-        se <- sqrt(var.k)
-        CI.int[j, ] <- c((k1[j] - k2[j]) - quant*se, (k1[j] - k2[j]) + quant*se)
-        zscore <- (k1[j] - k2[j])/se
+        se[j] <- sqrt(var.k)
+        CI.int[j, ] <- c( (hits1-hits2)[j]/nact - quant*se[j],    #jho change!
+                          (hits1-hits2)[j]/nact + quant*se[j])
+        zscore <- ( (hits1-hits2)[j]/nact )/se[j]    #jho change!
         p.val[j] <- 2*pnorm(-abs(zscore))
         p.val[j] <- ifelse(is.na(p.val[j]), 1, p.val[j])
       }
@@ -125,43 +119,64 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
           var.k <- var1.k + var1.k
         }
         var.k <- ifelse(var.k < 0, 0, var.k)
-        se <- sqrt(var.k)
-        CI.int[j, ] <- c((k1[j] - k2[j]) - quant*se, (k1[j] - k2[j]) + quant*se)
-        zscore <- (k1[j] - k2[j])/se
+        se[j] <- sqrt(var.k)
+        CI.int[j, ] <- c( (hits1-hits2)[j]/nact - quant*se[j],    #jho change!
+                          (hits1-hits2)[j]/nact + quant*se[j])
+        zscore <- ( (hits1-hits2)[j]/nact )/se[j]    #jho change!
         p.val[j] <- 2*pnorm(-abs(zscore))
         p.val[j] <- ifelse(is.na(p.val[j]), 1, p.val[j])
       } 
     } else if(method == "mcnemar") {
       for(j in seq_along(k1)) {
-        mat <- matrix(c(hits12[j], hits1[j] - hits12[j],  hits2[j] - hits12[j], (m*pi.0) - (hits1[j] + hits2[j] - hits12[j])), ncol = 2)
-        for(a in 1:2) {
-          for(b in 1:2) {
-            mat[a, b] <- round(mat[a, b])
-          }
-        }
-        if(!all(c(mat)>=0)) stop(paste(toString(mat),"Negative matrix?", eff_seeds[z], toString(params), metric, sep = "|"))
-        b <- mat[1, 2]
-        c <- mat[2, 1]
-        if((b+c) == 0) {
-          p.val[j] <- 1
-        } else {
-          t <- mcnemar.test(mat, correct = F)
-          t <- ifelse(is.na(t), 0, t) 
-          p.val[j] <- t$p.value
-        }
+        mat <- matrix(c(hits12[j], hits1[j] - hits12[j],  hits2[j] - hits12[j],
+                        nact - (hits1[j] + hits2[j] - hits12[j])), ncol = 2)
+        # no longer needed        
+        #        for(a in 1:2) {
+        #          for(b in 1:2) {
+        #            mat[a, b] <- round(mat[a, b])
+        #          }
+        #        }
+        # what is eff_seeds[z] ?      
+        if(!all(c(mat)>=0)) stop(paste(toString(mat),"Negative matrix?", 
+                                       eff_seeds[z], toString(params), metric, 
+                                       sep = "|"))
+        BminusC <- hits1[j] - hits2[j]
+        BplusC <- hits1[j] + hits2[j] - 2*hits12[j]
+        #        Ntot <- nact  # m*pi.0
+        zscore <- ifelse(BplusC>0, BminusC/sqrt(BplusC), 0)
+        p.val[j] <- 2*pnorm(-abs(zscore))
+        se[j] <- sqrt(BplusC - BminusC^2/nact) / nact
+        CI.int[j,] <- c( BminusC/nact - quant*se[j], BminusC/nact + quant*se[j])
       }
     }
     # difference estimates
-    est <- k1 - k2
+    est <- (hits1-hits2)/nact
   } else if(metric == "prec") {
+    Sorder1 <-  order(S1,decreasing=TRUE)
+    S1.o <- S1[Sorder1]
+    c1 <- S1.o[idx]
+    hits1 <- cumsum(X[Sorder1])[idx]
+    Sorder2 <-  order(S2,decreasing=TRUE)
+    S2.o <- S2[Sorder2]
+    c2 <- S2.o[idx]
+    hits2 <- cumsum(X[Sorder2])[idx]
+    hits12 <- vector(length = length(idx))
+    r12 <- vector(length = length(r))
+    for(i in 1:length(idx)) {
+      r12[i] <-  mean(S1 > c1[i] & S2 > c2[i])
+      hits12[i] <- sum(X*(S1 > c1[i] & S2 > c2[i]))
+      hits1[i] <- sum(X*(S1 > c1[i]))
+      hits2[i] <- sum(X*(S2 > c2[i]))
+    }
+    
     if(method %in% c("JZ ind", "AH")) {
       Sorder1.idx <- Sorder1[idx]
       Sorder2.idx <- Sorder2[idx]
       for(j in seq_along(pi1)) {
-        Lam1 <- Lam.vec1[j]
+        Lam1 <- EstLambda(S1, X, m, t = S1[Sorder1.idx][j])
         var1.pi <- (pi1[j]*(1-pi1[j]))/(m*r[j]) + (1-r[j])*(pi1[j]-Lam1)^2/(m*r[j])
         var1.pi <- ifelse(var1.pi < 0, 0, var1.pi)
-        Lam2 <- Lam.vec2[j]
+        Lam2 <- EstLambda(S2, X, m, t = S2[Sorder2.idx][j])
         var2.pi <- (pi2[j]*(1-pi2[j]))/(m*r[j]) + (1-r[j])*(pi2[j]-Lam2)^2/(m*r[j])
         var2.pi <- ifelse(var2.pi < 0, 0, var2.pi)
         cov.pi <- ((m^-1*r[j]^-2))*(r12[j]*pi12[j]*(1 - pi12[j]) + (pi12[j]-Lam1)*(pi12[j]-Lam2)*(r12[j] - r[j]^2))
@@ -228,5 +243,6 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
     # difference estimates
     est <- pi1 - pi2
   }
-  list(diff_estimate = est, ci_interval = cbind(CI.int[, 1], CI.int[, 2]), p_value = p.val)
+  list(diff_estimate = est, std_err = se, ci_interval = CI.int, p_value = p.val)
+  #  list(diff_estimate = est, ci_interval = cbind(CI.int[, 1], CI.int[, 2]), p_value = p.val)
 }

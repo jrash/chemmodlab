@@ -1,15 +1,15 @@
 # Original 
 #
 # # Returns Lambda, or P(+|S=t)
-# EstLambda = function(S, X, t, m){
-#   #h is the bandwidth, t is called c in the JZ paper
-#   #m is the sample size, S and X are the vectors of scores and labels
-#   h <- m^{-1/3}
-#   ind.win <- (S < t + h) & (S > t - h)
-#   exp.X.and.I <- sum(X*ind.win)/m
-#   exp.I <- sum(ind.win)/m
-#   exp.X.and.I/exp.I
-# }
+EstLambda = function(S, X, t, m){
+ #h is the bandwidth, t is called c in the JZ paper
+ #m is the sample size, S and X are the vectors of scores and labels
+ h <- (m^{-1/5}) * sd(S)
+ ind.win <- (S < t + h) & (S > t - h)
+ exp.X.and.I <- sum(X*ind.win)/m
+ exp.I <- sum(ind.win)/m
+ exp.X.and.I/exp.I
+}
 
 # KernSmooth method
 
@@ -34,25 +34,25 @@
 # np method
 
 # # Returns Lambda, or P(+|S=t)
-EstLambda = function(S, X, t, idx, Sorder, h = NULL){
-
-  idx.range <- c(max(1, idx - 100), min(length(S), idx + 100))
-
-  S.ordered <- S[Sorder][idx.range[1]:idx.range[2]]
-  X.ordered <- X[Sorder][idx.range[1]:idx.range[2]]
-
-  # TODO This is still not silent!
-  if(is.null(h)) {
-    bwa <- invisible(np::npregbw(formula = X.ordered ~ S.ordered, bwtype = "adaptive_nn",
-                                 regtype = "lc"))
-  } else {
-    bwa <- invisible(np::npregbw(formula = X.ordered ~ S.ordered, bws = h,
-                                 regtype = "lc"))
-  }
-  np.model <- invisible(np::npreg(bwa))
-
-  return(predict(np.model, newdata = data.frame(S.ordered = t)))
-}
+# EstLambda = function(S, X, t, idx, Sorder, h = NULL){
+# 
+#   idx.range <- c(max(1, idx - 100), min(length(S), idx + 100))
+# 
+#   S.ordered <- S[Sorder][idx.range[1]:idx.range[2]]
+#   X.ordered <- X[Sorder][idx.range[1]:idx.range[2]]
+# 
+#   # TODO This is still not silent!
+#   if(is.null(h)) {
+#     bwa <- invisible(np::npregbw(formula = X.ordered ~ S.ordered, bwtype = "adaptive_nn",
+#                                  regtype = "lc"))
+#   } else {
+#     bwa <- invisible(np::npregbw(formula = X.ordered ~ S.ordered, bws = h,
+#                                  regtype = "lc"))
+#   }
+#   np.model <- invisible(np::npreg(bwa))
+# 
+#   return(predict(np.model, newdata = data.frame(S.ordered = t)))
+# }
 
 
 # Bootstrap percentile CI
