@@ -1,9 +1,10 @@
 # Original 
 #
 # # Returns Lambda, or P(+|S=t)
-EstLambda = function(S, X, t, m){
+EstLambda = function(S, X, t, ...){
  #h is the bandwidth, t is called c in the JZ paper
  #m is the sample size, S and X are the vectors of scores and labels
+ m <- length(S)
  h <- (m^{-1/5}) * sd(S)
  ind.win <- (S < t + h) & (S > t - h)
  exp.X.and.I <- sum(X*ind.win)/m
@@ -121,7 +122,7 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
   
   # Some error handeling
   
-  if (!(method %in% c("binomial", "JZ", "bootstrap", "sup-t", "theta-proj"))) {
+  if (!(method %in% c("binomial", "JZ", "bootstrap", "sup-t", "theta-proj", "bonf"))) {
     stop("'method' should be a string specifiying a performance curve method in chemmodlab.
          Point-wise confidence interval options are 'binomial', 'JZ', 'bootstrap'. Confidence band options
          are 'sup-t', 'theta-proj'.")
