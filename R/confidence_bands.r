@@ -256,6 +256,8 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           quant <- quantile(max.q, probs = 1-alpha/2)
         } else if(method == "theta-proj") {
           quant <- sqrt(qchisq(1-alpha, length(k)))
+        } else if(method == "bonf") {
+          quant <- qnorm(1-alpha/(2*length(k)))
         }
         for(j in seq_along(k)) {
           Lam <- Lam.vec[j]
