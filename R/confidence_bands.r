@@ -244,15 +244,15 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
                         + (r[e]-r[e]*r[f])*Lam1*Lam2))
               cov.k <- ifelse(cov.k < 0, 0, cov.k)
               cor.k <- cov.k/(sqrt(var.k1)*sqrt(var.k2))
-              cor.k <- ifelse(var.k1 == 0 | var.k2 == 0, 0, cor.k)
-              cor.C[e, f] <- cov.k
-              cor.C[f, e] <- cov.k
+              cor.k <- ifelse(var.k1 == 0 | var.k2 == 0, ifelse(e == f, 1, 0), cor.k)
+              cor.C[e, f] <- cor.k
+              cor.C[f, e] <- cor.k
             }
           }
           mc.samples <- MASS::mvrnorm(n = mc.rep, rep(0, length = length(k)), cor.C, tol = 1)
           max.q <- vector(length = mc.rep)
           for(j in 1:mc.rep) {
-            max.q[j] <- max(abs(mc.samples[j, ] * diag(cor.C)^(-1/2)))
+            max.q[j] <- max(abs(mc.samples[j, ]))
           }
           quant <- quantile(max.q, probs = 1-alpha)
         } else if(method == "theta-proj") {
