@@ -17,7 +17,7 @@
 # Returns Lambda, or P(+|S=t)
 EstLambda = function(S, X, t, idx, Sorder, h = NULL){
 
-  idx.range <- c(max(1, idx - 1000), min(length(S), idx + 1000))
+  idx.range <- c(max(1, idx - 100), min(length(S), idx + 100))
 
   S.ordered <- S[Sorder][idx.range[1]:idx.range[2]]
   X.ordered <- X[Sorder][idx.range[1]:idx.range[2]]
