@@ -1,36 +1,36 @@
 # Original 
 #
 # # Returns Lambda, or P(+|S=t)
-EstLambda = function(S, X, t, ...){
- #h is the bandwidth, t is called c in the JZ paper
- #m is the sample size, S and X are the vectors of scores and labels
- m <- length(S)
- h <- (m^{-1/5}) * sd(S)
- ind.win <- (S < t + h) & (S > t - h)
- exp.X.and.I <- sum(X*ind.win)/m
- exp.I <- sum(ind.win)/m
- exp.X.and.I/exp.I
-}
+# EstLambda = function(S, X, t, ...){
+#  #h is the bandwidth, t is called c in the JZ paper
+#  #m is the sample size, S and X are the vectors of scores and labels
+#  m <- length(S)
+#  h <- (m^{-1/5}) * sd(S)
+#  ind.win <- (S < t + h) & (S > t - h)
+#  exp.X.and.I <- sum(X*ind.win)/m
+#  exp.I <- sum(ind.win)/m
+#  exp.X.and.I/exp.I
+# }
 
 # KernSmooth method
 
-# # Returns Lambda, or P(+|S=t)
-# EstLambda = function(S, X, t, idx, Sorder, h = NULL){
-# 
-#   idx.range <- c(max(1, idx - 100), min(length(S), idx + 100))
-# 
-#   S.ordered <- S[Sorder][idx.range[1]:idx.range[2]]
-#   X.ordered <- X[Sorder][idx.range[1]:idx.range[2]]
-# 
-#   if(is.null(h)) h <- KernSmooth::dpill(x = S.ordered, y = X.ordered, gridsize = 100)
-# 
-#   lp0 <- KernSmooth::locpoly(x = S.ordered, y = X.ordered, bandwidth = h, degree = 0,
-#                              range.x = range(S.ordered), gridsize = 10000)
-# 
-#   lp0.idx <- which.min(abs(lp0$x - t))
-#   
-#   return(lp0$y[lp0.idx])
-# }
+# Returns Lambda, or P(+|S=t)
+EstLambda = function(S, X, t, idx, Sorder, h = NULL){
+
+  idx.range <- c(max(1, idx - 1000), min(length(S), idx + 1000))
+
+  S.ordered <- S[Sorder][idx.range[1]:idx.range[2]]
+  X.ordered <- X[Sorder][idx.range[1]:idx.range[2]]
+
+  if(is.null(h)) h <- KernSmooth::dpill(x = S.ordered, y = X.ordered, gridsize = 100)
+
+  lp0 <- KernSmooth::locpoly(x = S.ordered, y = X.ordered, bandwidth = h, degree = 0,
+                             range.x = range(S.ordered), gridsize = 10000)
+
+  lp0.idx <- which.min(abs(lp0$x - t))
+
+  return(lp0$y[lp0.idx])
+}
 
 # np method
 
