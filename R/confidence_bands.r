@@ -1,3 +1,35 @@
+# Current method
+
+# TODO Consider implementing this from scratch so that you know the details
+# It should be straightforward, see here: https://bookdown.org/egarpor/NP-UC3M/kre-i-kre.html
+# Using kernsmooth currently because I expect their implementation is faster and more robust
+
+# Returns Lambda, or P(+|S=t)
+EstLambda = function(S, X, t, idx, Sorder, h = NULL){
+
+  tryCatch({
+    m <- length(S)
+    idx.range <- c(max(1, idx - 1000), min(length(S), idx + 1000))
+
+    S.ordered <- S[Sorder][idx.range[1]:idx.range[2]]
+    X.ordered <- X[Sorder][idx.range[1]:idx.range[2]]
+
+    if(is.null(h)) h <- KernSmooth::dpill(x = S.ordered, y = X.ordered, gridsize = 100)
+    # if(is.null(h)) h <- (m^{-1/5}) * sd(S)
+
+    lp0 <- KernSmooth::locpoly(x = S.ordered, y = X.ordered, bandwidth = h, degree = 0,
+                               range.x = range(S.ordered), gridsize = 1000)
+
+    lp0.idx <- which.min(abs(lp0$x - t))
+    lam <- lp0$y[lp0.idx]
+  }, error = function(e) {
+    stop("Lambda estimate failed.  Try setting h manually.")
+  }
+  )
+
+  return(lam)
+}
+
 # Original 
 #
 # # Returns Lambda, or P(+|S=t)
@@ -9,28 +41,8 @@
 #  ind.win <- (S < t + h) & (S > t - h)
 #  exp.X.and.I <- sum(X*ind.win)/m
 #  exp.I <- sum(ind.win)/m
-#  exp.X.and.I/exp.I
+#  return(exp.X.and.I/exp.I)
 # }
-
-# KernSmooth method
-
-# Returns Lambda, or P(+|S=t)
-EstLambda = function(S, X, t, idx, Sorder, h = NULL){
-
-  idx.range <- c(max(1, idx - 100), min(length(S), idx + 100))
-
-  S.ordered <- S[Sorder][idx.range[1]:idx.range[2]]
-  X.ordered <- X[Sorder][idx.range[1]:idx.range[2]]
-
-  if(is.null(h)) h <- KernSmooth::dpill(x = S.ordered, y = X.ordered, gridsize = 100)
-
-  lp0 <- KernSmooth::locpoly(x = S.ordered, y = X.ordered, bandwidth = h, degree = 0,
-                             range.x = range(S.ordered), gridsize = 10000)
-
-  lp0.idx <- which.min(abs(lp0$x - t))
-
-  return(lp0$y[lp0.idx])
-}
 
 # np method
 
