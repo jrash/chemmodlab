@@ -4,6 +4,8 @@
 # It should be straightforward, see here: https://bookdown.org/egarpor/NP-UC3M/kre-i-kre.html
 # Using kernsmooth currently because I expect their implementation is faster and more robust
 
+# The following functions contains Kernsmooth and ROT estimators.  ROT is selected currently
+
 # Returns Lambda, or P(+|S=t)
 EstLambda = function(S, X, t, idx, Sorder, h = NULL){
 
@@ -14,7 +16,12 @@ EstLambda = function(S, X, t, idx, Sorder, h = NULL){
     S.ordered <- S[Sorder][idx.range[1]:idx.range[2]]
     X.ordered <- X[Sorder][idx.range[1]:idx.range[2]]
 
+    ## --1 Kernsmooth bandwidth estimator
+    ## more accurate, but prone to errors
     # if(is.null(h)) h <- KernSmooth::dpill(x = S.ordered, y = X.ordered, gridsize = 100)
+    
+    ## --2 Rule of thumb estimator
+    ## Should not throw an error
     if(is.null(h)) h <- (m^{-1/5}) * sd(S)
 
     lp0 <- KernSmooth::locpoly(x = S.ordered, y = X.ordered, bandwidth = h, degree = 0,
@@ -30,7 +37,7 @@ EstLambda = function(S, X, t, idx, Sorder, h = NULL){
   return(lam)
 }
 
-# Original 
+# --3 JHO 
 #
 # # Returns Lambda, or P(+|S=t)
 # EstLambda = function(S, X, t, ...){
@@ -44,7 +51,7 @@ EstLambda = function(S, X, t, idx, Sorder, h = NULL){
 #  return(exp.X.and.I/exp.I)
 # }
 
-# np method
+# --4 np method
 
 # # Returns Lambda, or P(+|S=t)
 # EstLambda = function(S, X, t, idx, Sorder, h = NULL){
