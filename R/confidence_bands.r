@@ -261,7 +261,6 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
               var.k2 <- ifelse(var.k2 < 0, 0, var.k2)
               cov.k <- ((m^-1*pi.0^-2)*(pi.0*(k.c[e]-k.c[e]*k.c[f])*(1-Lam1-Lam2) 
                         + (r[e]-r[e]*r[f])*Lam1*Lam2))
-              cov.k <- ifelse(cov.k < 0, 0, cov.k)
               cor.k <- cov.k/(sqrt(var.k1)*sqrt(var.k2))
               cor.k <- ifelse(var.k1 == 0 | var.k2 == 0, ifelse(e == f, 1, 0), cor.k)
               cor.C[e, f] <- cor.k
@@ -304,7 +303,6 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
               var.pi2 <- ifelse(var.pi2 < 0, 0, var.pi2)
               cov.pi <- (((m*r[e]*r[f])^{-1})*(r[e]*pi.c[e]*(1 - pi.c[e])
                         + (pi.c[e]-Lam1)*(pi.c[e]-Lam2)*(r[e] - r[e]*r[f])))
-              cov.pi <- ifelse(cov.pi < 0, 0, cov.pi)
               cor.pi <- cov.pi/(sqrt(var.pi1)*sqrt(var.pi2))
               cor.pi <- ifelse(var.pi1 == 0 | var.pi2 == 0, 0, cor.pi)
               cor.C[e, f] <- cor.pi
