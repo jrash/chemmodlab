@@ -14,8 +14,8 @@ EstLambda = function(S, X, t, idx, Sorder, h = NULL){
     S.ordered <- S[Sorder][idx.range[1]:idx.range[2]]
     X.ordered <- X[Sorder][idx.range[1]:idx.range[2]]
 
-    if(is.null(h)) h <- KernSmooth::dpill(x = S.ordered, y = X.ordered, gridsize = 100)
-    # if(is.null(h)) h <- (m^{-1/5}) * sd(S)
+    # if(is.null(h)) h <- KernSmooth::dpill(x = S.ordered, y = X.ordered, gridsize = 100)
+    if(is.null(h)) h <- (m^{-1/5}) * sd(S)
 
     lp0 <- KernSmooth::locpoly(x = S.ordered, y = X.ordered, bandwidth = h, degree = 0,
                                range.x = range(S.ordered), gridsize = 1000)
