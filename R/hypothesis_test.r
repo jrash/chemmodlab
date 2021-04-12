@@ -16,16 +16,12 @@
 #' 
 #' @export
 PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
-                          correction = "plus2", alpha = .05){
+                          correction = "plus2", alpha = .05, h = NULL){
   
   m <- length(S1) #total sample size
   nact <- sum(X)  #total number of actives
-  
-  # this block no longer needed ---
-  #  # Compute indices of the testing fractions
-  #  m <- length(S1)
-  #  r.all <- (1:m)/m
-  #  idx <- which(r.all %in% r)
+  r.all <- (1:m)/m
+  idx <- which(r.all %in% r)
   
   # Z Quantile for CIs
   quant <- qnorm(1-alpha/2)
@@ -53,8 +49,6 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
     # the compounds as shared can inflate the covariance when the number of 
     # compounds tested is small, leading to an increased type I error rate.
     # Want the plus 2 correction to have the maximum increase of the variance.
-    # Need to correct the stars because their correction is implied by the non
-    # star correction.
     pi1 <- (hits1+2)/(m*r+4)
     k1 <- r/pi.0*pi1
     pi2 <- (hits2+2)/(m*r+4)
@@ -75,17 +69,24 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
   }
   pi12 <- ifelse(is.na(pi12), 0, pi12)
   
+  Lam1.vec <- vector(length = length(k))
+  Lam2.vec <- vector(length = length(k))
+  for(j in seq_along(k)){
+    Lam1.vec[j] <- EstLambda(S1, X, t = F1inv(1-r[j]), idx = idx[j], h)
+    Lam2.vec[j] <- EstLambda(S2, X, t = F2inv(1-r[j]), idx = idx[j], h)
+  }
+  
   CI.int <- matrix(ncol = 2, nrow = length(k1))
   se <- p.val <- vector(length = length(pi1))
   if(metric == "rec") {
     if(method %in% c("JZ ind", "AH")){
       for(j in seq_along(k1)) {
-        Lam1 <- EstLambda(S1, X, m, t = F1inv(1-r[j]))   #jho change!
+        Lam1 <- Lam1.vec[j]
         var1.k <- ((k1[j]*(1-k1[j]))/(m*pi.0))*(1-2*Lam1) +
           (Lam1^2*(1-r[j])*r[j])/(m*pi.0^2)
         # Check to see if var.k is negative due to machine precision problem
         var1.k <- ifelse(var1.k < 0, 0, var1.k)
-        Lam2 <- EstLambda(S2, X, m, t = F2inv(1-r[j]))   #jho change!
+        Lam2 <- Lam2.vec[j]
         var2.k <- ((k2[j]*(1-k2[j]))/(m*pi.0))*(1-2*Lam2) +
           (Lam2^2*(1-r[j])*r[j])/(m*pi.0^2)
         # Check to see if var.k is negative due to machine precision problem
@@ -130,19 +131,11 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
       for(j in seq_along(k1)) {
         mat <- matrix(c(hits12[j], hits1[j] - hits12[j],  hits2[j] - hits12[j],
                         nact - (hits1[j] + hits2[j] - hits12[j])), ncol = 2)
-        # no longer needed        
-        #        for(a in 1:2) {
-        #          for(b in 1:2) {
-        #            mat[a, b] <- round(mat[a, b])
-        #          }
-        #        }
-        # what is eff_seeds[z] ?      
         if(!all(c(mat)>=0)) stop(paste(toString(mat),"Negative matrix?", 
                                        eff_seeds[z], toString(params), metric, 
                                        sep = "|"))
         BminusC <- hits1[j] - hits2[j]
         BplusC <- hits1[j] + hits2[j] - 2*hits12[j]
-        #        Ntot <- nact  # m*pi.0
         zscore <- ifelse(BplusC>0, BminusC/sqrt(BplusC), 0)
         p.val[j] <- 2*pnorm(-abs(zscore))
         se[j] <- sqrt(BplusC - BminusC^2/nact) / nact
@@ -173,13 +166,14 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
       Sorder1.idx <- Sorder1[idx]
       Sorder2.idx <- Sorder2[idx]
       for(j in seq_along(pi1)) {
-        Lam1 <- EstLambda(S1, X, m, t = S1[Sorder1.idx][j])
+        Lam1 <- Lam1.vec[j]
         var1.pi <- (pi1[j]*(1-pi1[j]))/(m*r[j]) + (1-r[j])*(pi1[j]-Lam1)^2/(m*r[j])
         var1.pi <- ifelse(var1.pi < 0, 0, var1.pi)
-        Lam2 <- EstLambda(S2, X, m, t = S2[Sorder2.idx][j])
+        Lam2 <- Lam2.vec[j]
         var2.pi <- (pi2[j]*(1-pi2[j]))/(m*r[j]) + (1-r[j])*(pi2[j]-Lam2)^2/(m*r[j])
         var2.pi <- ifelse(var2.pi < 0, 0, var2.pi)
-        cov.pi <- ((m^-1*r[j]^-2))*(r12[j]*pi12[j]*(1 - pi12[j]) + (pi12[j]-Lam1)*(pi12[j]-Lam2)*(r12[j] - r[j]^2))
+        cov.pi <- ((m^-1*r[j]^-2))*(r12[j]*pi12[j]*(1 - pi12[j]) + 
+                                      (pi12[j]-Lam1)*(pi12[j]-Lam2)*(r12[j] - r[j]^2))
         
         if(method == "JZ ind") {
           var.pi <- var1.pi + var2.pi
@@ -244,5 +238,4 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
     est <- pi1 - pi2
   }
   list(diff_estimate = est, std_err = se, ci_interval = CI.int, p_value = p.val)
-  #  list(diff_estimate = est, ci_interval = cbind(CI.int[, 1], CI.int[, 2]), p_value = p.val)
 }

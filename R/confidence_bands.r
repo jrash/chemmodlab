@@ -7,9 +7,10 @@
 # The following functions contains Kernsmooth and ROT estimators.  ROT is selected currently
 
 # Returns Lambda, or P(+|S=t)
-EstLambda = function(S, X, t, idx, Sorder, h = NULL){
+EstLambda = function(S, X, t, idx, h = NULL){
 
   tryCatch({
+    Sorder <- order(S, decreasing=TRUE)
     m <- length(S)
     idx.range <- c(max(1, idx - 1000), min(length(S), idx + 1000))
 
@@ -132,7 +133,6 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
 #' @param myseed the random seed.
 #' 
 #' @export
-#' 
 PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup-t",
                            plus2 = T, conf.level = .95, boot.rep = 100,
                            mc.rep = 100000, myseed = 111, h = NULL){
@@ -162,24 +162,29 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
   set.seed(myseed)
   alpha <- 1-conf.level
   
-  # Compute indices of the testing fractions
-  m <- length(S)
+  m <- length(S) #total sample size
+  nact <- sum(X)  #total number of actives
   r.all <- (1:m)/m
-  # TODO This breaks when r contains zeros.  Need some error handling
   idx <- which(r.all %in% r)
+
+  # Convert fractions in r to thresholds, for both sets of scores
+  # Also accumulate the number of actives, for each score and jointly
+  Fcdf <- ecdf(S); yyobs <- sort(unique(S))
+  Finv <- stepfun(x = Fcdf(yyobs), y = c(yyobs, max(yyobs)), right=TRUE, f=1)
+  hits <- vector(length = length(r))
+  for(i in 1:length(r)) {
+    t <- Finv(1-r[i])
+    hits[i] <- sum(X*(S > t))
+  }
   
-  # Computing the performance measures
-  Sorder <- order(S,decreasing=TRUE)
-  Sorder.idx <- Sorder[idx]
-  hits <- cumsum(X[Sorder])[idx]
   pi.0 <- mean(X)
   pi <- (hits)/(m*r)
-  k <- (hits)/(sum(X))
+  k <- hits/nact
   k.ide <- (cumsum(rev(sort(X)))[idx]/sum(X))
   
   Lam.vec <- vector(length = length(k))
   for(j in seq_along(k)){
-    Lam.vec[j] <- EstLambda(S, X, t = S[Sorder.idx][j], idx = idx[j], Sorder, h)
+    Lam.vec[j] <- EstLambda(S, X, t = Finv(1-r[j]), idx = idx[j], h)
   }
   
   # Plus 2 correction
@@ -201,7 +206,8 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
       if(method == "JZ"){
         for(j in seq_along(k)) {
           Lam <- Lam.vec[j]
-          var.k <- ((k.c[j]*(1-k.c[j]))/(m*pi.0))*(1-2*Lam) + (Lam^2*(1-r[j])*r[j])/(m*pi.0^2)
+          var.k <- ((k.c[j]*(1-k.c[j]))/(m*pi.0))*(1-2*Lam) + 
+            (Lam^2*(1-r[j])*r[j])/(m*pi.0^2)
           # Check to see if var.k is negative due to machine precision problem
           var.k <- ifelse(var.k < 0, 0, var.k)
           sd.k <- sqrt(var.k)
@@ -226,7 +232,8 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
       if(method == "JZ") {
         for(j in seq_along(k)) {
           Lam <- Lam.vec[j]
-          var.pi <- (pi.c[j]*(1-pi.c[j]))/(m*r[j]) + (1-r[j])*(pi.c[j]-Lam)^2/(m*r[j])
+          var.pi <- (pi.c[j]*(1-pi.c[j]))/(m*r[j]) +
+            (1-r[j])*(pi.c[j]-Lam)^2/(m*r[j])
           # Check to see if var.pi is negative due to machine precision issues
           var.pi <- ifelse(var.pi < 0, 0, var.pi)
           sd.pi <- sqrt(var.pi)
@@ -252,15 +259,15 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           for(f in seq_along(k)) {
             for(e in 1:f) {
               Lam1 <- Lam.vec[e]
-              var.k1 <- (((k.c[e]*(1-k.c[e]))/(m*pi.0))*(1-2*Lam1) 
-                        + (Lam1^2*(1-r[e])*r[e])/(m*pi.0^2))
+              var.k1 <- (((k.c[e]*(1-k.c[e]))/(m*pi.0))*(1-2*Lam1) +
+                        (Lam1^2*(1-r[e])*r[e])/(m*pi.0^2))
               var.k1 <- ifelse(var.k1 < 0, 0, var.k1)
               Lam2 <- Lam.vec[f]
-              var.k2 <- (((k.c[f]*(1-k.c[f]))/(m*pi.0))*(1-2*Lam2) 
-                        + (Lam2^2*(1-r[f])*r[f])/(m*pi.0^2))
+              var.k2 <- (((k.c[f]*(1-k.c[f]))/(m*pi.0))*(1-2*Lam2) +
+                        (Lam2^2*(1-r[f])*r[f])/(m*pi.0^2))
               var.k2 <- ifelse(var.k2 < 0, 0, var.k2)
-              cov.k <- ((m^-1*pi.0^-2)*(pi.0*(k.c[e]-k.c[e]*k.c[f])*(1-Lam1-Lam2) 
-                        + (r[e]-r[e]*r[f])*Lam1*Lam2))
+              cov.k <- ((m^-1*pi.0^-2)*(pi.0*(k.c[e]-k.c[e]*k.c[f])*(1-Lam1-Lam2) +
+                        (r[e]-r[e]*r[f])*Lam1*Lam2))
               cov.k <- ifelse(cov.k < 0, 0, cov.k)
               cor.k <- cov.k/(sqrt(var.k1)*sqrt(var.k2))
               cor.k <- ifelse(var.k1 == 0 | var.k2 == 0, ifelse(e == f, 1, 0), cor.k)
@@ -281,7 +288,8 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
         }
         for(j in seq_along(k)) {
           Lam <- Lam.vec[j]
-          var.k <- ((k.c[j]*(1-k.c[j]))/(m*pi.0))*(1-2*Lam) + (Lam^2*(1-r[j])*r[j])/(m*pi.0^2)
+          var.k <- ((k.c[j]*(1-k.c[j]))/(m*pi.0))*(1-2*Lam) + 
+            (Lam^2*(1-r[j])*r[j])/(m*pi.0^2)
           # Check to see if var.k is negative due to machine precision problem
           var.k <- ifelse(var.k < 0, 0, var.k)
           sd.k <- sqrt(var.k)
@@ -297,10 +305,12 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           for(f in seq_along(pi)) {
             for(e in 1:f) {
               Lam1 <- Lam.vec[e]
-              var.pi1 <- (pi.c[e]*(1-pi.c[e]))/(m*r[e]) + (1-r[e])*(pi.c[e]-Lam1)^2/(m*r[e])
+              var.pi1 <- (pi.c[e]*(1-pi.c[e]))/(m*r[e]) + 
+                (1-r[e])*(pi.c[e]-Lam1)^2/(m*r[e])
               var.pi1 <- ifelse(var.pi1 < 0, 0, var.pi1)
               Lam2 <- Lam.vec[f]
-              var.pi2 <- (pi.c[f]*(1-pi.c[f]))/(m*r[f]) + (1-r[f])*(pi.c[f]-Lam2)^2/(m*r[f])
+              var.pi2 <- (pi.c[f]*(1-pi.c[f]))/(m*r[f]) + 
+                (1-r[f])*(pi.c[f]-Lam2)^2/(m*r[f])
               var.pi2 <- ifelse(var.pi2 < 0, 0, var.pi2)
               cov.pi <- (((m*r[e]*r[f])^{-1})*(r[e]*pi.c[e]*(1 - pi.c[e])
                         + (pi.c[e]-Lam1)*(pi.c[e]-Lam2)*(r[e] - r[e]*r[f])))
@@ -334,3 +344,4 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
   list(CI = CI.int, rec = k, prec = pi, h = h)
   
 }
+
