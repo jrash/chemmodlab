@@ -20,7 +20,7 @@ EstLambda = function(S, X, t, idx, h = NULL){
     ## --1 Kernsmooth bandwidth estimator
     ## more accurate, but prone to errors
     # if(is.null(h)) h <- KernSmooth::dpill(x = S.ordered, y = X.ordered, gridsize = 100)
-    
+
     ## --2 Rule of thumb estimator
     ## Should not throw an error
     if(is.null(h)) h <- (m^{-1/5}) * sd(S)
@@ -73,6 +73,20 @@ EstLambda = function(S, X, t, idx, h = NULL){
 #   np.model <- invisible(np::npreg(bwa))
 # 
 #   return(predict(np.model, newdata = data.frame(S.ordered = t)))
+# }
+
+# --5 JZ original method
+# 
+# Returns Lambda, or P(+|S=t)
+# EstLambda = function(S, X, t, ...){
+#  #h is the bandwidth, t is called c in the JZ paper
+#  #m is the sample size, S and X are the vectors of scores and labels
+#  m <- length(S)
+#  h <- (m^{-1/5})
+#  ind.win <- (S < t + h) & (S > t - h)
+#  exp.X.and.I <- sum(X*ind.win)/m
+#  exp.I <- sum(ind.win)/m
+#  return(exp.X.and.I/exp.I)
 # }
 
 
@@ -221,6 +235,8 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
       } else if(method == "bootstrap") {
         # bootstrap quantiles
         CI.int <- BootCI(X, S, m, pi.0, boot.rep, metric = "rec", plus2, r, myseed=myseed)
+        CI.int[, 1] <- ifelse(CI.int[, 1] < 0, 0, CI.int[, 1])
+        CI.int[, 2] <- ifelse(CI.int[, 2] > k.ide, k.ide, CI.int[, 2])
       } else if(method == "binomial") {
         for(j in seq_along(k)) {
           var.k <- ((m*pi.0)^-1)*k.c[j]*(1-k.c[j])
@@ -251,6 +267,8 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
       } else if(method == "bootstrap") {
         # bootstrap quantiles
         CI.int <- BootCI(X, S, m, pi.0, boot.rep, metric = "prec", plus2, r, myseed=myseed)
+        CI.int[, 1] <- ifelse(CI.int[, 1] < 0, 0, CI.int[, 1])
+        CI.int[, 2] <- ifelse(CI.int[, 2] > 1, 1, CI.int[, 2])
       } else if(method == "binomial") {
         for(j in seq_along(pi)) {
           var.pi <- ((m*r[j])^-1)*pi.c[j]*(1-pi.c[j])
