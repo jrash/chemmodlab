@@ -192,8 +192,8 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
     hits[i] <- sum(X*(S > t[i]))
   }
   
-  Lam.vec <- vector(length = length(k))
-  for(j in seq_along(k)){
+  Lam.vec <- vector(length = length(idx))
+  for(j in seq_along(idx)){
     Lam.vec[j] <- EstLambda(S, X, t = t[j], idx = idx[j], h)
   }
   
