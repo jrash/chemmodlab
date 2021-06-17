@@ -43,6 +43,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
   }
   nact <- sum(X) #total number of actives
   ntest <- (m*r) #number of compounds tested
+  pi.0 <- nact/m
   
   k1 <- (hits1)/nact
   k2 <- (hits2)/nact
@@ -64,16 +65,16 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
   k12.c <- (hits12)/nact
   pi1.c <- (hits1)/(ntest)
   pi2.c <- (hits2)/(ntest)
+  r12 <- ntest12/m
   pi12.c <- (hits12)/(m*r12)
   pi12.c <- ifelse(is.na(pi12.c), 0, pi12.c)
-  r12 <- ntest12/m
   # pooled estimates
   pi.c <- (pi1.c + pi2.c)/2
   k.c <- (k1.c + k2.c)/2
   
-  Lam1.vec <- vector(length = length(k))
-  Lam2.vec <- vector(length = length(k))
-  for(j in seq_along(k)){
+  Lam1.vec <- vector(length = length(k1))
+  Lam2.vec <- vector(length = length(k1))
+  for(j in seq_along(k1)){
     Lam1.vec[j] <- EstLambda(S1, X, t = F1inv(1-r[j]), idx = idx[j], h)
     Lam2.vec[j] <- EstLambda(S2, X, t = F2inv(1-r[j]), idx = idx[j], h)
   }
