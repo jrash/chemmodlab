@@ -175,12 +175,12 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
   
   set.seed(myseed)
   alpha <- 1-conf.level
-  
   m <- length(S) #total sample size
   nact <- sum(X)  #total number of actives
+  ntest <- m*r #total number tested
   r.all <- (1:m)/m
   idx <- which(r.all %in% r)
-
+  
   # Convert fractions in r to thresholds, for both sets of scores
   # Also accumulate the number of actives, for each score and jointly
   Fcdf <- ecdf(S); yyobs <- sort(unique(S))
@@ -192,24 +192,27 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
     hits[i] <- sum(X*(S > t[i]))
   }
   
-  pi.0 <- mean(X)
-  pi <- (hits)/(m*r)
-  k <- hits/nact
-  k.ide <- (cumsum(rev(sort(X)))[idx]/sum(X))
-  
   Lam.vec <- vector(length = length(k))
   for(j in seq_along(k)){
     Lam.vec[j] <- EstLambda(S, X, t = t[j], idx = idx[j], h)
   }
   
+  pi <- (hits)/(m*r)
+  k <- hits/nact
+  
   # Plus 2 correction
   if (plus2) {
-    pi.c <- (hits+2)/(m*r+4)
-    k.c <- r/pi.0*pi.c
-  } else {
-    pi.c <- pi
-    k.c <- k
+    hits <- hits + 2
+    nact <- nact + 4
+    ntest <- ntest + 2
+    m <- m + 4
   }
+  
+  pi.0 <- nact/m
+  r <- ntest/m
+  k.c <- hits/nact
+  pi.c <- pi.0/r*k.c
+  k.ide <- (cumsum(rev(sort(X)))[idx]/sum(X))
   
   CI.int <- matrix(ncol = 2, nrow = length(k))
   if(type == "pointwise") {
