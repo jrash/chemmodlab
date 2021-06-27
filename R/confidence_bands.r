@@ -91,7 +91,7 @@ EstLambda = function(S, X, t, idx, h = NULL){
 
 
 # Bootstrap percentile CI
-BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
+BootCI = function(X, S, m, pi.0, boot.rep, metric, plus, r, myseed=111){
   storeout=matrix(NA, nrow=m, ncol=1+boot.rep)
   r.all <- (1:m)/m
   idx <- which(r.all %in% r)
@@ -107,10 +107,10 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
     pi.0 <- mean(X.star)
     pi <- (hits)/(m*r)
     k <- (hits)/(sum(X.star))
-    if (plus2) {
-      # using random plus2 correction
-      plus2.yes <- rbinom(1, 4, .5)
-      pi <- (hits+plus2.yes)/(m*r+4)
+    if (plus) {
+      # using random plus correction
+      plus.yes <- rbinom(1, 4, .5)
+      pi <- (hits+plus.yes)/(m*r+4)
       k <- r/pi.0*pi
     }
     if(metric == "rec") {
@@ -140,7 +140,7 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
 #' ("pointwise") or a confidence band ("band") should be constructed.
 #' @param method the method to use. Point-wise confidence interval options
 #' are "binomial", "JZ", "bootstrap". Confidence band options are "sup-t", "theta-proj".
-#' @param plus2 should plus2 correction be used or not?
+#' @param plus should plus correction be used or not?
 #' @param conf.level the confidence level for the bands.
 #' @param boot.rep the number of replicates to use for the bootstrap method.
 #' @param mc.rep the number of Monte Carlo replicates to use for the sup-t method.
@@ -148,7 +148,7 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, plus2, r, myseed=111){
 #' 
 #' @export
 PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup-t",
-                           plus2 = T, conf.level = .95, boot.rep = 100,
+                           plus = T, conf.level = .95, boot.rep = 100,
                            mc.rep = 100000, myseed = 111, h = NULL){
   
   # TODO add support for EF
@@ -201,7 +201,7 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
   k <- hits/nact
   
   # Plus 2 correction
-  if (plus2) {
+  if (plus) {
     hits <- hits + 2
     nact <- nact + 4
     ntest <- ntest + 2
@@ -237,7 +237,7 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
         }
       } else if(method == "bootstrap") {
         # bootstrap quantiles
-        CI.int <- BootCI(X, S, m, pi.0, boot.rep, metric = "rec", plus2, r, myseed=myseed)
+        CI.int <- BootCI(X, S, m, pi.0, boot.rep, metric = "rec", plus, r, myseed=myseed)
         CI.int[, 1] <- ifelse(CI.int[, 1] < 0, 0, CI.int[, 1])
         CI.int[, 2] <- ifelse(CI.int[, 2] > k.ide, k.ide, CI.int[, 2])
       } else if(method == "binomial") {
@@ -269,7 +269,7 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
         }
       } else if(method == "bootstrap") {
         # bootstrap quantiles
-        CI.int <- BootCI(X, S, m, pi.0, boot.rep, metric = "prec", plus2, r, myseed=myseed)
+        CI.int <- BootCI(X, S, m, pi.0, boot.rep, metric = "prec", plus, r, myseed=myseed)
         CI.int[, 1] <- ifelse(CI.int[, 1] < 0, 0, CI.int[, 1])
         CI.int[, 2] <- ifelse(CI.int[, 2] > 1, 1, CI.int[, 2])
       } else if(method == "binomial") {

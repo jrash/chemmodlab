@@ -12,13 +12,14 @@
 #' @param method the method to use. Recall options are 
 #' c("AH", "binomial", "JZ ind", "mcnemar", "binomial ind"). Precision options are
 #' c("AH", "binomial", "JZ ind", "stouffer", "binomial ind").
-#' @param plus2 should plus2 correction be used or not?
+#' @param plus should plus correction be used or not?
 #' @param alpha the significance level.
 #' 
 #' @export
 PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
-                          plus2 = T, alpha = .05, h = NULL){
+                          plus = T, alpha = .05, h = NULL, pool = F, seed = 111){
   
+  set.seed(seed)
   m <- length(S1) #total sample size
   r.all <- (1:m)/m
   idx <- which(r.all %in% r)
@@ -39,7 +40,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
     hits1[i] <- sum(X*(S1 > t1))
     hits2[i] <- sum(X*(S2 > t2))
     hits12[i] <- sum(X*(S1 > t1 & S2 > t2))
-    ntest12[i] <- mean(S1 > t1 & S2 > t2)
+    ntest12[i] <- sum(S1 > t1 & S2 > t2)
   }
   nact <- sum(X) #total number of actives
   ntest <- (m*r) #number of compounds tested
@@ -50,7 +51,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
   pi1 <- pi.0/r*k1
   pi2 <- pi.0/r*k2
   
-  if(plus2) {
+  if(plus) {
     hits1 <- hits1 + 1
     hits2 <- hits2 + 1
     nact <- nact + 2 
@@ -84,18 +85,33 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
   if(metric == "rec") {
     if(method %in% c("JZ ind", "AH")){
       for(j in seq_along(k1.c)) {
-        Lam1 <- Lam1.vec[j]
-        var1.k <- ((k1.c[j]*(1-k1.c[j]))/(m*pi.0))*(1-2*Lam1) +
-          (Lam1^2*(1-r[j])*r[j])/(m*pi.0^2)
-        # Check to see if var.k is negative due to machine precision problem
-        var1.k <- ifelse(var1.k < 0, 0, var1.k)
-        Lam2 <- Lam2.vec[j]
-        var2.k <- ((k2.c[j]*(1-k2.c[j]))/(m*pi.0))*(1-2*Lam2) +
-          (Lam2^2*(1-r[j])*r[j])/(m*pi.0^2)
-        # Check to see if var.k is negative due to machine precision problem
-        var2.k <- ifelse(var2.k < 0, 0, var2.k)
-        cov.k <- (m^-1*pi.0^-2)*(pi.0*(k12.c[j]-k1.c[j]*k2.c[j])*(1-Lam1-Lam2) +
-                                   (r12[j]-r[j]^2)*Lam1*Lam2)
+        if (!pool) {
+          Lam1 <- Lam1.vec[j]
+          var1.k <- ((k1.c[j]*(1-k1.c[j]))/(m*pi.0))*(1-2*Lam1) +
+            (Lam1^2*(1-r[j])*r[j])/(m*pi.0^2)
+          # Check to see if var.k is negative due to machine precision problem
+          var1.k <- ifelse(var1.k < 0, 0, var1.k)
+          Lam2 <- Lam2.vec[j]
+          var2.k <- ((k2.c[j]*(1-k2.c[j]))/(m*pi.0))*(1-2*Lam2) +
+            (Lam2^2*(1-r[j])*r[j])/(m*pi.0^2)
+          # Check to see if var.k is negative due to machine precision problem
+          var2.k <- ifelse(var2.k < 0, 0, var2.k)
+          cov.k <- (m^-1*pi.0^-2)*(pi.0*(k12.c[j]-k1.c[j]*k2.c[j])*(1-Lam1-Lam2) +
+                                     (r12[j]-r[j]^2)*Lam1*Lam2)
+        } else {
+          Lam1 <- Lam1.vec[j]
+          var1.k <- ((k.c[j]*(1-k.c[j]))/(m*pi.0))*(1-2*Lam1) +
+            (Lam1^2*(1-r[j])*r[j])/(m*pi.0^2)
+          # Check to see if var.k is negative due to machine precision problem
+          var1.k <- ifelse(var1.k < 0, 0, var1.k)
+          Lam2 <- Lam2.vec[j]
+          var2.k <- ((k.c[j]*(1-k.c[j]))/(m*pi.0))*(1-2*Lam2) +
+            (Lam2^2*(1-r[j])*r[j])/(m*pi.0^2)
+          # Check to see if var.k is negative due to machine precision problem
+          var2.k <- ifelse(var2.k < 0, 0, var2.k)
+          cov.k <- (m^-1*pi.0^-2)*(pi.0*(k12.c[j]-k.c[j]*k.c[j])*(1-Lam1-Lam2) +
+                                     (r12[j]-r[j]^2)*Lam1*Lam2)
+        }
         
         # assuming independence of k
         if(method == "JZ ind"){
@@ -104,6 +120,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
           var.k <- var1.k + var2.k - 2*cov.k
         }
         # Check to see if var.k is negative due to machine precision problem
+        if(var.k < -.000001) stop(paste0("Negative variance: var1: ", var1.k, ", var2:  ", var2.k, ", cov: ", cov.k, " , seed: ", seed))
         var.k <- ifelse(var.k < 0, 0, var.k)
         se[j] <- sqrt(var.k)
         # TODO threshold these as we do in the confidence bands
@@ -116,17 +133,23 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
       }
     } else if(method %in% c("binomial ind", "binomial")) {
       for(j in seq_along(k1.c)) {
-        # TODO make sure to check this after pooling simulations!
-        var1.k <- (m*pi.0)^-1*(k.c[j])*(1-k.c[j])
-        var2.k <- (m*pi.0)^-1*(k.c[j])*(1-k.c[j])
-        cov.k <- (m*pi.0)^-1*(k12.c[j] - k.c[j]*k.c[j])
         
-        if(method == "binomial") {
-          var.k <- var1.k + var1.k - 2*cov.k
-        } else if(method == "binomial ind") {
-          var.k <- var1.k + var1.k
+        if (!pool) {
+          var1.k <- (m*pi.0)^-1*(k1.c[j])*(1-k1.c[j])
+          var2.k <- (m*pi.0)^-1*(k2.c[j])*(1-k2.c[j])
+          cov.k <- (m*pi.0)^-1*(k12.c[j] - k1.c[j]*k2.c[j])
+        } else {
+          var1.k <- (m*pi.0)^-1*(k.c[j])*(1-k.c[j])
+          var2.k <- (m*pi.0)^-1*(k.c[j])*(1-k.c[j])
+          cov.k <- (m*pi.0)^-1*(k12.c[j] - k.c[j]*k.c[j])
         }
         
+        if(method == "binomial") {
+          var.k <- var1.k + var2.k - 2*cov.k
+        } else if(method == "binomial ind") {
+          var.k <- var1.k + var2.k
+        }
+        if(var.k < -.000001) stop(paste0("Negative variance: var1: ", var1.k, ", var2:  ", var2.k, ", cov: ", cov.k, " , seed: ", seed))
         var.k <- ifelse(var.k < 0, 0, var.k)
         se[j] <- sqrt(var.k)
         CI.int[j, ] <- c( (k1[j]-k2[j]) - quant*se[j],
@@ -139,9 +162,6 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
       for(j in seq_along(k1.c)) {
         mat <- matrix(c(hits12[j], hits1[j] - hits12[j],  hits2[j] - hits12[j],
                         nact - (hits1[j] + hits2[j] - hits12[j])), ncol = 2)
-        if(!all(c(mat)>=0)) stop(paste(toString(mat),"Negative matrix?", 
-                                       eff_seeds[z], toString(params), metric, 
-                                       sep = "|"))
         BminusC <- hits1[j] - hits2[j]
         BplusC <- hits1[j] + hits2[j] - 2*hits12[j]
         zscore <- ifelse(BplusC>0, BminusC/sqrt(BplusC), 0)
@@ -151,8 +171,9 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
       }
     }
     # difference estimates
-    est <- (k1[j]-k2[j])
+    est <- (k1 - k2)
   } else if(metric == "prec") {
+    # TODO remember to address pooling method here once we decide on a method
     if(method %in% c("JZ ind", "AH")) {
       for(j in seq_along(pi1.c)) {
         Lam1 <- Lam1.vec[j]
@@ -215,7 +236,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
         p.1 <- e/n1
         p.2 <- g/n1
         p.bar <- (e + g)/(2*n1)
-        if(correction == "plus2") {
+        if(correction == "plus") {
           n1 <- n1 + 4
           e <- e + 2
           g <- g + 2
