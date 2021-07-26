@@ -10,14 +10,14 @@
 #' @param r a vector of testing fractions.
 #' @param metric the performance curve to use. Options are recall ("rec") and precision ("prec").
 #' @param method the method to use. Recall options are 
-#' c("AH", "binomial", "JZ ind", "mcnemar", "binomial ind"). Precision options are
-#' c("AH", "binomial", "JZ ind", "stouffer", "binomial ind").
+#' c("EmProc", "binomial", "JZ ind", "mcnemar", "binomial ind"). Precision options are
+#' c("EmProc", "binomial", "JZ ind", "stouffer", "binomial ind").
 #' @param plus should plus correction be used or not?
 #' @param alpha the significance level.
 #' 
 #' @export
-PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
-                          plus = T, alpha = .05, h = NULL, pool = F, seed = 111){
+PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "EmProc",
+                          plus = T, alpha = .05, h = NULL, seed = 111){
   
   set.seed(seed)
   m <- length(S1) #total sample size
@@ -44,34 +44,48 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
   }
   nact <- sum(X) #total number of actives
   ntest <- (m*r) #number of compounds tested
-  pi.0 <- nact/m
   
-  k1 <- (hits1)/nact
-  k2 <- (hits2)/nact
-  pi1 <- pi.0/r*k1
-  pi2 <- pi.0/r*k2
-  
-  if(plus) {
-    hits1 <- hits1 + 1
-    hits2 <- hits2 + 1
-    nact <- nact + 2 
-    ntest <- ntest + 1
-    m <- m + 2
-  } 
-  
+  # Uncorrected parameters
   r <- ntest/m
   pi.0 <- nact/m
-  k1.c <- (hits1)/nact
-  k2.c <- (hits2)/nact
-  k12.c <- (hits12)/nact
-  pi1.c <- (hits1)/(ntest)
-  pi2.c <- (hits2)/(ntest)
+  k1 <- (hits1)/nact
+  k2 <- (hits2)/nact
+  k12 <- (hits12)/nact
+  pi1 <- pi.0/r*k1
+  pi2 <- pi.0/r*k2
   r12 <- ntest12/m
-  pi12.c <- (hits12)/(m*r12)
-  pi12.c <- ifelse(is.na(pi12.c), 0, pi12.c)
+  pi12 <- hits12/ntest12
+  pi12 <- ifelse(is.na(pi12), 0, pi12)
   # pooled estimates
-  pi.c <- (pi1.c + pi2.c)/2
-  k.c <- (k1.c + k2.c)/2
+  pi <- (pi1 + pi2)/2
+  k <- (k1 + k2)/2
+  
+  if(plus) {
+    hits1.c <- hits1 + 1
+    hits2.c <- hits2 + 1
+    nact.c <- nact + 2 
+    ntest.c <- ntest + 1
+    m.c <- m + 2
+  } else {
+    hits1.c <- hits1
+    hits2.c <- hits2
+    nact.c <- nact 
+    ntest.c <- ntest
+    m.c <- m
+  }
+  
+  # Corrected parameters
+  r.c <- ntest.c/m.c
+  pi.0.c <- nact.c/m.c
+  k1.c <- (hits1.c)/nact.c
+  k2.c <- (hits2.c)/nact.c
+  k12.c <- (hits12)/nact.c
+  pi1.c <- (hits1.c)/(ntest.c)
+  pi2.c <- (hits2.c)/(ntest.c)
+  r12.c <- ntest12/m.c
+  pi12.c <- hits12/ntest12
+  pi12.c <- ifelse(is.na(pi12.c), 0, pi12.c)
+  
   
   Lam1.vec <- vector(length = length(k1))
   Lam2.vec <- vector(length = length(k1))
@@ -80,101 +94,105 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
     Lam2.vec[j] <- EstLambda(S2, X, t = F2inv(1-r[j]), idx = idx[j], h)
   }
   
-  CI.int <- matrix(ncol = 2, nrow = length(k1.c))
-  se <- p.val <- vector(length = length(k1.c))
+  CI.int <- matrix(ncol = 2, nrow = length(k1))
+  se.p <- se.np <- p.val <- vector(length = length(k1))
   if(metric == "rec") {
-    if(method %in% c("JZ ind", "AH")){
-      for(j in seq_along(k1.c)) {
-        if (!pool) {
-          Lam1 <- Lam1.vec[j]
-          var1.k <- ((k1.c[j]*(1-k1.c[j]))/(m*pi.0))*(1-2*Lam1) +
-            (Lam1^2*(1-r[j])*r[j])/(m*pi.0^2)
-          # Check to see if var.k is negative due to machine precision problem
-          var1.k <- ifelse(var1.k < 0, 0, var1.k)
-          Lam2 <- Lam2.vec[j]
-          var2.k <- ((k2.c[j]*(1-k2.c[j]))/(m*pi.0))*(1-2*Lam2) +
-            (Lam2^2*(1-r[j])*r[j])/(m*pi.0^2)
-          # Check to see if var.k is negative due to machine precision problem
-          var2.k <- ifelse(var2.k < 0, 0, var2.k)
-          cov.k <- (m^-1*pi.0^-2)*(pi.0*(k12.c[j]-k1.c[j]*k2.c[j])*(1-Lam1-Lam2) +
-                                     (r12[j]-r[j]^2)*Lam1*Lam2)
-        } else {
-          Lam1 <- Lam1.vec[j]
-          var1.k <- ((k.c[j]*(1-k.c[j]))/(m*pi.0))*(1-2*Lam1) +
-            (Lam1^2*(1-r[j])*r[j])/(m*pi.0^2)
-          # Check to see if var.k is negative due to machine precision problem
-          var1.k <- ifelse(var1.k < 0, 0, var1.k)
-          Lam2 <- Lam2.vec[j]
-          var2.k <- ((k.c[j]*(1-k.c[j]))/(m*pi.0))*(1-2*Lam2) +
-            (Lam2^2*(1-r[j])*r[j])/(m*pi.0^2)
-          # Check to see if var.k is negative due to machine precision problem
-          var2.k <- ifelse(var2.k < 0, 0, var2.k)
-          cov.k <- (m^-1*pi.0^-2)*(pi.0*(k12.c[j]-k.c[j]*k.c[j])*(1-Lam1-Lam2) +
-                                     (r12[j]-r[j]^2)*Lam1*Lam2)
-        }
+    if(method %in% c("JZ ind", "EmProc")){
+      for(j in seq_along(k1)) {
         
-        # assuming independence of k
+        Lam1 <- Lam1.vec[j]
+        Lam2 <- Lam2.vec[j]
+        
+        # unpooled variances
+        var1.k.np <- ((k1.c[j]*(1-k1.c[j]))/(m.c*pi.0.c))*(1-2*Lam1) +
+          (Lam1^2*(1-r.c[j])*r.c[j])/(m.c*pi.0.c^2)
+        # Check to see if var.k.np is negative due to m.cachine precision problem.c
+        var1.k.np <- ifelse(var1.k.np < 0, 0, var1.k.np)
+        var2.k.np <- ((k2.c[j]*(1-k2.c[j]))/(m.c*pi.0.c))*(1-2*Lam2) +
+          (Lam2^2*(1-r.c[j])*r.c[j])/(m.c*pi.0.c^2)
+        var2.k.np <- ifelse(var2.k.np < 0, 0, var2.k.np)
+        cov.k.np <- (m.c^-1*pi.0.c^-2)*(pi.0.c*(k12.c[j]-k1.c[j]*k2.c[j])*(1-Lam1-Lam2) +
+                                          (r12.c[j]-r.c[j]^2)*Lam1*Lam2)
+        
+        # pooled variances          
+        var1.k.p <- ((k[j]*(1-k[j]))/(m*pi.0))*(1-2*Lam1) +
+          (Lam1^2*(1-r[j])*r[j])/(m*pi.0^2)
+        var1.k.p <- ifelse(var1.k.p < 0, 0, var1.k.p)
+        var2.k.p <- ((k[j]*(1-k[j]))/(m*pi.0))*(1-2*Lam2) +
+          (Lam2^2*(1-r[j])*r[j])/(m*pi.0^2)
+        var2.k.p <- ifelse(var2.k.p < 0, 0, var2.k.p)
+        cov.k.p <- (m^-1*pi.0^-2)*(pi.0*(k12[j]-k[j]*k[j])*(1-Lam1-Lam2) +
+                                     (r12[j]-r[j]^2)*Lam1*Lam2)
+        
         if(method == "JZ ind"){
-          var.k <- var1.k + var2.k
-        } else if(method == "AH") {
-          var.k <- var1.k + var2.k - 2*cov.k
+          # assuming independence of k
+          var.k.p <- var1.k.p + var2.k.p
+          var.k.np <- var1.k.np + var2.k.np
+        } else if(method == "EmProc") {
+          var.k.p <- var1.k.p + var2.k.p - 2*cov.k.p
+          var.k.np <- var1.k.np + var2.k.np - 2*cov.k.np
         }
-        # Check to see if var.k is negative due to machine precision problem
-        if(var.k < -.000001) stop(paste0("Negative variance: var1: ", var1.k, ", var2:  ", var2.k, ", cov: ", cov.k, " , seed: ", seed))
-        var.k <- ifelse(var.k < 0, 0, var.k)
-        se[j] <- sqrt(var.k)
-        # TODO threshold these as we do in the confidence bands
-        # Using uncorrected k for CI center point and zscore
-        CI.int[j, ] <- c( (k1[j]-k2[j]) - quant*se[j],
-                          (k1[j]-k2[j]) + quant*se[j])
-        zscore <- (k1[j]-k2[j])/se[j]
+        var.k.p <- ifelse(var.k.p < 0, 0, var.k.p)
+        var.k.np <- ifelse(var.k.np < 0, 0, var.k.np)
+        se.p[j] <- sqrt(var.k.p)
+        se.np[j] <- sqrt(var.k.np)
+        
+        # Use pooled variance for tests, and unpooled for CIs
+        CI.int[j, ] <- c( (k1[j]-k2[j]) - quant*se.np[j],
+                          (k1[j]-k2[j]) + quant*se.np[j])
+        zscore <- ( (k1[j]-k2[j]) )/se.p[j]
         p.val[j] <- 2*pnorm(-abs(zscore))
         p.val[j] <- ifelse(is.na(p.val[j]), 1, p.val[j])
       }
     } else if(method %in% c("binomial ind", "binomial")) {
       for(j in seq_along(k1.c)) {
         
-        if (!pool) {
-          var1.k <- (m*pi.0)^-1*(k1.c[j])*(1-k1.c[j])
-          var2.k <- (m*pi.0)^-1*(k2.c[j])*(1-k2.c[j])
-          cov.k <- (m*pi.0)^-1*(k12.c[j] - k1.c[j]*k2.c[j])
-        } else {
-          var1.k <- (m*pi.0)^-1*(k.c[j])*(1-k.c[j])
-          var2.k <- (m*pi.0)^-1*(k.c[j])*(1-k.c[j])
-          cov.k <- (m*pi.0)^-1*(k12.c[j] - k.c[j]*k.c[j])
-        }
+        # unpooled variances
+        var1.k.np <- (m.c*pi.0.c)^-1*(k1.c[j])*(1-k1.c[j])
+        var2.k.np <- (m.c*pi.0.c)^-1*(k2.c[j])*(1-k2.c[j])
+        cov.k.np <- (m.c*pi.0.c)^-1*(k12.c[j] - k1.c[j]*k2.c[j])
+        
+        # pooled variances
+        var1.k.p <- (m*pi.0)^-1*(k[j])*(1-k[j])
+        var2.k.p <- (m*pi.0)^-1*(k[j])*(1-k[j])
+        cov.k.p <- (m*pi.0)^-1*(k12[j] - k[j]*k[j])
         
         if(method == "binomial") {
-          var.k <- var1.k + var2.k - 2*cov.k
+          var.k.p <- var1.k.p + var2.k.p - 2*cov.k.p
+          var.k.np <- var1.k.np + var2.k.np - 2*cov.k.np
         } else if(method == "binomial ind") {
-          var.k <- var1.k + var2.k
+          var.k.p <- var1.k.p + var2.k.p
+          var.k.np <- var1.k.np + var2.k.np
         }
-        if(var.k < -.000001) stop(paste0("Negative variance: var1: ", var1.k, ", var2:  ", var2.k, ", cov: ", cov.k, " , seed: ", seed))
-        var.k <- ifelse(var.k < 0, 0, var.k)
-        se[j] <- sqrt(var.k)
-        CI.int[j, ] <- c( (k1[j]-k2[j]) - quant*se[j],
-                          (k1[j]-k2[j]) + quant*se[j])
-        zscore <- ( (k1[j]-k2[j]) )/se[j]
+        var.k.p <- ifelse(var.k.p < 0, 0, var.k.p)
+        var.k.np <- ifelse(var.k.np < 0, 0, var.k.np)
+        se.p[j] <- sqrt(var.k.p)
+        se.np[j] <- sqrt(var.k.np)
+        CI.int[j, ] <- c( (k1[j]-k2[j]) - quant*se.np[j],
+                          (k1[j]-k2[j]) + quant*se.np[j])
+        zscore <- ( (k1[j]-k2[j]) )/se.p[j]
         p.val[j] <- 2*pnorm(-abs(zscore))
         p.val[j] <- ifelse(is.na(p.val[j]), 1, p.val[j])
       } 
     } else if(method == "mcnemar") {
       for(j in seq_along(k1.c)) {
-        mat <- matrix(c(hits12[j], hits1[j] - hits12[j],  hits2[j] - hits12[j],
-                        nact - (hits1[j] + hits2[j] - hits12[j])), ncol = 2)
         BminusC <- hits1[j] - hits2[j]
         BplusC <- hits1[j] + hits2[j] - 2*hits12[j]
+        BminusC.c <- hits1.c[j] - hits2.c[j]
+        BplusC.c <- hits1.c[j] + hits2.c[j] - 2*hits12[j]
         zscore <- ifelse(BplusC>0, BminusC/sqrt(BplusC), 0)
         p.val[j] <- 2*pnorm(-abs(zscore))
-        se[j] <- sqrt(BplusC - BminusC^2/nact) / nact
-        CI.int[j,] <- c( BminusC/nact - quant*se[j], BminusC/nact + quant*se[j])
+        se.np[j] <- sqrt(BplusC.c - BminusC.c^2/nact.c) / nact.c
+        # TODO use the actual difference as the center point for the CI?
+        # No, use actual BP corrected McNemar for a fair comparison
+        CI.int[j,] <- c( BminusC.c/nact.c - quant*se.np[j], BminusC.c/nact.c + quant*se.np[j])
       }
     }
     # difference estimates
     est <- (k1 - k2)
   } else if(metric == "prec") {
-    # TODO remember to address pooling method here once we decide on a method
-    if(method %in% c("JZ ind", "AH")) {
+    # TODO implement pooled and unpooled variances here
+    if(method %in% c("JZ ind", "EmProc")) {
       for(j in seq_along(pi1.c)) {
         Lam1 <- Lam1.vec[j]
         var1.pi <- (pi1.c[j]*(1-pi1.c[j]))/(m*r[j]) + (1-r[j])*(pi1.c[j]-Lam1)^2/(m*r[j])
@@ -187,7 +205,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
         
         if(method == "JZ ind") {
           var.pi <- var1.pi + var2.pi
-        } else if(method == "AH") {
+        } else if(method == "EmProc") {
           var.pi <- var1.pi + var2.pi - 2*cov.pi
         }
         
@@ -252,5 +270,5 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "AH",
     # difference estimates
     est <- pi1 - pi2
   }
-  list(diff_estimate = est, std_err = se, ci_interval = CI.int, p_value = p.val)
+  list(diff_estimate = est, std_err = se.np, ci_interval = CI.int, p_value = p.val)
 }
