@@ -248,6 +248,7 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           lcl <- k[j] - quant*sd.k
           lcl <- ifelse(lcl < 0, 0, lcl)
           ucl <- k[j] + quant*sd.k
+          # TODO consider removing due to coverage issues
           ucl <- ifelse(ucl > k.ide[j], k.ide[j], ucl)
           CI.int[j, ] <- c(lcl, ucl)
         }
@@ -318,11 +319,14 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           for(j in 1:mc.rep) {
             max.q[j] <- max(abs(mc.samples[j, ]))
           }
+          # Should be 1-alpha, see Montiel Olea and Plagborg-Møller
           quant <- quantile(max.q, probs = 1-alpha)
         } else if(method == "theta-proj") {
           quant <- sqrt(qchisq(1-alpha, length(k)))
         } else if(method == "bonf") {
           quant <- qnorm(1-alpha/(2*length(k)))
+        } else {
+          stop("Invalid method selected")
         }
         for(j in seq_along(k)) {
           Lam <- Lam.vec[j]
@@ -368,9 +372,13 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           for(j in 1:mc.rep) {
             max.q[j] <- max(abs(mc.samples[j, ]))
           }
-          quant <- quantile(max.q, probs = 1-alpha/2)
+          quant <- quantile(max.q, probs = 1-alpha)
         } else if(method == "theta-proj") {
           quant <- sqrt(qchisq(1-alpha, length(pi)))
+        } else if(method == "bonf") {
+          quant <- qnorm(1-alpha/(2*length(k)))
+        } else {
+          stop("Invalid method selected")
         }
         for(j in seq_along(pi)) {
           Lam <- Lam.vec[j]
