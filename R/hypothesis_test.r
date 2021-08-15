@@ -13,11 +13,16 @@
 #' c("EmProc", "binomial", "JZ ind", "mcnemar", "binomial ind"). Precision options are
 #' c("EmProc", "binomial", "JZ ind", "stouffer", "binomial ind").
 #' @param plus should plus correction be used or not?
+#' @param pool use pooling for hypothesis tests or not? (only relevant to "EmProc")
 #' @param alpha the significance level.
 #' 
 #' @export
 PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "EmProc",
-                          plus = T, alpha = .05, h = NULL, seed = 111){
+                          plus = T, pool = F, alpha = .05, h = NULL, seed = 111){
+  
+  # TODO need some more error checking here
+  if(pool & method != "EmProc") warning("Pooling only relevant to EmProc and will not be applied")
+  
   
   set.seed(seed)
   m <- length(S1) #total sample size
@@ -140,7 +145,7 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "EmProc",
         # Use pooled variance for tests, and unpooled for CIs
         CI.int[j, ] <- c( (k1[j]-k2[j]) - quant*se.np[j],
                           (k1[j]-k2[j]) + quant*se.np[j])
-        zscore <- ( (k1[j]-k2[j]) )/se.p[j]
+        zscore <- ( (k1[j]-k2[j]) )/ifelse(pool, se.p[j], se.np[j])
         p.val[j] <- 2*pnorm(-abs(zscore))
         p.val[j] <- ifelse(is.na(p.val[j]), 1, p.val[j])
       }
@@ -170,7 +175,9 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "EmProc",
         se.np[j] <- sqrt(var.k.np)
         CI.int[j, ] <- c( (k1[j]-k2[j]) - quant*se.np[j],
                           (k1[j]-k2[j]) + quant*se.np[j])
-        zscore <- ( (k1[j]-k2[j]) )/se.p[j]
+        
+        # For CorrBinom, unpooled is always used
+        zscore <- ( (k1[j]-k2[j]) )/se.np[j]
         p.val[j] <- 2*pnorm(-abs(zscore))
         p.val[j] <- ifelse(is.na(p.val[j]), 1, p.val[j])
       } 
@@ -183,15 +190,15 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "EmProc",
         zscore <- ifelse(BplusC>0, BminusC/sqrt(BplusC), 0)
         p.val[j] <- 2*pnorm(-abs(zscore))
         se.np[j] <- sqrt(BplusC.c - BminusC.c^2/nact.c) / nact.c
-        # TODO use the actual difference as the center point for the CI?
-        # No, use actual BP corrected McNemar for a fair comparison
+        # Using corrected difference for center point since this is the true BP corrected McNemar 
         CI.int[j,] <- c( BminusC.c/nact.c - quant*se.np[j], BminusC.c/nact.c + quant*se.np[j])
       }
     }
     # difference estimates
     est <- (k1 - k2)
   } else if(metric == "prec") {
-    # TODO implement pooled and unpooled variances here
+    
+    # TODO still need to implement pooled and unpooled variances here
     if(method %in% c("JZ ind", "EmProc")) {
       for(j in seq_along(pi1.c)) {
         Lam1 <- Lam1.vec[j]
