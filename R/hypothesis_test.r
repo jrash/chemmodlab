@@ -12,8 +12,8 @@
 #' @param method the method to use. Recall options are 
 #' c("EmProc", "binomial", "JZ ind", "mcnemar", "binomial ind"). Precision options are
 #' c("EmProc", "binomial", "JZ ind", "stouffer", "binomial ind").
-#' @param plus should plus correction be used or not?
-#' @param pool use pooling for hypothesis tests or not? (only relevant to "EmProc")
+#' @param plus should plus correction be applied to the confidence intervals?
+#' @param pool use pooling for hypothesis tests? Only relevant to "EmProc".
 #' @param alpha the significance level.
 #' 
 #' @export
@@ -22,7 +22,6 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "EmProc",
   
   # TODO need some more error checking here
   if(pool & method != "EmProc") warning("Pooling only relevant to EmProc and will not be applied")
-  
   
   set.seed(seed)
   m <- length(S1) #total sample size
