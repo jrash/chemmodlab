@@ -148,8 +148,8 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "EmProc", type 
           se.np[j] <- sqrt(var.k.np)
           
           # Use pooled variance for tests, and unpooled for CIs
-          CI.int[j, ] <- c( (k1[j]-k2[j]) - quant*se.np[j],
-                            (k1[j]-k2[j]) + quant*se.np[j])
+          CI.int[j, ] <- c( (k1.c[j]-k2.c[j]) - quant*se.np[j],
+                            (k1.c[j]-k2.c[j]) + quant*se.np[j])
           zscore <- ( (k1[j]-k2[j]) )/ifelse(pool, se.p[j], se.np[j])
           p.val[j] <- 2*pnorm(-abs(zscore))
           p.val[j] <- ifelse(is.na(p.val[j]), 1, p.val[j])
@@ -178,9 +178,8 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "EmProc", type 
           var.k.np <- ifelse(var.k.np < 0, 0, var.k.np)
           se.p[j] <- sqrt(var.k.p)
           se.np[j] <- sqrt(var.k.np)
-          CI.int[j, ] <- c( (k1[j]-k2[j]) - quant*se.np[j],
-                            (k1[j]-k2[j]) + quant*se.np[j])
-          
+          CI.int[j, ] <- c( (k1.c[j]-k2.c[j]) - quant*se.np[j],
+                            (k1.c[j]-k2.c[j]) + quant*se.np[j])
           # For CorrBinom, unpooled is always used
           zscore <- ( (k1[j]-k2[j]) )/se.np[j]
           p.val[j] <- 2*pnorm(-abs(zscore))
@@ -195,7 +194,6 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "EmProc", type 
           zscore <- ifelse(BplusC>0, BminusC/sqrt(BplusC), 0)
           p.val[j] <- 2*pnorm(-abs(zscore))
           se.np[j] <- sqrt(BplusC.c - BminusC.c^2/nact.c) / nact.c
-          # Using corrected difference for center point since this is the true BP corrected McNemar 
           CI.int[j,] <- c( BminusC.c/nact.c - quant*se.np[j], BminusC.c/nact.c + quant*se.np[j])
         }
       }
@@ -296,8 +294,8 @@ PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "EmProc", type 
         var.k.np <- var1.k.np + var2.k.np - 2*cov.k.np
         var.k.np <- ifelse(var.k.np < 0, 0, var.k.np)
         se.np[j] <- sqrt(var.k.np)
-        CI.int[j, ] <- c( (k1[j]-k2[j]) - quant*se.np[j],
-                          (k1[j]-k2[j]) + quant*se.np[j])
+        CI.int[j, ] <- c( (k1.c[j]-k2.c[j]) - quant*se.np[j],
+                          (k1.c[j]-k2.c[j]) + quant*se.np[j])
         p.val[j] <- NA
       }
     }

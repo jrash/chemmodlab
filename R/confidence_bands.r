@@ -229,9 +229,9 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           # Check to see if var.k is negative due to machine precision problem
           var.k <- ifelse(var.k < 0, 0, var.k)
           sd.k <- sqrt(var.k)
-          lcl <- k[j] - quant*sd.k
+          lcl <- k.c[j] - quant*sd.k
           lcl <- ifelse(lcl < 0, 0, lcl)
-          ucl <- k[j] + quant*sd.k
+          ucl <- k.c[j] + quant*sd.k
           ucl <- ifelse(ucl > k.ide[j], k.ide[j], ucl)
           CI.int[j, ] <- c(lcl, ucl)
         }
@@ -245,9 +245,9 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           var.k <- ((m*pi.0)^-1)*k.c[j]*(1-k.c[j])
           var.k <- ifelse(var.k < 0, 0, var.k)
           sd.k <- sqrt(var.k)
-          lcl <- k[j] - quant*sd.k
+          lcl <- k.c[j] - quant*sd.k
           lcl <- ifelse(lcl < 0, 0, lcl)
-          ucl <- k[j] + quant*sd.k
+          ucl <- k.c[j] + quant*sd.k
           # TODO consider removing due to coverage issues
           ucl <- ifelse(ucl > k.ide[j], k.ide[j], ucl)
           CI.int[j, ] <- c(lcl, ucl)
@@ -262,9 +262,9 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           # Check to see if var.pi is negative due to machine precision issues
           var.pi <- ifelse(var.pi < 0, 0, var.pi)
           sd.pi <- sqrt(var.pi)
-          lcl <- pi[j] - quant*sd.pi
+          lcl <- pi.c[j] - quant*sd.pi
           lcl <- ifelse(lcl < 0, 0, lcl)
-          ucl <- pi[j] + quant*sd.pi
+          ucl <- pi.c[j] + quant*sd.pi
           ucl <- ifelse(ucl > 1, 1, ucl)
           CI.int[j, ] <- c(lcl, ucl)
         }
@@ -279,9 +279,9 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           # Check to see if var.pi is negative due to machine precision issues
           var.pi <- ifelse(var.pi < 0, 0, var.pi)
           sd.pi <- sqrt(var.pi)
-          lcl <- pi[j] - quant*sd.pi
+          lcl <- pi.c[j] - quant*sd.pi
           lcl <- ifelse(lcl < 0, 0, lcl)
-          ucl <- pi[j] + quant*sd.pi
+          ucl <- pi.c[j] + quant*sd.pi
           ucl <- ifelse(ucl > 1, 1, ucl)
           CI.int[j, ] <- c(lcl, ucl)
         }
@@ -335,9 +335,9 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           # Check to see if var.k is negative due to machine precision problem
           var.k <- ifelse(var.k < 0, 0, var.k)
           sd.k <- sqrt(var.k)
-          lcl <- k[j] - quant*sd.k
+          lcl <- k.c[j] - quant*sd.k
           lcl <- ifelse(lcl < 0, 0, lcl)
-          ucl <- k[j] + quant*sd.k
+          ucl <- k.c[j] + quant*sd.k
           ucl <- ifelse(ucl > k.ide[j], k.ide[j], ucl)
           CI.int[j, ] <- c(lcl, ucl)
         }
@@ -386,9 +386,9 @@ PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup
           # Check to see if var.k is negative due to machine precision problem
           var.pi <- ifelse(var.pi < 0, 0, var.pi)
           sd.pi <- sqrt(var.pi)
-          lcl <- pi[j] - quant*sd.pi
+          lcl <- pi.c[j] - quant*sd.pi
           lcl <- ifelse(lcl < 0, 0, lcl)
-          ucl <- pi[j] + quant*sd.pi
+          ucl <- pi.c[j] + quant*sd.pi
           ucl <- ifelse(ucl > 1, 1, ucl)
           CI.int[j, ] <- c(lcl, ucl)
         }
