@@ -14,7 +14,8 @@ df <- read.csv("~/RESEARCH/JeremyAsh/RecallPaper/2022.01.13/screen_explorer_data
 #   scores (surf, icm, vina).
 # Rescale docking scores so that larger values suggest active compounds. 
 
-pparg <- data.frame(df[order(df$surf_id),1:3], df[order(df$icm_id),4:6], df[order(df$vina_id),7:9] )
+pparg <- data.frame(df[order(df$surf_id),1:3], df[order(df$icm_id),4:6], 
+                    df[order(df$vina_id),7:9] )
 pparg$icm_scores <- -pparg$icm_scores
 pparg$vina_scores <- -pparg$vina_scores
 

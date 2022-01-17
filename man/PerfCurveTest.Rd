@@ -10,9 +10,14 @@ PerfCurveTest(
   X,
   r,
   metric = "rec",
-  method = "AH",
-  correction = "plus2",
-  alpha = 0.05
+  method = "EmProc",
+  type = "pointwise",
+  plus = T,
+  pool = F,
+  alpha = 0.05,
+  h = NULL,
+  seed = 111,
+  mc.rep = 1e+05
 )
 }
 \arguments{
@@ -27,8 +32,12 @@ PerfCurveTest(
 \item{metric}{the performance curve to use. Options are recall ("rec") and precision ("prec").}
 
 \item{method}{the method to use. Recall options are 
-c("AH", "binomial", "JZ ind", "mcnemar", "binomial ind"). Precision options are
-c("AH", "binomial", "JZ ind", "stouffer", "binomial ind").}
+c("EmProc", "binomial", "JZ ind", "mcnemar", "binomial ind"). Precision options are
+c("EmProc", "binomial", "JZ ind", "stouffer", "binomial ind").}
+
+\item{plus}{should plus correction be applied to the confidence intervals?}
+
+\item{pool}{use pooling for hypothesis tests? Only relevant to "EmProc".}
 
 \item{alpha}{the significance level.}
 }

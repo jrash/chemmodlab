@@ -11,7 +11,7 @@ PerfCurveBands(
   metric = "rec",
   type = "band",
   method = "sup-t",
-  plus2 = T,
+  plus = T,
   conf.level = 0.95,
   boot.rep = 100,
   mc.rep = 1e+05,
@@ -34,7 +34,7 @@ PerfCurveBands(
 \item{method}{the method to use. Point-wise confidence interval options
 are "binomial", "JZ", "bootstrap". Confidence band options are "sup-t", "theta-proj".}
 
-\item{plus2}{should plus2 correction be used or not?}
+\item{plus}{should plus correction be used or not?}
 
 \item{conf.level}{the confidence level for the bands.}
 
