@@ -32,7 +32,7 @@ minrank.mat[order_icm, 2] <- 1:n
 
 min.rank <- apply(minrank.mat, 1, min)  
 pparg$minr_id <- pparg$surf_id
-pparg$minr_scores <- min.rank
+pparg$minr_scores <- -min.rank
 pparg$minr_actives <- pparg$surf_actives
 
 # Create maximum z-score consensus of surf & icm
