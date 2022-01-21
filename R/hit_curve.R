@@ -38,6 +38,8 @@ add.alpha <- function(col, alpha=1){
 #'   confidence bands. Vector should be no longer than \code{y}, and should have
 #'   at least 20 entries. Entries should be in (0,1]. It is recommended that
 #'   entries be consistent with between 1 and \code{x.max} tests.
+#'   
+#' @export
 HitCurve <-
   function(S.df,
            labels = NULL,
