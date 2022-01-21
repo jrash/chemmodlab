@@ -1,3 +1,12 @@
+# Function to add shading ------
+add.alpha <- function(col, alpha=1){
+  if (missing(col))
+    stop("Please provide a vector of colours.")
+  apply(sapply(col, col2rgb)/255, 2, 
+        function(x) 
+          rgb(x[1], x[2], x[3], alpha = alpha))  
+}
+
 #' Plot hit enrichment curves from observed scores and activities
 #' 
 #' Plot hit enrichment curves based on scores from multiple algorithms. Actual
@@ -6,8 +15,8 @@
 #' would result under random scoring. Optionally, simultaneous confidence bands
 #' may also be requested.
 #' 
-#' @param S.df Data frame where variables are scores from different algorithms.
-#'   Rows represent unique compounds.
+#' @param S.df Data frame where variables are numeric scores from different
+#'   algorithms. Rows represent unique compounds.
 #' @param labels Character vector of labels for the different algorithms in
 #'   \code{S.df}. Variable names in \code{S.df} will be used by default.
 #' @param y Numeric vector of non-negative activity values. Compounds are
@@ -18,6 +27,17 @@
 #' @param x.max Integer, the maximum number of tests allowed on the x axis.
 #' @param log Logical. \code{TRUE} plots the x axis on the log scale.
 #' @param title Character string
+#' @param conf Logical. \code{TRUE} plots (simultaneous) confidence bands for
+#'   all hit enrichment curves.
+#' @param conf.level Numeric, confidence coefficient
+#' @param method Character indicates the method used to obtain confidence bands.
+#'   The default is \code{sup-t} but other options (not recommended) are
+#'   "theta-proj" and "bonf".
+#' @param plus Logical. \code{TRUE} uses plus-adjusted version of \code{method}.
+#' @param band.frac Numeric vector of fractions tested to be used in obtaining
+#'   confidence bands. Vector should be no longer than \code{y}, and should have
+#'   at least 20 entries. Entries should be in (0,1]. It is recommended that
+#'   entries be consistent with between 1 and \code{x.max} tests.
 HitCurve <-
   function(S.df,
            labels = NULL,
@@ -25,10 +45,21 @@ HitCurve <-
            y.bin = TRUE,
            x.max = NULL,
            log = TRUE, 
-           title = ""
+           title = "",
+           conf = FALSE,
+           conf.level = 0.95,
+           method = "sup-t",
+           plus = TRUE,
+           band.frac = NULL
   ) {
-    if (is.null(labels)) labels <- colnames(S.df)
-    m <- ncol(S.df)
+    if (is.data.frame(S.df)) {
+      if (is.null(labels)) labels <- colnames(S.df)
+      m <- ncol(S.df)
+    } else if (is.vector(S.df)) {
+      if (is.null(labels)) labels <- "Score"
+      m <- 1
+      S.df <- cbind(S.df,NA)
+    } else stop("S.df must be a data frame of a vector.")
     if (y.bin) y <- as.integer(y != 0)
     n <- length(y)
     n.actives <- sum(y)
@@ -42,13 +73,17 @@ HitCurve <-
     palette(safe_colorblind_palette)
     ch.list <- c(45, 3, 0, 2, 4, 5, 6, 8, 11, 13, 12, 14)
     if (conf) {
-      tested <- unique(ceiling(seq(frange[1], frange[2], len = fnum) * n))
-      ntested <- length(tested)
       if (missing(band.frac)) {
         band.frac <- frac[seq(1, x.max, len = 40)]
+        if (log) { # spread fractions equally on log scale
+          xvals <- seq(frac[1], frac[x.max], len = 40)
+          tested <- unique(ceiling((10 ^ xvals) * n))
+          band.frac <- log(tested / n, base = 10)
+        }
       } else {
-        band.frac <- unique(ceiling(band.frac * n))
-        if (log) band.frac <- log(band.frac, base = 10)
+        band.frac <- unique(ceiling(band.frac * n)) / n
+        if (log)
+          band.frac <- log(band.frac, base = 10)
       }
       band.frac.idx <-  which(frac %in% band.frac)
     }
@@ -95,6 +130,21 @@ HitCurve <-
       }
       lines( frac, hits, lty = 1, col = idx, lwd = 2)
       
+      if (conf) { # plot simultaneous confidence bands ----
+        cl.ls <-
+          PerfCurveBands(S = S, X = y, r = band.frac.idx / n, metric = "rec",
+                         type = "band", method = method, plus = plus,
+                         conf.level = conf.level)
+        ucl <- cl.ls$CI[, 2]
+        # Truncate the CI int at the ideal curve, because
+        # the parameter cannot go above
+        #ucl <- ifelse(ucl > y.ideal[band.frac.idx], y.ideal[band.frac.idx], ucl)
+        lcl <- cl.ls$CI[, 1]
+        polygon(c(band.frac, rev(band.frac)),
+                c(ucl, rev(lcl)),
+                col = add.alpha(idx, .25),
+                border = NA)
+      }
     }
     legend("bottomright", c("Ideal", labels, "Random"),
            cex = 0.6, bty = "n", title = "Scoring Method",
