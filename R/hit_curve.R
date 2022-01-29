@@ -43,6 +43,8 @@ add.alpha <- function(col, alpha=1){
 #' based on a smaller grid of 40 fractions. This smaller grid is evenly spaced
 #' on either the original grid of \code{(1:length(y))/length(y)}, or the log
 #' scale of the original grid.
+#' 
+#' @export
 HitCurve <-
   function(S.df,
            labels = NULL,
@@ -269,6 +271,8 @@ HitCurve <-
 #' based on a smaller grid of 40 fractions. This smaller grid is evenly spaced
 #' on either the original grid of \code{(1:length(y))/length(y)}, or the log
 #' scale of the original grid.
+#' 
+#' @export
 HitCurveDiff <-
   function(S.df,
            labels = NULL,
