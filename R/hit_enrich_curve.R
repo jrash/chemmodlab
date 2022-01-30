@@ -21,9 +21,9 @@ add.alpha <- function(col, alpha=1){
 #'   \code{S.df}. If missing, variable names in \code{S.df} will be used.
 #' @param y Numeric vector of activity values. Activity values must be either 0
 #'   (inactive/undesirable) or 1 (active/desirable); no other values are
-#'   accepted. Compounds are assumed to in the same order as in \code{S.df}.
+#'   accepted. Compounds are assumed to be in the same order as in \code{S.df}.
 #' @param x.max Integer, the maximum number of tests allowed on the x axis.
-#' @param log Logical. \code{TRUE} plots the x axis on the log scale.
+#' @param log Logical. \code{TRUE} plots the x axis on a log scale.
 #' @param title Character string
 #' @param conf Logical. \code{TRUE} plots (simultaneous) confidence bands for
 #'   all hit enrichment curves.
@@ -249,9 +249,9 @@ HitEnrich <- function(S.df,
 #'   \code{S.df}. If missing, variable names in \code{S.df} will be used.
 #' @param y Numeric vector of activity values. Activity values must be either 0
 #'   (inactive/undesirable) or 1 (active/desirable); no other values are
-#'   accepted. Compounds are assumed to in the same order as in \code{S.df}.
+#'   accepted. Compounds are assumed to be in the same order as in \code{S.df}.
 #' @param x.max Integer, the maximum number of tests allowed on the x axis.
-#' @param log Logical. \code{TRUE} plots the x axis on the log scale.
+#' @param log Logical. \code{TRUE} plots the x axis on a log scale.
 #' @param title Character string
 #' @param conf.level Numeric, confidence coefficient
 #' @param method Character indicates the method used to obtain confidence bands.

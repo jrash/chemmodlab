@@ -27,11 +27,11 @@ different algorithms. Rows represent unique compounds.}
 
 \item{y}{Numeric vector of activity values. Activity values must be either 0
 (inactive/undesirable) or 1 (active/desirable); no other values are
-accepted. Compounds are assumed to in the same order as in \code{S.df}.}
+accepted. Compounds are assumed to be in the same order as in \code{S.df}.}
 
 \item{x.max}{Integer, the maximum number of tests allowed on the x axis.}
 
-\item{log}{Logical. \code{TRUE} plots the x axis on the log scale.}
+\item{log}{Logical. \code{TRUE} plots the x axis on a log scale.}
 
 \item{title}{Character string}
 
