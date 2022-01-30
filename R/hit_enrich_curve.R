@@ -272,8 +272,7 @@ HitEnrich <- function(S.df,
 #' scale of the original grid.
 #' 
 #' @export
-HitEnrichDiff <-
-  function(S.df,
+HitEnrichDiff <- function(S.df,
            labels = NULL,
            y,
            x.max = NULL,
