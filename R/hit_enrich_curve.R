@@ -354,7 +354,7 @@ HitEnrichDiff <- function(S.df,
       mtext(text = "Hit Enrichment Difference", side = 2, line = 1.5)
       mtext(text = "Number Tested", side = 3, line = 1.05, cex = 0.5)
       title(title, cex = 0.8)
-      legend("topright", paste(score1[k], "-", score2[k]), cex = 0.6)
+      legend("topright", paste(score1[k], "-", score2[k]), cex = 0.6, bty = "n")
     }
     
   }
