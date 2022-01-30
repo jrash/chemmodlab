@@ -58,11 +58,3 @@ that would result under perfect scoring, and the hit enrichment curve that
 would result under random scoring. Optionally, simultaneous confidence bands
 may also be requested.
 }
-\details{
-By default, \code{x.max} is \code{length(y)}, so that hit enrichment
-curves are obtained for all observable fractions, i.e., fractions of
-\code{(1:length(y))/length(y)}. By default, confidence bands are evaluated
-based on a smaller grid of 40 fractions. This smaller grid is evenly spaced
-on either the original grid of \code{(1:length(y))/length(y)}, or the log
-scale of the original grid.
-}
