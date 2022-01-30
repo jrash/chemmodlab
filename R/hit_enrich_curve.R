@@ -37,9 +37,15 @@ add.alpha <- function(col, alpha=1){
 #'   at least 20 entries. Entries should be in (0,1]. It is recommended that
 #'   entries be consistent with between 1 and \code{x.max} tests.
 #' 
+#' @details By default, \code{x.max} is \code{length(y)}, so that hit enrichment
+#' curves are obtained for all observable fractions, i.e., fractions of
+#' \code{(1:length(y))/length(y)}. By default, confidence bands are evaluated
+#' based on a smaller grid of 40 fractions. This smaller grid is evenly spaced
+#' on either the original grid of \code{(1:length(y))/length(y)}, or the log
+#' scale of the original grid.
+#' 
 #' @export
-HitEnrich <-
-  function(S.df,
+HitEnrich <- function(S.df,
            labels = NULL,
            y,
            x.max = NULL,
