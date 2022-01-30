@@ -45,7 +45,7 @@ add.alpha <- function(col, alpha=1){
 #' scale of the original grid.
 #' 
 #' @export
-HitCurve <-
+HitEnrich <-
   function(S.df,
            labels = NULL,
            y,
@@ -273,7 +273,7 @@ HitCurve <-
 #' scale of the original grid.
 #' 
 #' @export
-HitCurveDiff <-
+HitEnrichDiff <-
   function(S.df,
            labels = NULL,
            y,
