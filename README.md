@@ -23,7 +23,7 @@ devtools::install_github("jrash/chemmodlab")
 Usage
 =====
 
-# Confidence bands and hypothesis tests for hit enrichment curves
+## Confidence bands and hypothesis tests for hit enrichment curves
 
 ``` r
 library(chemmodlab)
@@ -45,7 +45,7 @@ HitEnrichDiff(S.df = pparg[,c(14,2,5)], y = pparg[,3], x.max = NULL, labels =
 ```
 
 
-# General model fitting and model evaluations
+## General model fitting and model evaluations
 
 -   `ModelTrain()` fits a series of classification or regression models to sets of descriptors and computes cross-validated measures of model performance. Repeated k-fold cross validation is performed with multiple, different fold assignments for the data ("splits").
 -   `MakeModelDefaults()` makes a list containing the default parameters for all models implemented in ModelTrain so that they can be modified.
