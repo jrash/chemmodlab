@@ -39,7 +39,7 @@ Usage is divided into two sections:
 NOTE: The confidence bands and hypothesis tests section does not require models to be fit in chemmodlab.  Score and activity information can be provided from any model.
 
 
-## General model fitting and model evaluations
+## General model fitting and evaluations
 
 * `ModelTrain()` fits a series of classification or regression models to sets of descriptors and computes cross-validated measures of model performance.  Repeated k-fold cross validation is performed with multiple, different fold assignments for the data ("splits").
 * `MakeModelDefaults()` makes a list containing the default parameters for all models implemented in ModelTrain.
@@ -92,5 +92,16 @@ par(mfrow = c(2, 2))
 HitEnrichDiff(S.df = pparg[,c(14,2,5)], y = pparg[,3], x.max = NULL, labels =
                 c("Maximum z-score","Surflex-dock", "ICM"),
               log = T, conf.level = .95)
+```
+
+
+### Hypothesis tests at specific fractions
+
+```{r}
+n <- nrow(pparg)
+tested <- c(3,32,321)
+ntested <- length(tested)
+PerfCurveTest( S1=pparg$maxz_scores, S2=pparg$surf_scores,
+               X=pparg$surf_actives, r=tested/n, alpha=.05)
 ```
 

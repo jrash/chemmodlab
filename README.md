@@ -31,7 +31,7 @@ NOTE: The confidence bands and hypothesis tests section does not require
 models to be fit in chemmodlab. Score and activity information can be
 provided from any model.
 
-## General model fitting and model evaluations
+## General model fitting and evaluations
 
 -   `ModelTrain()` fits a series of classification or regression models
     to sets of descriptors and computes cross-validated measures of
@@ -106,3 +106,25 @@ All pairwise differences between three methods are shown:
                   log = T, conf.level = .95)
 
 ![](README-unnamed-chunk-5-1.png)<!-- -->
+
+### Hypothesis tests at specific fractions
+
+    n <- nrow(pparg)
+    tested <- c(3,32,321)
+    ntested <- length(tested)
+    PerfCurveTest( S1=pparg$maxz_scores, S2=pparg$surf_scores,
+                   X=pparg$surf_actives, r=tested/n, alpha=.05)
+    #> $diff_estimate
+    #> [1]  0.00000000 -0.01176471  0.05882353
+    #> 
+    #> $std_err
+    #> [1] 0.005366091 0.023740011 0.029532874
+    #> 
+    #> $ci_interval
+    #>               [,1]       [,2]
+    #> [1,] -0.0105173443 0.01051734
+    #> [2,] -0.0580238186 0.03503531
+    #> [3,] -0.0004121052 0.11535463
+    #> 
+    #> $p_value
+    #> [1] 1.00000000 0.62020172 0.04639319
