@@ -9,9 +9,7 @@ Status](https://travis-ci.org/jrash/chemmodlab.svg?branch=master)](https://travi
 
 `chemmodlab` contains a suite of methods for fitting machine learning
 models and for validating the resulting models. It also contains methods
-for confidence bands and hypothesis tests for hit enrichment curves (see
-section *Confidence bands and hypothesis tests for hit enrichment
-curves*).
+for confidence bands and hypothesis tests for hit enrichment curves.
 
 # Installation
 
@@ -23,6 +21,15 @@ curves*).
     devtools::install_github("jrash/chemmodlab")
 
 # Usage
+
+Usage is divided into two sections:
+
+-   General model fitting and evaluations
+-   Confidence bands and hypothesis tests for hit enrichment curves
+
+NOTE: The confidence bands and hypothesis tests section does not require
+models to be fit in chemmodlab. Score and activity information can be
+provided from any model.
 
 ## General model fitting and model evaluations
 
