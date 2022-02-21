@@ -35,7 +35,7 @@ Usage is divided into two sections:
 NOTES: 
 
 1. This functionality is not on CRAN yet, but will be soon.  Please download the development branch from github.
-2. The confidence bands and hypothesis tests section does not require
+2. The confidence bands and hypothesis tests functions do not require
 models to be fit in chemmodlab. Score and activity information can be
 provided from any model.
 
