@@ -24,8 +24,8 @@ for confidence bands and hypothesis tests for hit enrichment curves.
 
 Usage is divided into two sections:
 
-1. [Confidence bands and hypothesis tests for hit enrichment curves](https://github.com/jrash/chemmodlab#1.-confidence-bands-and-hypothesis-tests-for-hit-enrichment-curves)
-2. [General model fitting and evaluations](https://github.com/jrash/chemmodlab#2.-general-model-fitting-and-evaluations)
+1. [Confidence bands and hypothesis tests for hit enrichment curves](https://github.com/jrash/chemmodlab#1-confidence-bands-and-hypothesis-tests-for-hit-enrichment-curves)
+2. [Generalized model fitting and evaluations](https://github.com/jrash/chemmodlab#2-generalized-model-fitting-and-evaluations)
 
 NOTE: The confidence bands and hypothesis tests section does not require
 models to be fit in chemmodlab. Score and activity information can be
@@ -79,7 +79,7 @@ All pairwise differences between three methods are shown:
     #> $p_value
     #> [1] 1.00000000 0.62020172 0.04639319
 
-## 2. General model fitting and evaluations
+## 2. Generalized model fitting and evaluations
 
 -   `ModelTrain()` fits a series of classification or regression models
     to sets of descriptors and computes cross-validated measures of
