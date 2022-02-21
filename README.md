@@ -32,7 +32,10 @@ Usage is divided into two sections:
 
 ## 1. Confidence bands and hypothesis tests for hit enrichment curves
 
-NOTE: The confidence bands and hypothesis tests section does not require
+NOTES: 
+
+1. This functionality is not on CRAN, please download the development branch from github.
+2. The confidence bands and hypothesis tests section does not require
 models to be fit in chemmodlab. Score and activity information can be
 provided from any model.
 
