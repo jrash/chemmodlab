@@ -8,8 +8,8 @@ Status](https://travis-ci.org/jrash/chemmodlab.svg?branch=master)](https://travi
 [![CRAN](https://img.shields.io/cran/v/chemmodlab.svg)]()
 
 `chemmodlab` contains a suite of methods for fitting machine learning
-models and for validating the resulting models. It also contains methods
-for confidence bands and hypothesis tests for hit enrichment curves.
+models and for validating the resulting models. The methods are tailored to virtual screening for drug discovery applications and include
+confidence bands and hypothesis tests for hit enrichment curves.
 
 # Installation
 
