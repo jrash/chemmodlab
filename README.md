@@ -30,11 +30,11 @@ Usage is divided into two sections:
 2.  [Generalized model fitting and
     evaluations](https://github.com/jrash/chemmodlab#2-generalized-model-fitting-and-evaluations)
 
+## 1. Confidence bands and hypothesis tests for hit enrichment curves
+
 NOTE: The confidence bands and hypothesis tests section does not require
 models to be fit in chemmodlab. Score and activity information can be
 provided from any model.
-
-## 1. Confidence bands and hypothesis tests for hit enrichment curves
 
 ### Confidence bands for individual curves
 
