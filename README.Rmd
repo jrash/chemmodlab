@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 
 [![Build Status](https://travis-ci.org/jrash/chemmodlab.svg?branch=master)](https://travis-ci.org/jrash/chemmodlab) [![CRAN](https://img.shields.io/cran/v/chemmodlab.svg)]()
 
-`chemmodlab` contains a suite of methods for fitting machine learning models and for validating the resulting models. It also contains methods for confidence bands and hypothesis tests for hit enrichment curves.
+`chemmodlab` contains a suite of methods for fitting machine learning models and for validating the resulting models. The methods are tailored to virtual screening for drug discovery applications and include confidence bands and hypothesis tests for hit enrichment curves.
     
 # Installation
 
@@ -33,42 +33,13 @@ devtools::install_github("jrash/chemmodlab")
 
 Usage is divided into two sections:
 
-* General model fitting and evaluations
-* Confidence bands and hypothesis tests for hit enrichment curves
+1. [Confidence bands and hypothesis tests for hit enrichment curves](https://github.com/jrash/chemmodlab#1-confidence-bands-and-hypothesis-tests-for-hit-enrichment-curves)
+2. [Generalized model fitting and evaluations](https://github.com/jrash/chemmodlab#2-generalized-model-fitting-and-evaluations)
+
 
 NOTE: The confidence bands and hypothesis tests section does not require models to be fit in chemmodlab.  Score and activity information can be provided from any model.
 
-
-## General model fitting and evaluations
-
-* `ModelTrain()` fits a series of classification or regression models to sets of descriptors and computes cross-validated measures of model performance.  Repeated k-fold cross validation is performed with multiple, different fold assignments for the data ("splits").
-* `MakeModelDefaults()` makes a list containing the default parameters for all models implemented in ModelTrain.
-* `plot.chemmodlab()` takes a chemmodlab object output by the `ModelTrain` function and creates a series of accumulation curve plots for assesing model and descriptor set performance.
-* `Performance()` can evaluate many performance measures across all splits created by `ModelTrain`, then outputs a data frame for each D-M combination.
-* `CombineSplits()` evaluates a specified performance measure across all splits created by `ModelTrain` and conducts statistical tests to determine the best performing descriptor set and model (D-M) combinations.
-* `chemmodlab()` is the constructor for the chemmodlab object.
-    
-    The statistical methodologies comprise
-    a comprehensive collection of approaches whose validity and utility have
-    been accepted by experts in the Cheminformatics field. As promising new
-    methodologies emerge from the statistical and data-mining communities, they
-    will be incorporated into the laboratory. These methods are aimed at discovering
-    quantitative structure-activity relationships (QSARs). However, the user can
-    directly input their own choices of descriptors and responses, so the capability
-    for comparing models is effectively unlimited.
-
-```{r message=FALSE, warning=FALSE, results='hide'}
-library(chemmodlab)
-
-data(aid364)
-cml <- ModelTrain(aid364, ids = TRUE, xcol.lengths = c(24, 147),
-                  des.names = c("BurdenNumbers", "Pharmacophores"))
-plot(cml, splits = 1, meths = c("NNet", "KNN"))
-CombineSplits(cml, metric = "enhancement", m = 100)
-```
-
-
-## Confidence bands and hypothesis tests for hit enrichment curves
+## 1. Confidence bands and hypothesis tests for hit enrichment curves
 
 ### Confidence bands for individual curves
 
@@ -105,3 +76,31 @@ PerfCurveTest( S1=pparg$maxz_scores, S2=pparg$surf_scores,
                X=pparg$surf_actives, r=tested/n, alpha=.05)
 ```
 
+
+## 2. Generalized model fitting and evaluations
+
+* `ModelTrain()` fits a series of classification or regression models to sets of descriptors and computes cross-validated measures of model performance.  Repeated k-fold cross validation is performed with multiple, different fold assignments for the data ("splits").
+* `MakeModelDefaults()` makes a list containing the default parameters for all models implemented in ModelTrain.
+* `plot.chemmodlab()` takes a chemmodlab object output by the `ModelTrain` function and creates a series of accumulation curve plots for assesing model and descriptor set performance.
+* `Performance()` can evaluate many performance measures across all splits created by `ModelTrain`, then outputs a data frame for each D-M combination.
+* `CombineSplits()` evaluates a specified performance measure across all splits created by `ModelTrain` and conducts statistical tests to determine the best performing descriptor set and model (D-M) combinations.
+* `chemmodlab()` is the constructor for the chemmodlab object.
+    
+    The statistical methodologies comprise
+    a comprehensive collection of approaches whose validity and utility have
+    been accepted by experts in the Cheminformatics field. As promising new
+    methodologies emerge from the statistical and data-mining communities, they
+    will be incorporated into the laboratory. These methods are aimed at discovering
+    quantitative structure-activity relationships (QSARs). However, the user can
+    directly input their own choices of descriptors and responses, so the capability
+    for comparing models is effectively unlimited.
+
+```{r message=FALSE, warning=FALSE, results='hide'}
+library(chemmodlab)
+
+data(aid364)
+cml <- ModelTrain(aid364, ids = TRUE, xcol.lengths = c(24, 147),
+                  des.names = c("BurdenNumbers", "Pharmacophores"))
+plot(cml, splits = 1, meths = c("NNet", "KNN"))
+CombineSplits(cml, metric = "enhancement", m = 100)
+```

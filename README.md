@@ -8,7 +8,8 @@ Status](https://travis-ci.org/jrash/chemmodlab.svg?branch=master)](https://travi
 [![CRAN](https://img.shields.io/cran/v/chemmodlab.svg)]()
 
 `chemmodlab` contains a suite of methods for fitting machine learning
-models and for validating the resulting models. The methods are tailored to virtual screening for drug discovery applications and include
+models and for validating the resulting models. The methods are tailored
+to virtual screening for drug discovery applications and include
 confidence bands and hypothesis tests for hit enrichment curves.
 
 # Installation
@@ -24,8 +25,10 @@ confidence bands and hypothesis tests for hit enrichment curves.
 
 Usage is divided into two sections:
 
-1. [Confidence bands and hypothesis tests for hit enrichment curves](https://github.com/jrash/chemmodlab#1-confidence-bands-and-hypothesis-tests-for-hit-enrichment-curves)
-2. [Generalized model fitting and evaluations](https://github.com/jrash/chemmodlab#2-generalized-model-fitting-and-evaluations)
+1.  [Confidence bands and hypothesis tests for hit enrichment
+    curves](https://github.com/jrash/chemmodlab#1-confidence-bands-and-hypothesis-tests-for-hit-enrichment-curves)
+2.  [Generalized model fitting and
+    evaluations](https://github.com/jrash/chemmodlab#2-generalized-model-fitting-and-evaluations)
 
 NOTE: The confidence bands and hypothesis tests section does not require
 models to be fit in chemmodlab. Score and activity information can be
@@ -43,7 +46,7 @@ provided from any model.
               y = pparg[,3], labels = c("Maximum z-score","Surflex-dock", "ICM"),
               log = T, conf = T, conf.level = .95)
 
-![](README-unnamed-chunk-4-1.png)<!-- -->
+![](README-unnamed-chunk-3-1.png)<!-- -->
 
 ### Confidence bands for differences between curves
 
@@ -55,7 +58,7 @@ All pairwise differences between three methods are shown:
                     c("Maximum z-score","Surflex-dock", "ICM"),
                   log = T, conf.level = .95)
 
-![](README-unnamed-chunk-5-1.png)<!-- -->
+![](README-unnamed-chunk-4-1.png)<!-- -->
 
 ### Hypothesis tests at specific fractions
 
@@ -123,8 +126,8 @@ All pairwise differences between three methods are shown:
                       des.names = c("BurdenNumbers", "Pharmacophores"))
     plot(cml, splits = 1, meths = c("NNet", "KNN"))
 
-![](README-unnamed-chunk-3-1.png)<!-- -->![](README-unnamed-chunk-3-2.png)<!-- -->![](README-unnamed-chunk-3-3.png)<!-- -->![](README-unnamed-chunk-3-4.png)<!-- -->
+![](README-unnamed-chunk-6-1.png)<!-- -->![](README-unnamed-chunk-6-2.png)<!-- -->![](README-unnamed-chunk-6-3.png)<!-- -->![](README-unnamed-chunk-6-4.png)<!-- -->
 
     CombineSplits(cml, metric = "enhancement", m = 100)
 
-![](README-unnamed-chunk-3-5.png)<!-- -->
+![](README-unnamed-chunk-6-5.png)<!-- -->
