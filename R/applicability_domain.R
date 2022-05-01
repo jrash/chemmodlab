@@ -42,7 +42,7 @@ HotellingControlChart <- function(type = c("chi", "t2", "mewma", "mcusum", "mcus
   type <- match.arg(type)
   p <- ncol(x)
   m <- nrow(x)
-  if (class(x) == "matrix" || class(x) == "data.frame") 
+  if (is(x, "matrix") || is(x, "data.frame")) 
     (x <- array(data.matrix(x), c(m, p, 1)))
   n <- dim(x)[3]
   if (!missing(Xmv)) 
