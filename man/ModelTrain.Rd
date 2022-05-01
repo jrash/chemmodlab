@@ -3,7 +3,6 @@
 \name{ModelTrain}
 \alias{ModelTrain}
 \alias{ModelTrain.default}
-\alias{ModelTrain.character}
 \alias{ModelTrain.data.frame}
 \title{Fit predictive models to sets of descriptors.}
 \usage{
@@ -12,20 +11,6 @@ ModelTrain(...)
 \method{ModelTrain}{default}(
   x,
   y,
-  nfolds = 10,
-  nsplits = 3,
-  seed.in = NA,
-  des.names = NA,
-  models = c("NNet", "PLS", "LAR", "Lasso", "PLSLDA", "Tree", "SVM", "KNN", "RF"),
-  user.params = NULL,
-  verbose = FALSE,
-  ...
-)
-
-\method{ModelTrain}{character}(
-  descriptors,
-  y,
-  mols,
   nfolds = 10,
   nsplits = 3,
   seed.in = NA,
@@ -88,10 +73,6 @@ a list of parameters using  \code{\link{MakeModelDefaults}} and then
 modify the parameters.}
 
 \item{verbose}{verbose mode or not?}
-
-\item{descriptors}{descriptor sets to compute}
-
-\item{mols}{molecule file created by rcdk}
 
 \item{d}{a data frame containing an (optional) ID column,
 a response column, and descriptor columns.  The columns should be
@@ -210,8 +191,6 @@ descriptor set combination.
 \section{Methods (by class)}{
 \itemize{
 \item \code{default}: Default S3 method
-
-\item \code{character}: S3 method for class 'character'
 
 \item \code{data.frame}: S3 method for class 'data.frame'
 }}

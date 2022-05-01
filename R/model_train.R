@@ -49,8 +49,6 @@
 #' a list of parameters using  \code{\link{MakeModelDefaults}} and then
 #' modify the parameters.
 #' @param verbose verbose mode or not?
-#' @param descriptors descriptor sets to compute
-#' @param mols molecule file created by rcdk
 #' @param ... Additional parameters.
 #'
 #' @return A list is returned of class \code{\link{chemmodlab}} containing:
@@ -162,8 +160,6 @@
 #' @import methods
 #' @import stats
 #' @import utils
-#' @import rcdk
-#' @import fingerprint
 #' 
 #' @export
 ModelTrain <- function(...) UseMethod("ModelTrain")
@@ -213,62 +209,62 @@ ModelTrain.default <- function(x, y,
   }
 }
 
-#' @describeIn ModelTrain S3 method for class 'character'
-#' @export
-ModelTrain.character <- function(descriptors, y, mols, 
-                                 nfolds = 10,
-                                 nsplits = 3,
-                                 seed.in = NA,
-                                 des.names = NA,
-                                 models = c("NNet", "PLS", "LAR", "Lasso",
-                                            "PLSLDA", "Tree", "SVM", "KNN", "RF"),
-                                 user.params = NULL, verbose = FALSE,
-                                 ...) {
-  
-  s3method <- "character"
-  if (class(mols[[1]]) != "jobjRef") {
-    stop("'mols' should be a molecule list produced by the package rcdk")
-  }
-  
-  if (!all(descriptors %in% c("hybrid", "constitutional", "topological",
-                         "electronic", "geometrical", "fp.standard",
-                         "fp.extended", "fp.graph", "fp.hybridization",
-                         "fp.maccs", "fp.estate", "fp.pubchem", "fp.kr",
-                         "fp.shortestpath", "fp.signature", "fp.circular"))) {
-    stop("'descriptors' should be a character vector containing descriptors computed by chemmodlab")
-  }
-  
-  desc.ls <- list()
-  for (i in 1:length(descriptors)) {
-    if(descriptors[i] %in% c("hybrid", "constitutional", "topological",
-                           "electronic", "geometrical")) {
-      desc.ls[[i]] <- eval.desc(mols, get.desc.names(descriptors[i]))
-    } else {
-      fp.type <- sub("fp.", "", descriptors[i])
-      fing <- lapply(mols, get.fingerprint, type = fp.type)
-      desc.ls[[i]] <- fp.to.matrix(fing)
-    }
-  }
-  
-  df <- matrix(y, ncol = 1)
-  xcol.lengths <- c()
-  for (i in 1:length(descriptors)) {
-    work.data <- as.matrix(desc.ls[[i]])
-    rm.desc <- apply(work.data, 2, function(x) all(is.na(x)) == T)
-    if (sum(rm.desc) > 0) {
-      if (verbose)
-        warning(paste("WARNING.....", sum(rm.desc),
-                      "descriptors could not be computed and were omitted"))
-      work.data <- subset(work.data, select = !rm.desc)
-    }
-    rm(rm.desc)
-    xcol.lengths <- c(xcol.lengths, ncol(work.data))
-    df<- cbind(df, work.data)
-  }
-  df <- as.data.frame(df)
-  
-  ModelTrain.data.frame(d = df, ids = F, xcol.lengths = xcol.lengths, verbose = verbose) 
-}
+#' #' @describeIn ModelTrain S3 method for class 'character'
+#' #' @export
+#' ModelTrain.character <- function(descriptors, y, mols, 
+#'                                  nfolds = 10,
+#'                                  nsplits = 3,
+#'                                  seed.in = NA,
+#'                                  des.names = NA,
+#'                                  models = c("NNet", "PLS", "LAR", "Lasso",
+#'                                             "PLSLDA", "Tree", "SVM", "KNN", "RF"),
+#'                                  user.params = NULL, verbose = FALSE,
+#'                                  ...) {
+#'   
+#'   s3method <- "character"
+#'   if (class(mols[[1]]) != "jobjRef") {
+#'     stop("'mols' should be a molecule list produced by the package rcdk")
+#'   }
+#'   
+#'   if (!all(descriptors %in% c("hybrid", "constitutional", "topological",
+#'                          "electronic", "geometrical", "fp.standard",
+#'                          "fp.extended", "fp.graph", "fp.hybridization",
+#'                          "fp.maccs", "fp.estate", "fp.pubchem", "fp.kr",
+#'                          "fp.shortestpath", "fp.signature", "fp.circular"))) {
+#'     stop("'descriptors' should be a character vector containing descriptors computed by chemmodlab")
+#'   }
+#'   
+#'   desc.ls <- list()
+#'   for (i in 1:length(descriptors)) {
+#'     if(descriptors[i] %in% c("hybrid", "constitutional", "topological",
+#'                            "electronic", "geometrical")) {
+#'       desc.ls[[i]] <- eval.desc(mols, get.desc.names(descriptors[i]))
+#'     } else {
+#'       fp.type <- sub("fp.", "", descriptors[i])
+#'       fing <- lapply(mols, get.fingerprint, type = fp.type)
+#'       desc.ls[[i]] <- fp.to.matrix(fing)
+#'     }
+#'   }
+#'   
+#'   df <- matrix(y, ncol = 1)
+#'   xcol.lengths <- c()
+#'   for (i in 1:length(descriptors)) {
+#'     work.data <- as.matrix(desc.ls[[i]])
+#'     rm.desc <- apply(work.data, 2, function(x) all(is.na(x)) == T)
+#'     if (sum(rm.desc) > 0) {
+#'       if (verbose)
+#'         warning(paste("WARNING.....", sum(rm.desc),
+#'                       "descriptors could not be computed and were omitted"))
+#'       work.data <- subset(work.data, select = !rm.desc)
+#'     }
+#'     rm(rm.desc)
+#'     xcol.lengths <- c(xcol.lengths, ncol(work.data))
+#'     df<- cbind(df, work.data)
+#'   }
+#'   df <- as.data.frame(df)
+#'   
+#'   ModelTrain.data.frame(d = df, ids = F, xcol.lengths = xcol.lengths, verbose = verbose) 
+#' }
 
 
 #' @describeIn ModelTrain S3 method for class 'data.frame'

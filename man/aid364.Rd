@@ -16,7 +16,7 @@ indicating the presence/absence of "pharmacophore" features, described in more d
 Liu et al. (2005).
 }
 \source{
-\url{http://pubchem.ncbi.nlm.nih.gov/assay/assay.cgi?aid=364}
+\url{https://pubchem.ncbi.nlm.nih.gov/bioassay/364}
 }
 \usage{
 aid364
@@ -25,7 +25,7 @@ aid364
 These data are from a cytotoxicity assay conducted by the Scripps Research
 Institute Molecular Screening Center. There are 500 compounds assessed for toxicity using the
 the Jurkat human T-Cell line. 50 of these compounds were active (toxic). Visit 
-\url{http://pubchem.ncbi.nlm.nih.gov/assay/assay.cgi?aid=364} for more details.
+\url{https://pubchem.ncbi.nlm.nih.gov/bioassay/364} for more details.
 }
 \references{
 Burden, F. R. (1989). Molecular identification number for substructure searches.
