@@ -43,6 +43,9 @@ are "binomial", "JZ", "bootstrap". Confidence band options are "sup-t", "theta-p
 \item{mc.rep}{the number of Monte Carlo replicates to use for the sup-t method.}
 
 \item{myseed}{the random seed.}
+
+\item{h}{the bandwidth for the local regression estimator of Lambda.  If NULL, uses the default 
+plugin estimator.}
 }
 \description{
 \code{PerfCurveBands} takes a pair of score and activity vectors as input.

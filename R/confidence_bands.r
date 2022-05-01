@@ -145,6 +145,10 @@ BootCI = function(X, S, m, pi.0, boot.rep, metric, plus, r, myseed=111){
 #' @param boot.rep the number of replicates to use for the bootstrap method.
 #' @param mc.rep the number of Monte Carlo replicates to use for the sup-t method.
 #' @param myseed the random seed.
+#' @param h the bandwidth for the local regression estimator of Lambda.  If NULL, uses the default 
+#' plugin estimator.
+#' 
+#' @import KernSmooth
 #' 
 #' @export
 PerfCurveBands <- function(S, X, r, metric = "rec", type = "band", method = "sup-t",

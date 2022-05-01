@@ -15,6 +15,12 @@
 #' @param plus should plus correction be applied to the confidence intervals?
 #' @param pool use pooling for hypothesis tests? Only relevant to "EmProc".
 #' @param alpha the significance level.
+#' @param type specifies whether a point-wise confidence interval 
+#' ("pointwise") or a confidence band ("band") should be constructed.
+#' @param h the bandwidth for the local regression estimator of Lambda.  If NULL, uses the default 
+#' plugin estimator.
+#' @param seed the random seed.
+#' @param mc.rep the number of Monte Carlo replicates to use for the sup-t method.
 #' 
 #' @export
 PerfCurveTest <- function(S1, S2, X, r, metric = "rec", method = "EmProc", type = "pointwise", 

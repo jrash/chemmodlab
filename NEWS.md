@@ -1,4 +1,16 @@
-# chemmodlab 1.1.0.9000
+# chemmodlab 2.0.0
+
+## Major changes
+
+* This version of `chemmodlab` has all of the functionality mentioned in the following paper: https://arxiv.org/abs/1912.09526
+
+* Added function `PerfCurveBands` which constructs a confidence band for a recall curve.
+
+* Added function `PerfCurveTest` which performs a hypothesis test for the difference between two performance curves.
+
+* Added function `HitEnrich` which plots hit enrichment curves and confidence bands.
+
+* Added function `HitEnrichDiff` which plots the difference between hit enrichment curves and confidence bands.
 
 # chemmodlab 1.1.0
 

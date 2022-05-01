@@ -35,11 +35,21 @@ PerfCurveTest(
 c("EmProc", "binomial", "JZ ind", "mcnemar", "binomial ind"). Precision options are
 c("EmProc", "binomial", "JZ ind", "stouffer", "binomial ind").}
 
+\item{type}{specifies whether a point-wise confidence interval 
+("pointwise") or a confidence band ("band") should be constructed.}
+
 \item{plus}{should plus correction be applied to the confidence intervals?}
 
 \item{pool}{use pooling for hypothesis tests? Only relevant to "EmProc".}
 
 \item{alpha}{the significance level.}
+
+\item{h}{the bandwidth for the local regression estimator of Lambda.  If NULL, uses the default 
+plugin estimator.}
+
+\item{seed}{the random seed.}
+
+\item{mc.rep}{the number of Monte Carlo replicates to use for the sup-t method.}
 }
 \description{
 \code{PerfCurveTest} takes score vectors for two scoring algorithms and an activity vector.
