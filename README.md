@@ -34,10 +34,9 @@ Usage is divided into two sections:
 
 NOTES: 
 
-1. This functionality is not on CRAN yet, but will be soon.  Please download the development branch from github.
-2. The confidence band and hypothesis test functions do not require
-models to be fit in chemmodlab. Score and activity information can be
-provided from any model.
+1. The confidence band and hypothesis test functions do not require
+models to be fit in chemmodlab. Only score and activity information 
+need to be provided, and these can be provided from any model.
 
 ### Confidence bands for individual curves
 
