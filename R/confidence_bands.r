@@ -8,8 +8,9 @@
 
 # Returns Lambda, or P(+|S=t)
 EstLambda = function(S, X, t, idx, h = NULL){
-
-  tryCatch({
+  
+  # lam <- NULL
+  lam <- tryCatch({
     Sorder <- order(S, decreasing=TRUE)
     m <- length(S)
     idx.range <- c(max(1, idx - 1000), min(length(S), idx + 1000))
@@ -19,38 +20,38 @@ EstLambda = function(S, X, t, idx, h = NULL){
 
     ## --1 Kernsmooth bandwidth estimator
     ## more accurate, but prone to errors
-    # if(is.null(h)) h <- KernSmooth::dpill(x = S.ordered, y = X.ordered, gridsize = 100)
+    if(is.null(h)) h <- KernSmooth::dpill(x = S.ordered, y = X.ordered, gridsize = 100)
 
     ## --2 Rule of thumb estimator
     ## Should not throw an error
-    if(is.null(h)) h <- (m^{-1/5}) * sd(S)
+    # if(is.null(h)) h <- (m^{-1/5}) * sd(S)
 
     lp0 <- KernSmooth::locpoly(x = S.ordered, y = X.ordered, bandwidth = h, degree = 0,
                                range.x = range(S.ordered), gridsize = 1000)
 
     lp0.idx <- which.min(abs(lp0$x - t))
-    lam <- lp0$y[lp0.idx]
+    return(lp0$y[lp0.idx])
   }, error = function(e) {
-    stop("Lambda estimate failed.  Try setting h manually.")
-  }
-  )
+    # stop("Lambda estimate failed.  Try setting h manually.")
+    return(EstLambda_bak(S, X, t))
+  })
 
   return(lam)
 }
 
 # --3 JHO 
 #
-# # Returns Lambda, or P(+|S=t)
-# EstLambda = function(S, X, t, ...){
-#  #h is the bandwidth, t is called c in the JZ paper
-#  #m is the sample size, S and X are the vectors of scores and labels
-#  m <- length(S)
-#  h <- (m^{-1/5}) * sd(S)
-#  ind.win <- (S < t + h) & (S > t - h)
-#  exp.X.and.I <- sum(X*ind.win)/m
-#  exp.I <- sum(ind.win)/m
-#  return(exp.X.and.I/exp.I)
-# }
+# Returns Lambda, or P(+|S=t)
+EstLambda_bak = function(S, X, t, ...){
+ #h is the bandwidth, t is called c in the JZ paper
+ #m is the sample size, S and X are the vectors of scores and labels
+ m <- length(S)
+ h <- (m^{-1/5}) * sd(S)
+ ind.win <- (S < t + h) & (S > t - h)
+ exp.X.and.I <- sum(X*ind.win)/m
+ exp.I <- sum(ind.win)/m
+ return(exp.X.and.I/exp.I)
+}
 
 # --4 np method
 
