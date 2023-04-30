@@ -154,7 +154,7 @@ HitEnrich <- function(S.df,
             lcl <- cl.ls$CI[, 1]
             polygon(c(band.frac, rev(band.frac)),
                     c(ucl, rev(lcl)),
-                    col = add.alpha(idx, .25),
+                    col = add.alpha(idx, .4),
                     border = NA)
           }
           
@@ -219,7 +219,7 @@ HitEnrich <- function(S.df,
             lcl <- cl.ls$CI[, 1]
             polygon(c(band.frac, rev(band.frac)),
                     c(ucl, rev(lcl)),
-                    col = add.alpha(idx, .25),
+                    col = add.alpha(idx, .4),
                     border = NA)
           }
           
