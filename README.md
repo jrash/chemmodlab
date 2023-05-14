@@ -12,6 +12,11 @@ models and for validating the resulting models. The methods are tailored
 to virtual screening for drug discovery applications and include
 confidence bands and hypothesis tests for hit enrichment curves.
 
+The methodologies implemented in chemmodlab are described in the following papers:
+
+- https://jcheminf.biomedcentral.com/articles/10.1186/s13321-022-00629-0
+- https://jcheminf.biomedcentral.com/articles/10.1186/s13321-018-0309-4
+
 # Installation
 
     # install from CRAN
